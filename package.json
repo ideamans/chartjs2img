@@ -1,6 +1,6 @@
 {
   "name": "chartjs2img",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Render Chart.js charts to images via CLI or HTTP API using Playwright",
   "type": "module",
   "main": "src/index.ts",

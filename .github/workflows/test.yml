@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install
+
+      - name: Generate examples
+        run: bun run src/index.ts examples -o ./test-output
+
+      - name: Verify outputs
+        run: |
+          EXPECTED=18
+          COUNT=$(ls test-output/*.png 2>/dev/null | wc -l)
+          echo "PNG files: $COUNT / $EXPECTED expected"
+          if [ "$COUNT" -ne "$EXPECTED" ]; then
+            echo "::error::Expected $EXPECTED PNG files, got $COUNT"
+            exit 1
+          fi
+
+          FAILED=0
+          for f in test-output/*.png; do
+            SIZE=$(stat --format=%s "$f")
+            INFO=$(file "$f")
+            if ! echo "$INFO" | grep -q "PNG image data"; then
+              echo "::error::$f is not a valid PNG"
+              FAILED=1
+            elif [ "$SIZE" -lt 1000 ]; then
+              echo "::error::$f is too small (${SIZE} bytes)"
+              FAILED=1
+            else
+              echo "OK: $f (${SIZE} bytes)"
+            fi
+          done
+
+          exit $FAILED
