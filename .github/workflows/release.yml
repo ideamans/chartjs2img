@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: bun-linux-x64
+            os_arch: linux_amd64
+            ext: ""
+          - target: bun-linux-arm64
+            os_arch: linux_arm64
+            ext: ""
+          - target: bun-darwin-x64
+            os_arch: darwin_amd64
+            ext: ""
+          - target: bun-darwin-arm64
+            os_arch: darwin_arm64
+            ext: ""
+          - target: bun-windows-x64
+            os_arch: windows_amd64
+            ext: ".exe"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install
+
+      - name: Build binary
+        run: |
+          bun build src/index.ts --compile \
+            --target=${{ matrix.target }} \
+            --outfile=chartjs2img${{ matrix.ext }} \
+            --external electron \
+            --external chromium-bidi/lib/cjs/bidiMapper/BidiMapper \
+            --external chromium-bidi/lib/cjs/cdp/CdpConnection
+
+      - name: Package (tar.gz for unix)
+        if: matrix.ext == ''
+        run: |
+          ARCHIVE="chartjs2img_${GITHUB_REF_NAME#v}_${{ matrix.os_arch }}.tar.gz"
+          tar czf "$ARCHIVE" chartjs2img
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Package (zip for windows)
+        if: matrix.ext == '.exe'
+        run: |
+          ARCHIVE="chartjs2img_${GITHUB_REF_NAME#v}_${{ matrix.os_arch }}.zip"
+          zip "$ARCHIVE" chartjs2img.exe
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Generate checksums
+        run: sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os_arch }}
+          path: |
+            ${{ env.ARCHIVE }}
+            ${{ env.ARCHIVE }}.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate combined checksums
+        run: |
+          cd dist
+          cat *.sha256 > checksums.txt
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/chartjs2img_*
+            dist/checksums.txt
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_HUB_REPO }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,23 @@
+node_modules/
+dist/
+
+# Bun compiled binary
+chartjs2img
+
+# Output files
+*.png
+*.jpg
+*.jpeg
+*.webp
+examples/
+
+# Bun
+bun.lock
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
