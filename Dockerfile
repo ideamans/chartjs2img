@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxfixes3 \
     libxrandr2 \
     libxshmfence1 \
+    curl \
     unzip \
     wget \
     xdg-utils \
