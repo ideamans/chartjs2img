@@ -1,6 +1,6 @@
-import { existsSync, readdirSync } from 'fs'
+import { existsSync, readdirSync, mkdirSync, writeFileSync, chmodSync } from 'fs'
 import { join } from 'path'
-import { homedir, platform } from 'os'
+import { homedir, platform, arch } from 'os'
 import { buildHtml, type RenderOptions } from './template'
 import { Semaphore } from './semaphore'
 import { computeHash, getCache, setCache } from './cache'
@@ -106,7 +106,142 @@ function findChromiumExecutable(): string | null {
     }
   }
 
+  // 4. Check for system-installed Chrome/Chromium
+  const systemPaths: Record<string, string[]> = {
+    darwin: [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      join(home, 'Applications/Google Chrome.app/Contents/MacOS/Google Chrome'),
+    ],
+    linux: [
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/google-chrome',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/snap/bin/chromium',
+    ],
+    win32: [
+      join(process.env.PROGRAMFILES ?? 'C:\\Program Files', 'Google\\Chrome\\Application\\chrome.exe'),
+      join(process.env['PROGRAMFILES(X86)'] ?? 'C:\\Program Files (x86)', 'Google\\Chrome\\Application\\chrome.exe'),
+      join(home, 'AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'),
+    ],
+  }
+
+  for (const p of systemPaths[os] ?? []) {
+    if (existsSync(p)) return p
+  }
+
   return null
+}
+
+/** Resolve the Chrome for Testing platform string for the current OS/arch */
+function getCftPlatform(): string {
+  const os = platform()
+  const a = arch()
+  if (os === 'darwin') return a === 'arm64' ? 'mac-arm64' : 'mac-x64'
+  if (os === 'win32') return a === 'x64' ? 'win64' : 'win32'
+  return a === 'arm64' ? 'linux-arm64' : 'linux64'
+}
+
+/** Download Chrome for Testing and extract to a local directory. No external tools required. */
+async function downloadChromeForTesting(): Promise<string> {
+  const os = platform()
+  const cftPlatform = getCftPlatform()
+
+  // Determine install directory
+  const home = homedir()
+  let installBase: string
+  if (os === 'darwin') {
+    installBase = join(home, 'Library', 'Caches', 'ms-playwright')
+  } else if (os === 'win32') {
+    installBase = join(home, 'AppData', 'Local', 'ms-playwright')
+  } else {
+    installBase = join(home, '.cache', 'ms-playwright')
+  }
+  const installDir = join(installBase, 'chromium-cft')
+  mkdirSync(installDir, { recursive: true })
+
+  // Fetch latest stable Chrome for Testing download URL
+  console.log('[renderer] Fetching Chrome for Testing download info...')
+  const apiUrl = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
+  const res = await fetch(apiUrl)
+  if (!res.ok) throw new Error(`Failed to fetch Chrome for Testing API: ${res.status}`)
+  const data = (await res.json()) as any
+  const entry = data.channels.Stable.downloads.chrome.find((d: any) => d.platform === cftPlatform)
+  if (!entry) throw new Error(`No Chrome for Testing download for platform: ${cftPlatform}`)
+  const downloadUrl: string = entry.url
+  const version: string = data.channels.Stable.version
+
+  console.log(`[renderer] Downloading Chrome ${version} for ${cftPlatform}...`)
+  const dlRes = await fetch(downloadUrl)
+  if (!dlRes.ok) throw new Error(`Download failed: ${dlRes.status}`)
+  const zipBuffer = Buffer.from(await dlRes.arrayBuffer())
+
+  // Write zip to temp file and extract
+  const zipPath = join(installDir, 'chrome.zip')
+  writeFileSync(zipPath, zipBuffer)
+
+  console.log('[renderer] Extracting...')
+  if (os === 'win32') {
+    // PowerShell Expand-Archive
+    const proc = Bun.spawn(['powershell', '-Command', `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${installDir}'`], {
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+    if ((await proc.exited) !== 0) throw new Error('Failed to extract Chrome zip (PowerShell)')
+  } else {
+    // unzip is pre-installed on macOS and most Linux
+    const proc = Bun.spawn(['unzip', '-o', '-q', zipPath, '-d', installDir], {
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+    if ((await proc.exited) !== 0) throw new Error('Failed to extract Chrome zip (unzip)')
+  }
+
+  // Clean up zip
+  try {
+    const { unlinkSync } = await import('fs')
+    unlinkSync(zipPath)
+  } catch {
+    // ignore
+  }
+
+  // Find the extracted executable
+  // Chrome for Testing extracts to: chrome-<platform>/chrome (or .exe on Windows)
+  const execCandidates: Record<string, string[]> = {
+    darwin: [
+      `chrome-${cftPlatform}/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`,
+    ],
+    linux: [
+      `chrome-${cftPlatform}/chrome`,
+    ],
+    win32: [
+      `chrome-${cftPlatform}\\chrome.exe`,
+    ],
+  }
+
+  for (const rel of execCandidates[os] ?? execCandidates['linux']) {
+    const fullPath = join(installDir, rel)
+    if (existsSync(fullPath)) {
+      // Ensure executable permission on Unix
+      if (os !== 'win32') {
+        try { chmodSync(fullPath, 0o755) } catch { /* ignore */ }
+      }
+      return fullPath
+    }
+  }
+
+  throw new Error('Chrome was downloaded but executable not found in extracted files')
+}
+
+async function installChromiumViaPlaywright(): Promise<void> {
+  // Use playwright-core's built-in registry to download Chromium directly — no bunx/npx needed
+  const { registry } = await import('playwright-core/lib/server')
+  const chromiumEntry = registry._executables.find((e: any) => e.name === 'chromium')
+  if (!chromiumEntry) {
+    throw new Error('Chromium entry not found in playwright registry')
+  }
+  await registry.install([chromiumEntry])
 }
 
 async function ensureChromiumInstalled(): Promise<string> {
@@ -121,34 +256,34 @@ async function ensureChromiumInstalled(): Promise<string> {
 
   console.log('[renderer] Chromium not found. Installing automatically...')
 
-  const proc = Bun.spawn(['bunx', 'playwright', 'install', 'chromium'], {
-    stdout: 'inherit',
-    stderr: 'inherit',
-  })
-  const exitCode = await proc.exited
-
-  if (exitCode !== 0) {
-    // Fallback: try npx in case we're in a Node.js / Docker environment
-    console.log('[renderer] Retrying with npx...')
-    const proc2 = Bun.spawn(['npx', 'playwright', 'install', 'chromium'], {
-      stdout: 'inherit',
-      stderr: 'inherit',
-    })
-    const exitCode2 = await proc2.exited
-    if (exitCode2 !== 0) {
-      throw new Error('Failed to install Chromium. Please run: bunx playwright install chromium')
+  // Strategy 1: Use playwright's built-in registry installer (works in dev / node_modules available)
+  try {
+    await installChromiumViaPlaywright()
+    const p = findChromiumExecutable()
+    if (p) {
+      console.log('[renderer] Chromium installed successfully via Playwright')
+      chromiumPath = p
+      return chromiumPath
     }
+  } catch {
+    // Expected to fail in compiled binary — fall through to Chrome for Testing
   }
 
-  console.log('[renderer] Chromium installed successfully')
-
-  // Try to find the newly installed Chromium
-  const newPath = findChromiumExecutable()
-  if (!newPath) {
-    throw new Error('Chromium was installed but could not be found. Set CHROMIUM_PATH env var to the executable.')
+  // Strategy 2: Download Chrome for Testing directly (standalone binary friendly)
+  try {
+    const p = await downloadChromeForTesting()
+    console.log('[renderer] Chrome for Testing installed successfully')
+    chromiumPath = p
+    return chromiumPath
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(
+      `Failed to install Chromium automatically: ${msg}\n` +
+        'You can install it manually:\n' +
+        '  npx playwright install chromium\n' +
+        'Or set CHROMIUM_PATH to an existing Chrome/Chromium executable.',
+    )
   }
-  chromiumPath = newPath
-  return chromiumPath
 }
 
 async function launchBrowser(): Promise<BrowserContext> {
