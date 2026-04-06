@@ -21,3 +21,5 @@ bun.lock
 # OS
 .DS_Store
 Thumbs.db
+chartjs2img-darwin-arm64
+chartjs2img

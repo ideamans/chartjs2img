@@ -1,7 +1,7 @@
 {
   "name": "chartjs2img",
   "version": "0.2.0",
-  "description": "Render Chart.js charts to images via CLI or HTTP API using Playwright",
+  "description": "Render Chart.js charts to images via CLI or HTTP API using headless Chrome",
   "type": "module",
   "main": "src/index.ts",
   "bin": {
@@ -9,12 +9,12 @@
   },
   "scripts": {
     "dev": "bun run src/index.ts serve",
-    "build": "bun build src/index.ts --compile --outfile chartjs2img --external electron --external chromium-bidi/lib/cjs/bidiMapper/BidiMapper --external chromium-bidi/lib/cjs/cdp/CdpConnection",
+    "build": "bun build src/index.ts --compile --outfile chartjs2img",
     "start": "bun run src/index.ts serve",
     "cli": "bun run src/index.ts"
   },
   "dependencies": {
-    "playwright": "^1.52.0"
+    "puppeteer-core": "^24.40.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
