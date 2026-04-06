@@ -1,8 +1,14 @@
-import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
-import { existsSync } from 'fs'
+import { existsSync, readdirSync } from 'fs'
+import { join } from 'path'
+import { homedir, platform } from 'os'
 import { buildHtml, type RenderOptions } from './template'
 import { Semaphore } from './semaphore'
 import { computeHash, getCache, setCache } from './cache'
+
+// Playwright types are imported lazily to avoid module resolution errors in compiled binaries
+type Browser = import('playwright').Browser
+type BrowserContext = import('playwright').BrowserContext
+type Page = import('playwright').Page
 
 /** Max concurrency (env: CONCURRENCY, default: 8) */
 const MAX_CONCURRENCY = Number(process.env.CONCURRENCY ?? '8')
@@ -16,23 +22,101 @@ let browser: Browser | null = null
 let context: BrowserContext | null = null
 let launching = false
 let launchPromise: Promise<BrowserContext> | null = null
-let browserInstalled = false
+let chromiumPath: string | null = null
 
 // Track active pages for lifecycle management
 const activePages = new Map<Page, NodeJS.Timeout>()
 
-async function ensureChromiumInstalled(): Promise<void> {
-  if (browserInstalled) return
+/**
+ * Find the Chromium executable in the Playwright browser cache.
+ * Works in both development (via playwright's registry) and compiled binary mode.
+ */
+function findChromiumExecutable(): string | null {
+  // 1. Environment variable override
+  if (process.env.CHROMIUM_PATH && existsSync(process.env.CHROMIUM_PATH)) {
+    return process.env.CHROMIUM_PATH
+  }
 
-  // Check if Chromium executable exists
+  // 2. Try playwright's chromium.executablePath() (works in dev, may fail in compiled binary)
   try {
+    const { chromium } = require('playwright')
     const execPath = chromium.executablePath()
-    if (existsSync(execPath)) {
-      browserInstalled = true
-      return
-    }
+    if (existsSync(execPath)) return execPath
   } catch {
-    // executablePath() may throw if browser registry is missing
+    // Expected to fail in compiled binary mode
+  }
+
+  // 3. Scan Playwright's browser cache directories
+  const home = homedir()
+  const os = platform()
+
+  const cacheDirs: string[] = []
+  if (os === 'darwin') {
+    cacheDirs.push(join(home, 'Library', 'Caches', 'ms-playwright'))
+  } else if (os === 'linux') {
+    cacheDirs.push(join(home, '.cache', 'ms-playwright'))
+  } else if (os === 'win32') {
+    cacheDirs.push(join(home, 'AppData', 'Local', 'ms-playwright'))
+  }
+  // Also check PLAYWRIGHT_BROWSERS_PATH
+  if (process.env.PLAYWRIGHT_BROWSERS_PATH) {
+    cacheDirs.unshift(process.env.PLAYWRIGHT_BROWSERS_PATH)
+  }
+
+  // Executable paths relative to chromium-<revision> directory
+  const execPaths: Record<string, string[]> = {
+    darwin: [
+      'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+      'chrome-mac/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+      'chrome-mac-arm64/Chromium.app/Contents/MacOS/Chromium',
+      'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
+    ],
+    linux: [
+      'chrome-linux/chrome',
+      'chrome-linux64/chrome',
+      'chrome-linux/chromium',
+    ],
+    win32: [
+      'chrome-win64/chrome.exe',
+      'chrome-win/chrome.exe',
+    ],
+  }
+
+  const candidates = execPaths[os] ?? execPaths['linux']
+
+  for (const cacheDir of cacheDirs) {
+    if (!existsSync(cacheDir)) continue
+
+    // Find chromium-* directories, sorted descending to prefer newest revision
+    let entries: string[]
+    try {
+      entries = readdirSync(cacheDir)
+        .filter((e) => e.startsWith('chromium-'))
+        .sort()
+        .reverse()
+    } catch {
+      continue
+    }
+
+    for (const entry of entries) {
+      for (const relPath of candidates) {
+        const fullPath = join(cacheDir, entry, relPath)
+        if (existsSync(fullPath)) return fullPath
+      }
+    }
+  }
+
+  return null
+}
+
+async function ensureChromiumInstalled(): Promise<string> {
+  if (chromiumPath) return chromiumPath
+
+  // Try to find existing installation
+  const found = findChromiumExecutable()
+  if (found) {
+    chromiumPath = found
+    return chromiumPath
   }
 
   console.log('[renderer] Chromium not found. Installing automatically...')
@@ -57,13 +141,22 @@ async function ensureChromiumInstalled(): Promise<void> {
   }
 
   console.log('[renderer] Chromium installed successfully')
-  browserInstalled = true
+
+  // Try to find the newly installed Chromium
+  const newPath = findChromiumExecutable()
+  if (!newPath) {
+    throw new Error('Chromium was installed but could not be found. Set CHROMIUM_PATH env var to the executable.')
+  }
+  chromiumPath = newPath
+  return chromiumPath
 }
 
 async function launchBrowser(): Promise<BrowserContext> {
-  await ensureChromiumInstalled()
+  const execPath = await ensureChromiumInstalled()
+  const { chromium } = await import('playwright')
 
   browser = await chromium.launch({
+    executablePath: execPath,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
   })
 
