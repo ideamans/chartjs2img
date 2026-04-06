@@ -15,6 +15,7 @@ Built for generating charts in contexts where a browser isn't available — emai
 - **API key authentication** — optional, via header or query param
 - **Japanese text support** — Noto Sans CJK included in Docker image (no tofu)
 - **Error feedback** — Chart.js errors/warnings captured and returned via header (HTTP) or stderr (CLI)
+- **LLM integration** — `chartjs2img llm` outputs detailed Chart.js + plugin reference in Markdown for LLM context
 - **Examples gallery** — built-in `/examples` page for visual verification
 - **Single binary** — compile with `bun build --compile` for easy distribution
 
@@ -103,6 +104,7 @@ curl -X POST http://localhost:3000/render \
 | `bun run dev` | Start the HTTP server (development) |
 | `bun run start` | Same as `bun run dev` |
 | `bun run build` | Compile to a single binary `./chartjs2img` |
+| `bun run cli -- <cmd>` | Run any CLI subcommand (e.g., `bun run cli -- llm`) |
 
 > **Tip:** You can always run TypeScript files directly with Bun — no compilation step needed for development:
 > ```bash
@@ -220,6 +222,43 @@ API_KEY=YOUR_KEY bun run dev
 ```
 
 ## CLI Usage
+
+### LLM Help
+
+Print extended documentation for LLMs — covers Chart.js core and all plugin parameters in Markdown:
+
+```bash
+chartjs2img llm
+# or
+bun run cli -- llm
+```
+
+This outputs ~1400 lines of structured Markdown reference, organized per module:
+
+- **Usage guide** — input format (CLI / HTTP), constraints (JSON only, no functions)
+- **Chart.js core** — all chart types, dataset properties, scales, title/legend/tooltip
+- **12 plugins** — datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, dayjs adapter
+
+Each section includes option tables (property, type, default, description) and JSON examples.
+
+**Use cases:**
+
+```bash
+# Feed as system prompt context to an LLM
+chartjs2img llm | pbcopy   # copy to clipboard (macOS)
+
+# Save to a file for reuse
+chartjs2img llm > chartjs2img-reference.md
+
+# Pipe directly into an LLM CLI tool
+chartjs2img llm | llm -s "Generate a bar chart config for monthly sales data"
+```
+
+The output includes a disclaimer noting that the documentation may contain inaccuracies. LLMs should prioritize Chart.js error messages (returned via [Error Feedback](#error-feedback)) over this reference when debugging.
+
+**Maintaining the docs:** Each module's documentation lives in its own file under `src/llm-docs/`. When a plugin is added or removed, add/remove the corresponding file and update `src/llm-docs/index.ts`.
+
+### Rendering
 
 Render charts directly from the command line without starting a server.
 

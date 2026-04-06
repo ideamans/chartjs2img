@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "bun run src/index.ts serve",
     "build": "bun build src/index.ts --compile --outfile chartjs2img --external electron --external chromium-bidi/lib/cjs/bidiMapper/BidiMapper --external chromium-bidi/lib/cjs/cdp/CdpConnection",
-    "start": "bun run src/index.ts serve"
+    "start": "bun run src/index.ts serve",
+    "cli": "bun run src/index.ts"
   },
   "dependencies": {
     "playwright": "^1.52.0"

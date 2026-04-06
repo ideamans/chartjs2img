@@ -2,6 +2,7 @@
 import { startServer } from './server'
 import { cliRender, cliExamples } from './cli'
 import { VERSION } from './version'
+import { getLlmDocs } from './llm-docs'
 
 function printUsage(): void {
   console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images using Playwright (headless Chromium)
@@ -13,6 +14,7 @@ COMMANDS
   chartjs2img serve [options]       Start HTTP server
   chartjs2img render [options]      Render a single chart image
   chartjs2img examples [options]    Generate all built-in example images
+  chartjs2img llm                   Print extended help for LLMs (Chart.js + plugin reference)
   chartjs2img help                  Show this help
 
 SERVE OPTIONS
@@ -242,6 +244,11 @@ async function main(): Promise<void> {
 
   if (!command || command === '--help' || command === 'help') {
     printUsage()
+    process.exit(0)
+  }
+
+  if (command === 'llm') {
+    console.log(getLlmDocs())
     process.exit(0)
   }
 
