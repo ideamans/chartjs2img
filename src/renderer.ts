@@ -139,11 +139,18 @@ const CONTENT_TYPES: Record<string, string> = {
   webp: 'image/webp',
 }
 
+export interface ConsoleMessage {
+  level: 'error' | 'warn' | 'info' | 'log'
+  message: string
+}
+
 export interface RenderResult {
   buffer: Buffer
   hash: string
   contentType: string
   cached: boolean
+  /** Console messages (errors/warnings) from Chart.js during rendering */
+  messages: ConsoleMessage[]
 }
 
 export async function renderChart(options: RenderOptions): Promise<RenderResult> {
@@ -154,7 +161,7 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
   // Check cache first
   const cached = getCache(hash)
   if (cached) {
-    return { buffer: cached.buffer, hash, contentType: cached.contentType, cached: true }
+    return { buffer: cached.buffer, hash, contentType: cached.contentType, cached: true, messages: [] }
   }
 
   // Acquire semaphore slot (waits if at max concurrency)
@@ -164,7 +171,7 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
     // Re-check cache (another request may have rendered while we waited)
     const cachedAgain = getCache(hash)
     if (cachedAgain) {
-      return { buffer: cachedAgain.buffer, hash, contentType: cachedAgain.contentType, cached: true }
+      return { buffer: cachedAgain.buffer, hash, contentType: cachedAgain.contentType, cached: true, messages: [] }
     }
 
     // Ensure browser is up
@@ -173,6 +180,24 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
     // Create a new page (tab) for this render
     const page = await ctx.newPage()
     schedulePageCleanup(page)
+
+    // Capture browser console messages (filter out Chromium internal noise)
+    const messages: ConsoleMessage[] = []
+    const IGNORED_PATTERNS = [
+      'A parser-blocking, cross site',
+      'Third-party cookie will be blocked',
+    ]
+    page.on('console', (msg) => {
+      const type = msg.type()
+      if (type === 'error' || type === 'warning' || type === 'warn') {
+        const text = msg.text()
+        if (IGNORED_PATTERNS.some((p) => text.includes(p))) return
+        messages.push({ level: type === 'warning' || type === 'warn' ? 'warn' : 'error', message: text })
+      }
+    })
+    page.on('pageerror', (err) => {
+      messages.push({ level: 'error', message: err.message })
+    })
 
     try {
       const html = buildHtml(options)
@@ -183,6 +208,24 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
       await page.setContent(html, { waitUntil: 'networkidle' })
       await page.waitForFunction('window.__chartRendered === true', null, { timeout: 10000 })
       await page.waitForTimeout(100)
+
+      // Collect messages captured inside the page (Chart.js warnings/errors)
+      const pageMessages = await page.evaluate(() => (window as any).__chartMessages ?? [])
+      for (const m of pageMessages) {
+        // Avoid duplicates from console listener
+        if (!messages.some((existing) => existing.message === m.message && existing.level === m.level)) {
+          messages.push({ level: m.level, message: m.message })
+        }
+      }
+
+      // Check if Chart.js threw an error during construction
+      const chartError = await page.evaluate(() => (window as any).__chartError)
+      if (chartError) {
+        // Still return the result (may have partial render), but ensure error is in messages
+        if (!messages.some((m) => m.message === chartError)) {
+          messages.push({ level: 'error', message: chartError })
+        }
+      }
 
       const container = page.locator('#chart-container')
 
@@ -200,7 +243,7 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
       // Store in cache
       setCache(hash, buffer, contentType)
 
-      return { buffer, hash, contentType, cached: false }
+      return { buffer, hash, contentType, cached: false, messages }
     } finally {
       clearPageCleanup(page)
       try {

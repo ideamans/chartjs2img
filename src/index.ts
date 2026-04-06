@@ -55,6 +55,7 @@ HTTP ENDPOINTS (serve mode)
     X-Cache-Hash         SHA-256 hash (first 16 hex chars) of the render input
     X-Cache-Url          Full URL to GET this image from /cache/<hash>
     X-Cache-Hit          "true" if served from cache, "false" if freshly rendered
+    X-Chart-Messages     JSON array of {level, message} from Chart.js (if any)
 
 AUTHENTICATION (when API_KEY is set)
   Requests to /render and /cache must include the key in one of:
@@ -141,6 +142,28 @@ BUILT-IN PLUGINS (all pre-loaded, no configuration needed)
   chartjs-adapter-dayjs-4 1.0.4     Day.js date adapter for time axes
 
   Note: animation is always forced OFF for deterministic rendering.
+
+ERROR FEEDBACK
+  Chart.js errors and warnings are captured from the browser console during
+  rendering and returned to the caller. This helps diagnose invalid configs.
+
+  CLI:
+    Errors/warnings are printed to stderr:
+      [chart ERROR] "nonexistent" is not a registered controller.
+      [chart WARN]  Some warning message from Chart.js
+
+  HTTP API:
+    When messages exist, the response includes an X-Chart-Messages header:
+      X-Chart-Messages: [{"level":"error","message":"..."},{"level":"warn","message":"..."}]
+
+    Parse it as JSON to inspect issues:
+      curl -s -D- -X POST http://localhost:3000/render \\
+        -H 'Content-Type: application/json' \\
+        -d '{"chart":{"type":"invalid",...}}' -o /dev/null \\
+        | grep X-Chart-Messages
+
+  Note: rendering still completes even when errors occur (the image may be
+  blank or partial). Check messages to determine if the chart was valid.
 
 USAGE EXAMPLES
 

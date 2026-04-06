@@ -53,6 +53,12 @@ export async function cliRender(args: CliRenderArgs): Promise<void> {
   try {
     const result = await renderChart(options)
 
+    // Print chart messages (errors/warnings) to stderr
+    for (const msg of result.messages) {
+      const prefix = msg.level === 'error' ? 'ERROR' : 'WARN'
+      console.error(`[chart ${prefix}] ${msg.message}`)
+    }
+
     if (!args.output || args.output === '-') {
       await Bun.write(Bun.stdout, result.buffer)
     } else {

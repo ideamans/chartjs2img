@@ -139,15 +139,20 @@ export async function startServer(config: ServerConfig): Promise<void> {
         const result = await renderChart(options)
         const cacheUrl = `${url.protocol}//${url.host}/cache/${result.hash}`
 
-        return new Response(result.buffer, {
-          headers: {
-            'Content-Type': result.contentType,
-            'Content-Length': result.buffer.length.toString(),
-            'X-Cache-Hash': result.hash,
-            'X-Cache-Url': cacheUrl,
-            'X-Cache-Hit': result.cached ? 'true' : 'false',
-          },
-        })
+        const headers: Record<string, string> = {
+          'Content-Type': result.contentType,
+          'Content-Length': result.buffer.length.toString(),
+          'X-Cache-Hash': result.hash,
+          'X-Cache-Url': cacheUrl,
+          'X-Cache-Hit': result.cached ? 'true' : 'false',
+        }
+
+        // Include chart messages (errors/warnings) in response header
+        if (result.messages.length > 0) {
+          headers['X-Chart-Messages'] = JSON.stringify(result.messages)
+        }
+
+        return new Response(result.buffer, { headers })
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Internal server error'
         console.error('[server] Render error:', message)

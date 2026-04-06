@@ -14,6 +14,7 @@ Built for generating charts in contexts where a browser isn't available — emai
 - **Browser lifecycle management** — auto-restart on crash, orphaned page cleanup
 - **API key authentication** — optional, via header or query param
 - **Japanese text support** — Noto Sans CJK included in Docker image (no tofu)
+- **Error feedback** — Chart.js errors/warnings captured and returned via header (HTTP) or stderr (CLI)
 - **Examples gallery** — built-in `/examples` page for visual verification
 - **Single binary** — compile with `bun build --compile` for easy distribution
 
@@ -145,6 +146,7 @@ Render a chart from a JSON body.
 | `X-Cache-Hash` | Unique hash for this chart configuration |
 | `X-Cache-Url` | Full URL to retrieve this image from cache |
 | `X-Cache-Hit` | `"true"` if served from cache, `"false"` if freshly rendered |
+| `X-Chart-Messages` | JSON array of `{level, message}` from Chart.js (only present if errors/warnings occurred) |
 
 ### `GET /render`
 
@@ -243,6 +245,43 @@ bun run src/index.ts render -i chart.json -o chart.png -w 1200 -h 400 -f jpeg -q
 | `--background-color <color>` | Background (default: white) |
 | `-f, --format <fmt>` | png, jpeg, webp (default: png) |
 | `-q, --quality <0-100>` | JPEG/WebP quality (default: 90) |
+
+## Error Feedback
+
+Chart.js errors and warnings are captured from the browser console during rendering and returned to the caller. This helps diagnose invalid configurations without guessing.
+
+### CLI
+
+Errors and warnings are printed to stderr:
+
+```bash
+$ echo '{"type":"invalid","data":{"labels":["A"],"datasets":[{"data":[1]}]}}' \
+  | chartjs2img render -o chart.png
+[chart ERROR] "invalid" is not a registered controller.
+Written to chart.png (hash: ...)
+```
+
+### HTTP API
+
+When messages are present, the response includes an `X-Chart-Messages` header containing a JSON array:
+
+```bash
+$ curl -s -D- -X POST http://localhost:3000/render \
+  -H 'Content-Type: application/json' \
+  -d '{"chart":{"type":"invalid","data":{"labels":["A"],"datasets":[{"data":[1]}]}}}' \
+  -o /dev/null | grep X-Chart-Messages
+
+X-Chart-Messages: [{"level":"error","message":"\"invalid\" is not a registered controller."}]
+```
+
+Each message has:
+
+| Field | Values | Description |
+|-------|--------|-------------|
+| `level` | `"error"`, `"warn"` | Severity level |
+| `message` | string | Message text from Chart.js |
+
+> **Note:** Rendering still completes even when errors occur — the resulting image may be blank or partial. Always check `X-Chart-Messages` to determine if the chart configuration was valid.
 
 ## Environment Variables
 

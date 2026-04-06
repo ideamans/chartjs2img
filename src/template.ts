@@ -102,11 +102,31 @@ ${Object.values(LIBS)
     hide: { animation: { duration: 0 } },
   };
 
+  // Collect console messages for caller feedback
+  window.__chartMessages = [];
+  var origWarn = console.warn;
+  var origError = console.error;
+  console.warn = function() {
+    var msg = Array.prototype.slice.call(arguments).join(' ');
+    window.__chartMessages.push({ level: 'warn', message: msg });
+    origWarn.apply(console, arguments);
+  };
+  console.error = function() {
+    var msg = Array.prototype.slice.call(arguments).join(' ');
+    window.__chartMessages.push({ level: 'error', message: msg });
+    origError.apply(console, arguments);
+  };
+
   var canvas = document.getElementById('chart');
   var ctx = canvas.getContext('2d');
-  var myChart = new Chart(ctx, config);
+  try {
+    var myChart = new Chart(ctx, config);
+  } catch (e) {
+    window.__chartMessages.push({ level: 'error', message: e.message || String(e) });
+    window.__chartError = e.message || String(e);
+  }
 
-  // Signal that chart is ready
+  // Signal that chart is ready (even on error, so we don't timeout)
   window.__chartRendered = true;
 })();
 </script>
