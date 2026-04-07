@@ -85,7 +85,11 @@ ${Object.values(LIBS)
   config.options.maintainAspectRatio = false;
 
   // Register plugins that don't auto-register
-  if (window.ChartDataLabels) Chart.register(ChartDataLabels);
+  if (window.ChartDataLabels) {
+    Chart.register(ChartDataLabels);
+    // Default to hidden — show only when explicitly configured
+    Chart.defaults.set('plugins.datalabels', { display: false });
+  }
   if (window.ChartGeo) {
     Object.values(ChartGeo).forEach(function(v) {
       if (v && v.id) Chart.register(v);
