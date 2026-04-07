@@ -112,12 +112,14 @@ function findChromiumExecutable(): string | null {
   return null
 }
 
-/** Resolve the Chrome for Testing platform string for the current OS/arch */
-function getCftPlatform(): string {
+/** Resolve the Chrome for Testing platform string for the current OS/arch, or null if unsupported */
+function getCftPlatform(): string | null {
   const os = platform()
   const a = arch()
   if (os === 'darwin') return a === 'arm64' ? 'mac-arm64' : 'mac-x64'
   if (os === 'win32') return a === 'x64' ? 'win64' : 'win32'
+  // Chrome for Testing only provides linux64 (x86_64) — no linux-arm64
+  if (a === 'arm64' || a === 'aarch64') return null
   return 'linux64'
 }
 
@@ -125,6 +127,12 @@ function getCftPlatform(): string {
 async function downloadChromeForTesting(): Promise<string> {
   const os = platform()
   const cftPlatform = getCftPlatform()
+  if (!cftPlatform) {
+    throw new Error(
+      `Chrome for Testing is not available for ${platform()}/${arch()}.\n` +
+        'Install Chromium manually (e.g., apt install chromium) and set CHROMIUM_PATH.',
+    )
+  }
 
   // Install into user-local cache directory (no sudo)
   const home = homedir()
