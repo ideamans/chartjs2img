@@ -37,6 +37,29 @@ Verify it's working:
 bun --version
 ```
 
+## Chrome / Chromium
+
+chartjs2img requires Chrome or Chromium to render charts. On first run, it searches for an existing installation in this order:
+
+1. `CHROMIUM_PATH` environment variable
+2. Playwright browser cache (`~/Library/Caches/ms-playwright/` etc.)
+3. System-installed Chrome/Chromium (`/Applications/Google Chrome.app`, `/usr/bin/google-chrome`, etc.)
+4. **Auto-download** — if nothing is found, [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/) is downloaded automatically to the user cache directory (no sudo required)
+
+Auto-download is available for **macOS (x64/arm64)**, **Windows (x64/x86)**, and **Linux (x64)**. 
+
+> **Linux ARM64:** Chrome for Testing does not provide linux-arm64 builds. You must install Chromium manually:
+> ```bash
+> # Debian/Ubuntu
+> sudo apt install chromium-browser
+> # or
+> sudo apt install chromium
+> ```
+> Then either let chartjs2img detect it automatically, or set `CHROMIUM_PATH`:
+> ```bash
+> export CHROMIUM_PATH=/usr/bin/chromium-browser
+> ```
+
 ## Quick Start
 
 ### 1. Install dependencies
