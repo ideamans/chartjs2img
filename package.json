@@ -1,6 +1,6 @@
 {
   "name": "chartjs2img",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Render Chart.js charts to images via CLI or HTTP API using headless Chrome",
   "type": "module",
   "main": "src/index.ts",
