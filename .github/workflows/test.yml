@@ -105,10 +105,17 @@ jobs:
       - name: Make executable
         run: chmod +x ./chartjs2img
 
-      - name: Install Chrome for Testing
+      - name: Hide system Chrome to test auto-install
         run: |
-          # Pre-install Chrome so the test doesn't depend on auto-download speed
-          npx @puppeteer/browsers install chrome@stable
+          # Move system Chrome out of the way so the binary exercises its auto-install path
+          if [ -d "/Applications/Google Chrome.app" ]; then
+            sudo mv "/Applications/Google Chrome.app" "/Applications/Google Chrome.app.bak"
+            echo "RESTORE_CHROME=1" >> $GITHUB_ENV
+          fi
+          if [ -d "/Applications/Chromium.app" ]; then
+            sudo mv "/Applications/Chromium.app" "/Applications/Chromium.app.bak"
+            echo "RESTORE_CHROMIUM=1" >> $GITHUB_ENV
+          fi
 
       - name: Verify help
         run: ./chartjs2img --help
@@ -119,8 +126,14 @@ jobs:
           echo "LLM doc lines: $LINES"
           [ "$LINES" -gt 1000 ]
 
-      - name: Generate examples
+      - name: Generate examples (triggers auto-install of Chrome for Testing)
         run: ./chartjs2img examples -o ./test-output
+
+      - name: Restore system Chrome
+        if: always()
+        run: |
+          [ "$RESTORE_CHROME" = "1" ] && sudo mv "/Applications/Google Chrome.app.bak" "/Applications/Google Chrome.app" || true
+          [ "$RESTORE_CHROMIUM" = "1" ] && sudo mv "/Applications/Chromium.app.bak" "/Applications/Chromium.app" || true
 
       - name: Verify outputs
         run: |
@@ -160,9 +173,14 @@ jobs:
         with:
           name: bin-windows-amd64
 
-      - name: Install Chrome for Testing
+      - name: Hide system Chrome to test auto-install
         shell: pwsh
-        run: npx @puppeteer/browsers install chrome@stable
+        run: |
+          $chromePath = "C:\Program Files\Google\Chrome"
+          if (Test-Path $chromePath) {
+            Rename-Item $chromePath "$chromePath.bak"
+            Write-Host "Renamed system Chrome"
+          }
 
       - name: Verify help
         shell: pwsh
@@ -175,7 +193,7 @@ jobs:
           Write-Host "LLM doc lines: $lines"
           if ($lines -lt 1000) { exit 1 }
 
-      - name: Generate examples
+      - name: Generate examples (triggers auto-install of Chrome for Testing)
         shell: pwsh
         run: .\chartjs2img.exe examples -o test-output
 
@@ -202,6 +220,15 @@ jobs:
           }
 
           exit $failed
+
+      - name: Restore system Chrome
+        if: always()
+        shell: pwsh
+        run: |
+          $chromePath = "C:\Program Files\Google\Chrome"
+          if (Test-Path "$chromePath.bak") {
+            Rename-Item "$chromePath.bak" $chromePath
+          }
 
   # -------------------------------------------------------------------
   # 5. Test compiled binary on Linux ARM64 (via QEMU)
