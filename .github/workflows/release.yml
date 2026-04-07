@@ -42,10 +42,7 @@ jobs:
         run: |
           bun build src/index.ts --compile \
             --target=${{ matrix.target }} \
-            --outfile=chartjs2img${{ matrix.ext }} \
-            --external electron \
-            --external chromium-bidi/lib/cjs/bidiMapper/BidiMapper \
-            --external chromium-bidi/lib/cjs/cdp/CdpConnection
+            --outfile=chartjs2img${{ matrix.ext }}
 
       - name: Package (tar.gz for unix)
         if: matrix.ext == ''

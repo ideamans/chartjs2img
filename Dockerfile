@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# Install dependencies for Playwright Chromium + Noto Sans JP
+# Install dependencies for headless Chrome + Noto Sans JP
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     fonts-noto-cjk \
@@ -43,8 +43,8 @@ WORKDIR /app
 COPY package.json bun.lock* ./
 RUN bun install --production
 
-# Install Playwright Chromium
-RUN bunx playwright install chromium
+# Install Chrome for Testing (used by puppeteer-core)
+RUN npx @puppeteer/browsers install chrome@stable
 
 # Copy source
 COPY src/ ./src/

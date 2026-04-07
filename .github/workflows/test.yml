@@ -7,7 +7,50 @@ on:
       - develop
 
 jobs:
-  test:
+  # -------------------------------------------------------------------
+  # 1. Build on linux-amd64 (fast) — produces binaries for all platforms
+  # -------------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: bun-linux-x64
+            artifact: linux-amd64
+            ext: ""
+          - target: bun-linux-arm64
+            artifact: linux-arm64
+            ext: ""
+          - target: bun-darwin-arm64
+            artifact: darwin-arm64
+            ext: ""
+          - target: bun-windows-x64
+            artifact: windows-amd64
+            ext: ".exe"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install
+
+      - name: Cross-compile
+        run: |
+          bun build src/index.ts --compile \
+            --target=${{ matrix.target }} \
+            --outfile=chartjs2img${{ matrix.ext }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.artifact }}
+          path: chartjs2img${{ matrix.ext }}
+
+  # -------------------------------------------------------------------
+  # 2. Test on linux-amd64 (bun dev mode — baseline)
+  # -------------------------------------------------------------------
+  test-linux-amd64:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,3 +90,182 @@ jobs:
           done
 
           exit $FAILED
+
+  # -------------------------------------------------------------------
+  # 3. Test compiled binary on macOS ARM64
+  # -------------------------------------------------------------------
+  test-darwin-arm64:
+    needs: build
+    runs-on: macos-14  # Apple Silicon (M1)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bin-darwin-arm64
+
+      - name: Make executable
+        run: chmod +x ./chartjs2img
+
+      - name: Install Chrome for Testing
+        run: |
+          # Pre-install Chrome so the test doesn't depend on auto-download speed
+          npx @puppeteer/browsers install chrome@stable
+
+      - name: Verify help
+        run: ./chartjs2img --help
+
+      - name: Verify llm docs
+        run: |
+          LINES=$(./chartjs2img llm | wc -l)
+          echo "LLM doc lines: $LINES"
+          [ "$LINES" -gt 1000 ]
+
+      - name: Generate examples
+        run: ./chartjs2img examples -o ./test-output
+
+      - name: Verify outputs
+        run: |
+          EXPECTED=18
+          COUNT=$(ls test-output/*.png 2>/dev/null | wc -l)
+          echo "PNG files: $COUNT / $EXPECTED expected"
+          if [ "$COUNT" -ne "$EXPECTED" ]; then
+            echo "::error::Expected $EXPECTED PNG files, got $COUNT"
+            exit 1
+          fi
+
+          FAILED=0
+          for f in test-output/*.png; do
+            SIZE=$(stat -f%z "$f")
+            INFO=$(file "$f")
+            if ! echo "$INFO" | grep -q "PNG image data"; then
+              echo "::error::$f is not a valid PNG"
+              FAILED=1
+            elif [ "$SIZE" -lt 1000 ]; then
+              echo "::error::$f is too small (${SIZE} bytes)"
+              FAILED=1
+            else
+              echo "OK: $f (${SIZE} bytes)"
+            fi
+          done
+
+          exit $FAILED
+
+  # -------------------------------------------------------------------
+  # 4. Test compiled binary on Windows
+  # -------------------------------------------------------------------
+  test-windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bin-windows-amd64
+
+      - name: Install Chrome for Testing
+        shell: pwsh
+        run: npx @puppeteer/browsers install chrome@stable
+
+      - name: Verify help
+        shell: pwsh
+        run: .\chartjs2img.exe --help
+
+      - name: Verify llm docs
+        shell: pwsh
+        run: |
+          $lines = (.\chartjs2img.exe llm | Measure-Object -Line).Lines
+          Write-Host "LLM doc lines: $lines"
+          if ($lines -lt 1000) { exit 1 }
+
+      - name: Generate examples
+        shell: pwsh
+        run: .\chartjs2img.exe examples -o test-output
+
+      - name: Verify outputs
+        shell: pwsh
+        run: |
+          $expected = 18
+          $files = Get-ChildItem test-output\*.png
+          $count = $files.Count
+          Write-Host "PNG files: $count / $expected expected"
+          if ($count -ne $expected) {
+            Write-Error "Expected $expected PNG files, got $count"
+            exit 1
+          }
+
+          $failed = 0
+          foreach ($f in $files) {
+            if ($f.Length -lt 1000) {
+              Write-Error "$($f.Name) is too small ($($f.Length) bytes)"
+              $failed = 1
+            } else {
+              Write-Host "OK: $($f.Name) ($($f.Length) bytes)"
+            }
+          }
+
+          exit $failed
+
+  # -------------------------------------------------------------------
+  # 5. Test compiled binary on Linux ARM64 (via QEMU)
+  # -------------------------------------------------------------------
+  test-linux-arm64:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bin-linux-arm64
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Test in arm64 container
+        run: |
+          chmod +x ./chartjs2img
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD:/work" -w /work \
+            arm64v8/node:20-slim bash -c '
+              set -e
+
+              # Install Chrome dependencies
+              apt-get update && apt-get install -y --no-install-recommends \
+                ca-certificates fonts-noto-cjk libasound2 libatk-bridge2.0-0 \
+                libatk1.0-0 libcairo2 libcups2 libdbus-1-3 libdrm2 libexpat1 \
+                libgbm1 libglib2.0-0 libnspr4 libnss3 libpango-1.0-0 \
+                libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxdamage1 \
+                libxext6 libxfixes3 libxrandr2 libxshmfence1 unzip wget file \
+                > /dev/null 2>&1
+
+              echo "--- help ---"
+              ./chartjs2img --help | head -3
+
+              echo "--- llm ---"
+              LINES=$(./chartjs2img llm | wc -l)
+              echo "LLM doc lines: $LINES"
+              [ "$LINES" -gt 1000 ]
+
+              echo "--- examples ---"
+              ./chartjs2img examples -o ./test-output
+
+              echo "--- verify ---"
+              EXPECTED=18
+              COUNT=$(ls test-output/*.png 2>/dev/null | wc -l)
+              echo "PNG files: $COUNT / $EXPECTED expected"
+              [ "$COUNT" -eq "$EXPECTED" ]
+
+              FAILED=0
+              for f in test-output/*.png; do
+                SIZE=$(stat --format=%s "$f")
+                INFO=$(file "$f")
+                if ! echo "$INFO" | grep -q "PNG image data"; then
+                  echo "FAIL: $f is not a valid PNG"
+                  FAILED=1
+                elif [ "$SIZE" -lt 1000 ]; then
+                  echo "FAIL: $f is too small (${SIZE} bytes)"
+                  FAILED=1
+                else
+                  echo "OK: $f (${SIZE} bytes)"
+                fi
+              done
+              exit $FAILED
+            '
