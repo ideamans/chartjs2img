@@ -231,39 +231,62 @@ jobs:
           }
 
   # -------------------------------------------------------------------
-  # 5. Test compiled binary on Linux ARM64 (via QEMU)
+  # 5. Test compiled binary on Linux ARM64 (native runner)
   # -------------------------------------------------------------------
   test-linux-arm64:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: bin-linux-arm64
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
-      - name: Test in arm64 container
+      - name: Install Chromium
         run: |
-          chmod +x ./chartjs2img
-          # Note: headless Chrome rendering is unstable under QEMU CPU emulation,
-          # so we only test non-browser commands (help, llm) here.
-          # Browser-based rendering is tested natively on darwin-arm64 and windows.
-          docker run --rm --platform linux/arm64 \
-            -v "$PWD:/work" -w /work \
-            arm64v8/debian:bookworm-slim bash -c '
-              set -e
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            chromium-browser fonts-noto-cjk file \
+            || sudo apt-get install -y --no-install-recommends \
+            chromium fonts-noto-cjk file
 
-              echo "--- help ---"
-              ./chartjs2img --help | head -3
+      - name: Make executable
+        run: chmod +x ./chartjs2img
 
-              echo "--- llm ---"
-              LINES=$(./chartjs2img llm | wc -l)
-              echo "LLM doc lines: $LINES"
-              [ "$LINES" -gt 1000 ]
+      - name: Verify help
+        run: ./chartjs2img --help
 
-              echo "All non-browser tests passed (browser tests skipped: QEMU arm64 limitation)"
-            '
+      - name: Verify llm docs
+        run: |
+          LINES=$(./chartjs2img llm | wc -l)
+          echo "LLM doc lines: $LINES"
+          [ "$LINES" -gt 1000 ]
+
+      - name: Generate examples
+        run: ./chartjs2img examples -o ./test-output
+
+      - name: Verify outputs
+        run: |
+          EXPECTED=18
+          COUNT=$(ls test-output/*.png 2>/dev/null | wc -l)
+          echo "PNG files: $COUNT / $EXPECTED expected"
+          if [ "$COUNT" -ne "$EXPECTED" ]; then
+            echo "::error::Expected $EXPECTED PNG files, got $COUNT"
+            exit 1
+          fi
+
+          FAILED=0
+          for f in test-output/*.png; do
+            SIZE=$(stat --format=%s "$f")
+            INFO=$(file "$f")
+            if ! echo "$INFO" | grep -q "PNG image data"; then
+              echo "::error::$f is not a valid PNG"
+              FAILED=1
+            elif [ "$SIZE" -lt 1000 ]; then
+              echo "::error::$f is too small (${SIZE} bytes)"
+              FAILED=1
+            else
+              echo "OK: $f (${SIZE} bytes)"
+            fi
+          done
+
+          exit $FAILED
