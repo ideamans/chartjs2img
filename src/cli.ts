@@ -14,7 +14,7 @@ export interface CliRenderArgs {
   height?: number
   devicePixelRatio?: number
   backgroundColor?: string
-  format?: 'png' | 'jpeg' | 'webp'
+  format?: 'png' | 'jpeg'
   quality?: number
 }
 

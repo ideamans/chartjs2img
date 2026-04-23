@@ -7,7 +7,7 @@ export const doc = `## chartjs2img — Usage Guide for LLMs
 > (stderr for CLI, X-Chart-Messages header for HTTP) to diagnose and correct
 > your configuration.
 
-This service renders Chart.js configurations (JSON) into PNG/JPEG/WebP images.
+This service renders Chart.js configurations (JSON) into PNG or JPEG images.
 All Chart.js plugins listed below are **pre-loaded** — no extra setup needed.
 
 ### Important Constraints
@@ -65,8 +65,8 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
 | \`height\` | number | 600 | Image height in pixels |
 | \`devicePixelRatio\` | number | 2 | Retina scaling factor |
 | \`backgroundColor\` | string | \`"white"\` | CSS color or \`"transparent"\` |
-| \`format\` | string | \`"png"\` | \`"png"\`, \`"jpeg"\`, or \`"webp"\` |
-| \`quality\` | number | 90 | JPEG/WebP quality (0-100) |
+| \`format\` | string | \`"png"\` | \`"png"\` or \`"jpeg"\` |
+| \`quality\` | number | 90 | JPEG quality (0-100) |
 
 ### Error Feedback
 

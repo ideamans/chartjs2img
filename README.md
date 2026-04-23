@@ -161,8 +161,8 @@ Render a chart from a JSON body.
 | `height` | number | 600 | Image height in pixels |
 | `devicePixelRatio` | number | 2 | Retina scaling factor |
 | `backgroundColor` | string | `"white"` | CSS background color (`"transparent"` supported) |
-| `format` | string | `"png"` | Output format: `png`, `jpeg`, `webp` |
-| `quality` | number | 90 | JPEG/WebP quality (0-100) |
+| `format` | string | `"png"` | Output format: `png` or `jpeg` |
+| `quality` | number | 90 | JPEG quality (0-100) |
 
 **Response headers:**
 
@@ -305,8 +305,8 @@ bun run src/index.ts render -i chart.json -o chart.png -w 1200 -h 400 -f jpeg -q
 | `-h, --height <px>` | Height (default: 600) |
 | `--device-pixel-ratio <n>` | DPR (default: 2) |
 | `--background-color <color>` | Background (default: white) |
-| `-f, --format <fmt>` | png, jpeg, webp (default: png) |
-| `-q, --quality <0-100>` | JPEG/WebP quality (default: 90) |
+| `-f, --format <fmt>` | png, jpeg (default: png) |
+| `-q, --quality <0-100>` | JPEG quality (default: 90) |
 
 ## Error Feedback
 

@@ -322,7 +322,6 @@ function clearPageCleanup(page: Page): void {
 const CONTENT_TYPES: Record<string, string> = {
   png: 'image/png',
   jpeg: 'image/jpeg',
-  webp: 'image/webp',
 }
 
 export interface ConsoleMessage {
@@ -412,7 +411,7 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
       if (!container) throw new Error('Chart container element not found')
 
       const screenshotOptions: Record<string, unknown> = {
-        type: format === 'webp' ? 'png' : format,
+        type: format,
         omitBackground: options.backgroundColor === 'transparent',
       }
       if (format === 'jpeg') {

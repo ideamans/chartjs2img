@@ -52,7 +52,6 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
 const CONTENT_TYPES: Record<string, string> = {
   png: 'image/png',
   jpeg: 'image/jpeg',
-  webp: 'image/webp',
 }
 
 export async function startServer(config: ServerConfig): Promise<void> {

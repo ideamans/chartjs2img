@@ -7,7 +7,7 @@ import { getLlmDocs } from './llm-docs'
 function printUsage(): void {
   console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images using Playwright (headless Chromium)
 
-Converts a Chart.js configuration JSON into a PNG/JPEG/WebP image. Works as an
+Converts a Chart.js configuration JSON into a PNG or JPEG image. Works as an
 HTTP server or a one-shot CLI. Chromium is installed automatically on first run.
 
 COMMANDS
@@ -29,8 +29,8 @@ RENDER OPTIONS
   --height, -h <px>              Canvas height in pixels (default: 600)
   --device-pixel-ratio <n>       Retina scale factor (default: 2)
   --background-color <color>     CSS color or "transparent" (default: white)
-  --format, -f <fmt>             png | jpeg | webp (default: png)
-  --quality, -q <0-100>          JPEG/WebP quality (default: 90)
+  --format, -f <fmt>             png | jpeg (default: png)
+  --quality, -q <0-100>          JPEG quality (default: 90)
 
 EXAMPLES OPTIONS
   --outdir, -o <dir>             Output directory (default: ./examples)
@@ -90,8 +90,8 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
       "height": 600,             // optional, default 600
       "devicePixelRatio": 2,     // optional, default 2
       "backgroundColor": "white",// optional, default "white"
-      "format": "png",           // optional, "png" | "jpeg" | "webp"
-      "quality": 90              // optional, 0-100 for jpeg/webp
+      "format": "png",           // optional, "png" | "jpeg"
+      "quality": 90              // optional, 0-100 for jpeg
     }
 
 CHART.JS CONFIGURATION REFERENCE
@@ -278,7 +278,7 @@ async function main(): Promise<void> {
       height: args['height'] ? Number(args['height']) : args['h'] ? Number(args['h']) : undefined,
       devicePixelRatio: args['device-pixel-ratio'] ? Number(args['device-pixel-ratio']) : undefined,
       backgroundColor: args['background-color'] as string,
-      format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | 'webp' | undefined,
+      format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | undefined,
       quality: args['quality'] ? Number(args['quality']) : args['q'] ? Number(args['q']) : undefined,
     })
   } else {
