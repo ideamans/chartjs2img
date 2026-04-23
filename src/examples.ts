@@ -822,6 +822,101 @@ export const EXAMPLES: ExampleChart[] = [
       },
     },
   },
+  {
+    title: 'Choropleth (abstract grid)',
+    description:
+      'chartjs-chart-geo choropleth using six hand-written polygon features arranged in a 3×2 grid. Demonstrates the plugin without shipping a large real-world TopoJSON — swap the feature list for your own GeoJSON to map real countries.',
+    config: {
+      type: 'choropleth',
+      data: {
+        labels: ['North', 'Central', 'South', 'Western', 'Eastern', 'Offshore'],
+        datasets: [
+          {
+            label: 'Metric by region',
+            outline: [
+              { type: 'Feature', properties: { name: 'North' },    geometry: { type: 'Polygon', coordinates: [[[0, 10], [10, 10], [10, 20], [0, 20], [0, 10]]] } },
+              { type: 'Feature', properties: { name: 'Central' },  geometry: { type: 'Polygon', coordinates: [[[10, 10], [20, 10], [20, 20], [10, 20], [10, 10]]] } },
+              { type: 'Feature', properties: { name: 'South' },    geometry: { type: 'Polygon', coordinates: [[[20, 10], [30, 10], [30, 20], [20, 20], [20, 10]]] } },
+              { type: 'Feature', properties: { name: 'Western' },  geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] } },
+              { type: 'Feature', properties: { name: 'Eastern' },  geometry: { type: 'Polygon', coordinates: [[[10, 0], [20, 0], [20, 10], [10, 10], [10, 0]]] } },
+              { type: 'Feature', properties: { name: 'Offshore' }, geometry: { type: 'Polygon', coordinates: [[[20, 0], [30, 0], [30, 10], [20, 10], [20, 0]]] } },
+            ],
+            showOutline: true,
+            borderColor: '#64748b',
+            borderWidth: 1,
+            data: [
+              { feature: { type: 'Feature', properties: { name: 'North' },    geometry: { type: 'Polygon', coordinates: [[[0, 10], [10, 10], [10, 20], [0, 20], [0, 10]]] } }, value: 82 },
+              { feature: { type: 'Feature', properties: { name: 'Central' },  geometry: { type: 'Polygon', coordinates: [[[10, 10], [20, 10], [20, 20], [10, 20], [10, 10]]] } }, value: 54 },
+              { feature: { type: 'Feature', properties: { name: 'South' },    geometry: { type: 'Polygon', coordinates: [[[20, 10], [30, 10], [30, 20], [20, 20], [20, 10]]] } }, value: 37 },
+              { feature: { type: 'Feature', properties: { name: 'Western' },  geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] } }, value: 21 },
+              { feature: { type: 'Feature', properties: { name: 'Eastern' },  geometry: { type: 'Polygon', coordinates: [[[10, 0], [20, 0], [20, 10], [10, 10], [10, 0]]] } }, value: 68 },
+              { feature: { type: 'Feature', properties: { name: 'Offshore' }, geometry: { type: 'Polygon', coordinates: [[[20, 0], [30, 0], [30, 10], [20, 10], [20, 0]]] } }, value: 12 },
+            ],
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Metric by region (abstract)' },
+          legend: { display: false },
+        },
+        scales: {
+          projection: { axis: 'x', projection: 'equirectangular' },
+          color: { axis: 'x', interpolate: 'blues', missing: '#f3f4f6', legend: { position: 'bottom-right', align: 'right' } },
+        },
+      },
+    },
+    width: 700,
+    height: 500,
+  },
+  {
+    title: 'Bubble Map (abstract grid)',
+    description:
+      'chartjs-chart-geo bubbleMap on the same abstract outline. Each point is `{longitude, latitude, value}`; the plugin sizes the bubble radius from the value. No per-point color needed — the radius carries the signal.',
+    config: {
+      type: 'bubbleMap',
+      data: {
+        labels: ['Hub A', 'Hub B', 'Hub C', 'Hub D', 'Hub E', 'Hub F'],
+        datasets: [
+          {
+            label: 'Throughput',
+            outline: [
+              { type: 'Feature', properties: { name: 'North' },    geometry: { type: 'Polygon', coordinates: [[[0, 10], [10, 10], [10, 20], [0, 20], [0, 10]]] } },
+              { type: 'Feature', properties: { name: 'Central' },  geometry: { type: 'Polygon', coordinates: [[[10, 10], [20, 10], [20, 20], [10, 20], [10, 10]]] } },
+              { type: 'Feature', properties: { name: 'South' },    geometry: { type: 'Polygon', coordinates: [[[20, 10], [30, 10], [30, 20], [20, 20], [20, 10]]] } },
+              { type: 'Feature', properties: { name: 'Western' },  geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] } },
+              { type: 'Feature', properties: { name: 'Eastern' },  geometry: { type: 'Polygon', coordinates: [[[10, 0], [20, 0], [20, 10], [10, 10], [10, 0]]] } },
+              { type: 'Feature', properties: { name: 'Offshore' }, geometry: { type: 'Polygon', coordinates: [[[20, 0], [30, 0], [30, 10], [20, 10], [20, 0]]] } },
+            ],
+            showOutline: true,
+            backgroundColor: 'rgba(236, 72, 153, 0.55)',
+            borderColor: '#be185d',
+            borderWidth: 1,
+            data: [
+              { longitude: 5,  latitude: 15, value: 420 },
+              { longitude: 15, latitude: 15, value: 180 },
+              { longitude: 25, latitude: 15, value: 95 },
+              { longitude: 5,  latitude: 5,  value: 260 },
+              { longitude: 15, latitude: 5,  value: 350 },
+              { longitude: 25, latitude: 5,  value: 60 },
+            ],
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Hub throughput (abstract)' },
+          legend: { display: false },
+        },
+        scales: {
+          projection: { axis: 'x', projection: 'equirectangular' },
+          size: { axis: 'r', size: [4, 28] },
+        },
+      },
+    },
+    width: 700,
+    height: 500,
+  },
   // --- Option showcases: axis customization, multiple axes, log scale, etc.
   {
     title: 'Dual Axis (Sales vs Conversion Rate)',

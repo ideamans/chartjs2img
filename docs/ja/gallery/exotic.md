@@ -61,49 +61,44 @@ description: Chart.js プラグインが必要なチャートタイプ - treemap
 固定深度のクラスタレイアウトが欲しければ `"type": "dendrogram"`、
 円形ツリーは `options.tree.orientation: "radial"`。
 
-## Choropleth / バブルマップ (chartjs-chart-geo)
+## Choropleth (chartjs-chart-geo)
 
-地理マップは URL 読み込み機構がないため、GeoJSON をインラインで
-渡します。Natural Earth や TopoJSON などから `FeatureCollection` を
-取得してリクエストボディに含めます。
+地理マップは URL 読み込みが使えず、GeoJSON をインラインで渡します。
+このギャラリー例は 3 × 2 の抽象グリッドをポリゴン 6 個で構成し、
+設定が読みやすく収まる最小の形にしています。実地図を描くときは
+Natural Earth や TopoJSON の FeatureCollection を `outline` に
+そのまま入れれば OK。
 
-Choropleth の骨格:
+<Example name="choropleth-abstract-grid" http />
 
-```jsonc
-{
-  "type": "choropleth",
-  "data": {
-    "labels": ["France", "Germany", "Italy", "Spain"],
-    "datasets": [{
-      "outline": [ /* 境界用の GeoJSON Feature[] */ ],
-      "showOutline": true,
-      "borderColor": "#888",
-      "data": [
-        { "feature": { "type": "Feature", "geometry": { /* ... */ },
-                        "properties": { "name": "France" } },
-          "value": 67 },
-        { "feature": { /* ... */ }, "value": 83 },
-        { "feature": { /* ... */ }, "value": 59 },
-        { "feature": { /* ... */ }, "value": 47 }
-      ]
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "scales": {
-      "projection": { "axis": "x", "projection": "equalEarth" },
-      "color":      { "axis": "x", "quantize": 5, "display": false }
-    }
-  }
-}
-```
+主要な型:
 
-`bubbleMap` の場合は同じ `outline` / スケール設定のまま、データを
-`{ longitude, latitude, value }` の点として渡します。
+- `datasets[i].outline` — 地図の境界を表す GeoJSON `Feature` 配列
+  （`showOutline: true` のときはアウトラインの描画にも使われる）
+- `datasets[i].data[i]` — `{ feature, value }`。`feature` の内側が
+  塗られ、`value` がカラースケールを駆動
+- `options.scales.projection` —
+  [d3-geo projection](https://github.com/d3/d3-geo#projections) 名
+- `options.scales.color.interpolate` — d3 のインターポレータ名
+  (`"blues"`、`"viridis"`、`"reds"` …)
 
-GeoJSON ペイロードが大きいので、chartjs2img の既定ギャラリーには
-レンダリング済み choropleth を同梱していません。自前のデータで
-`/chartjs2img-render` に投げれば出力できます。
+## バブルマップ (chartjs-chart-geo)
+
+同じプラグインで、`outline` も同じですが、データは
+`{longitude, latitude, value}` 点列です。バブルの半径は `value`
+から `size` スケール経由で決まります。
+
+<Example name="bubble-map-abstract-grid" http />
+
+抽象 outline を実地の FeatureCollection に差し替えれば、バブル
+位置は現実の地理に揃います。データセットが多い地図（地域ごとに
+1 シリーズなど）は複数の `datasets` を定義し、各々が同じ
+`outline` を共有する形にします。
+
+> **ペイロード Tips:** 実地 TopoJSON は数百 KB になりがちです。
+> HTTP クライアントから使うときは `GET /render?chart=…` ではなく
+> POST を推奨。URL 長制限のほうが JSON ボディ制限より先に当たる
+> ためです。
 
 ## なぜ全ての拡張型を掲載しないのか
 

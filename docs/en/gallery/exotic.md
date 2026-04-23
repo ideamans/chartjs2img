@@ -63,49 +63,46 @@ Hierarchical layout driven by a `parent` index per node.
 Switch to `"type": "dendrogram"` for a fixed-depth cluster layout, or
 set `options.tree.orientation: "radial"` for a circular tree.
 
-## Choropleth / bubble map (chartjs-chart-geo)
+## Choropleth (chartjs-chart-geo)
 
-Geographic maps require GeoJSON inline — there is no URL-loading
-mechanism. Fetch `FeatureCollection` data from a source like Natural
-Earth or TopoJSON, then inline it into the request body.
+Geographic maps need GeoJSON **inline** — there is no URL-loading
+mechanism. This gallery example uses six hand-written polygon
+features in a 3 × 2 abstract grid so the config stays readable. For
+real maps, drop in a world / country FeatureCollection from Natural
+Earth or TopoJSON as the `outline`.
 
-Skeleton for a choropleth:
+<Example name="choropleth-abstract-grid" http />
 
-```jsonc
-{
-  "type": "choropleth",
-  "data": {
-    "labels": ["France", "Germany", "Italy", "Spain"],
-    "datasets": [{
-      "outline": [ /* GeoJSON Feature[] for bounds */ ],
-      "showOutline": true,
-      "borderColor": "#888",
-      "data": [
-        { "feature": { "type": "Feature", "geometry": { /* ... */ },
-                        "properties": { "name": "France" } },
-          "value": 67 },
-        { "feature": { /* ... */ }, "value": 83 },
-        { "feature": { /* ... */ }, "value": 59 },
-        { "feature": { /* ... */ }, "value": 47 }
-      ]
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "scales": {
-      "projection": { "axis": "x", "projection": "equalEarth" },
-      "color":      { "axis": "x", "quantize": 5, "display": false }
-    }
-  }
-}
-```
+Key shape:
 
-For a `bubbleMap`, keep the same `outline` / scale config and supply
-data as `{ longitude, latitude, value }` points.
+- `datasets[i].outline` — array of GeoJSON `Feature` objects for the
+  map bounds (also used to stroke the outline when
+  `showOutline: true`).
+- `datasets[i].data[i]` — `{ feature, value }`. `feature` is the
+  polygon whose interior gets colored; `value` drives the color
+  scale.
+- `options.scales.projection` — any
+  [d3-geo projection](https://github.com/d3/d3-geo#projections) name.
+- `options.scales.color.interpolate` — d3 interpolator name
+  (`"blues"`, `"viridis"`, `"reds"`, …).
 
-Because full GeoJSON payloads are large, chartjs2img doesn't ship a
-rendered choropleth in the default gallery — build one against your
-own dataset and `/chartjs2img-render` will gladly produce it.
+## Bubble map (chartjs-chart-geo)
+
+Same plugin, same `outline`, but the data is `{longitude, latitude,
+value}` points. Bubble radius comes from `value` via the `size`
+scale.
+
+<Example name="bubble-map-abstract-grid" http />
+
+Swap the abstract outline for a real FeatureCollection and the bubble
+positions line up with real geography. For many-dataset maps (e.g.
+one bubble series per region), define multiple datasets — each with
+its own `data` array sharing the same `outline`.
+
+> **Payload tip:** Real-world TopoJSON is often several hundred KB.
+> If you're driving chartjs2img from an HTTP client, POST the config
+> rather than using `GET /render?chart=…` — query-string limits bite
+> long before the JSON body does.
 
 ## Why not every exotic type?
 
