@@ -33,9 +33,21 @@ function checkAuth(req: Request, apiKey?: string): boolean {
   return false
 }
 
+/**
+ * Client-supplied input was invalid. Distinct from internal errors so
+ * the HTTP layer can map it to a 400 instead of 500 — a monitoring
+ * signal, not just a UX nicety.
+ */
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
 function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
-  if (!body.chart) {
-    throw new Error('Missing required field: chart')
+  if (!body.chart || typeof body.chart !== 'object') {
+    throw new ValidationError('Missing or invalid required field: chart (must be an object)')
   }
 
   return {
@@ -123,14 +135,28 @@ export async function startServer(config: ServerConfig): Promise<void> {
         let body: Record<string, unknown>
 
         if (req.method === 'POST') {
-          body = (await req.json()) as Record<string, unknown>
+          try {
+            body = (await req.json()) as Record<string, unknown>
+          } catch (parseErr) {
+            throw new ValidationError(
+              `Invalid JSON body: ${parseErr instanceof Error ? parseErr.message : 'parse failed'}`,
+            )
+          }
         } else if (req.method === 'GET') {
           const chartParam = url.searchParams.get('chart')
           if (!chartParam) {
-            return Response.json({ error: 'Missing chart parameter' }, { status: 400 })
+            throw new ValidationError('Missing required query parameter: chart')
+          }
+          let parsedChart: unknown
+          try {
+            parsedChart = JSON.parse(chartParam)
+          } catch (parseErr) {
+            throw new ValidationError(
+              `Invalid JSON in chart query parameter: ${parseErr instanceof Error ? parseErr.message : 'parse failed'}`,
+            )
           }
           body = {
-            chart: JSON.parse(chartParam),
+            chart: parsedChart,
             width: url.searchParams.get('width') ? Number(url.searchParams.get('width')) : undefined,
             height: url.searchParams.get('height') ? Number(url.searchParams.get('height')) : undefined,
             devicePixelRatio: url.searchParams.get('devicePixelRatio')
@@ -163,6 +189,9 @@ export async function startServer(config: ServerConfig): Promise<void> {
 
         return new Response(result.buffer as unknown as BodyInit, { headers })
       } catch (err) {
+        if (err instanceof ValidationError) {
+          return Response.json({ error: err.message }, { status: 400 })
+        }
         const message = err instanceof Error ? err.message : 'Internal server error'
         console.error('[server] Render error:', message)
         return Response.json({ error: message }, { status: 500 })
