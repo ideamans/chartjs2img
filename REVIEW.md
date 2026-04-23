@@ -5,6 +5,10 @@
 
 現行の E2E 出力は `tests/integration/` 配下の統合テスト（TS / CLI / HTTP 三経路×5 フィクスチャ）でピクセル差分 1% 未満の合格条件を満たすことを確認済み。本レビューの指摘を修正する際は、この統合テストが常にグリーンであることを合格条件とする。
 
+> **対応状況（末尾の「対応サマリー」節を参照）**: 全 P0 と大半の P1 / 選択した P2 を
+> `refactoring` ブランチで解消済み。一時統合テストは refactor 完了時点で削除し、
+> 代わりに `tests/unit/` に恒久ユニットテスト 25 件を追加した。
+
 ---
 
 ## 重大度の定義
@@ -364,4 +368,73 @@ function printUsage() { return [USAGE_HEADER, USAGE_SERVE, ...].join('\n') }
 - カバレッジ: 5 フィクスチャ × 3 インターフェース = 15 ケース
 - 合格基準: ピクセル差分 < 1% (fuzz 1% 適用後)
 
-リファクタ完了後、本 REVIEW.md の対応状況とともに削除する。
+リファクタリング完了時点で `tests/integration/` は削除した。代わりに
+Chromium を起動しない恒久ユニットテスト（`tests/unit/`、25 ケース、
+`cache` / `Semaphore` / サーバ validation + auth）を追加し、これらは
+今後も CI で実行する。
+
+---
+
+## 対応サマリー
+
+リファクタリングは `refactoring` ブランチで段階的に実施。各ステップ
+ごとに統合テスト 15 / 15 グリーン（PNG 差分 < 1%）を確認してから
+コミットした。
+
+| ID    | 内容                                                                       | コミット  | 状態 |
+| ----- | -------------------------------------------------------------------------- | --------- | ---- |
+| P0-1  | `/examples` の API キー漏洩                                                | `7bb94ac` | ✅   |
+| P0-2  | webp の虚偽 Content-Type                                                   | `0f4f087` | ✅   |
+| P0-3  | 入力不備が HTTP 500 として返る                                             | `4855c26` | ✅   |
+| P0-4  | treemap formatter が JSON 化で消失                                         | `046f534` | ✅   |
+| P1-1a | Chromium 発見・導入を `src/chromium.ts` へ分離                             | `50f363a` | ✅   |
+| P1-1b | Renderer クラス化、module 可変状態を撤去（P1-4 も包含）                    | `80b0aec` | ✅   |
+| P1-2  | `startServer` が `ServerHandle` を返す、シグナル登録は CLI 層へ            | `0b60134` | ✅   |
+| P1-3  | `maxRenderTimeMs` / `pageSafetyNetMs` に責務分離                           | `47619db` | ✅   |
+| P1-5  | CLI arg parser を VALUE\_FLAGS ホワイトリスト方式に                        | `ecf2ae8` | ✅   |
+| P1-6  | 内部ファイルは `./lib` を経由せず直接 import                               | `6b93677` | ✅   |
+| P1-7  | `CONTENT_TYPES` 重複 / dead code を削除                                    | `6b93677` | ✅   |
+| P1-8  | `examples.ts` からプレゼン層を `examples-gallery.ts` へ分離                | `ec894d8` | ✅   |
+| P1-9  | キャッシュ層の DI 化                                                       | (部分対応) | ◐  |
+| P1-10 | 恒久ユニットテスト追加（`tests/unit/` 25 件）                              | (追加分)  | ✅   |
+| P2-1  | `computeHash` をキー順不変に                                               | `4461a1d` | ✅   |
+| P2-2  | Semaphore `release()` に過剰呼び防御ガード                                 | `4461a1d` | ✅   |
+
+**P1-9** について: Renderer クラス化でセマフォとブラウザは DI 化された
+が、in-memory キャッシュの実体は依然としてモジュールレベルの `Map`。
+`Renderer` インスタンスごとにキャッシュを分離したい場面は現時点では
+ないと判断し、`CacheAdapter` インターフェースの導入は保留（将来の
+マルチテナント化で必要になった時点で対応する）。
+
+**未対応の P2 項目** (P2-3 ロガー統一 / P2-4 quality の discriminated union /
+P2-5 template 内 boot IIFE 切り出し / P2-6 printUsage 分割 / P2-7 コメント
+補足 / P2-8 slugify ASCII 前提): いずれも可読性・将来拡張性の話で、
+現在の挙動に問題はない。スコープを抑えるため今回は見送り、別途の
+メンテナンス PR で扱う想定。
+
+### テスト / ビルド確認
+
+- `bun test tests/` → 40 pass / 0 fail (25 unit + 15 integration、リファクタリング各段階)
+- リファクタ完了時点では `tests/integration/` を削除し `tests/unit/` のみ
+  （`bun test tests/` → 25 pass）
+- `bun run typecheck` → 通過
+- `bun run docs:build` → 通過（llms.txt / llms-full.txt 再生成後）
+
+### ファイル構成の before / after
+
+```
+before (src/)                       after (src/)
+  cache.ts     (52)                   cache.ts     (72)   + stableStringify
+  cli.ts       (123)                  cli.ts       (126)
+  examples.ts  (933)  ← 混在          examples.ts  (826)  ← データのみ
+                                      examples-gallery.ts (128)  ← 新規 (P1-8)
+  index.ts     (292)                  index.ts     (345)  + VALUE_FLAGS / signal
+  lib.ts       (49)                   lib.ts       (55)   + Renderer re-export
+  renderer.ts  (465)  ← 神             renderer.ts  (377)  ← Renderer class のみ
+                                      chromium.ts  (236)  ← 新規 (P1-1a)
+  semaphore.ts (34)                   semaphore.ts (42)   + guard
+  server.ts    (186)                  server.ts    (235)  + ServerHandle / 400
+  template.ts  (147)                  template.ts  (147)
+  version.ts   (4)                    version.ts   (4)
+  llm-docs/... (変更なし)             llm-docs/... (usage.ts 微修正)
+```
