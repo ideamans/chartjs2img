@@ -61,39 +61,33 @@ description: Chart.js プラグインが必要なチャートタイプ - treemap
 固定深度のクラスタレイアウトが欲しければ `"type": "dendrogram"`、
 円形ツリーは `options.tree.orientation: "radial"`。
 
-## Choropleth (chartjs-chart-geo)
+## バブルマップ (chartjs-chart-geo)
 
-地理マップは URL 読み込みが使えず、GeoJSON をインラインで渡します。
+`chartjs-chart-geo` は 2 種類のチャートタイプを提供します — 下記の
+`bubbleMap` と、同じ `outline` の上で領域ごとに色を塗る
+`choropleth` です。どちらも GeoJSON の `outline` で地図境界を与え、
+bubbleMap は `{longitude, latitude, value}` 点列を `size` スケール
+経由で半径に変換します。
+
 このギャラリー例は 3 × 2 の抽象グリッドをポリゴン 6 個で構成し、
 設定が読みやすく収まる最小の形にしています。実地図を描くときは
 Natural Earth や TopoJSON の FeatureCollection を `outline` に
 そのまま入れれば OK。
 
-<Example name="choropleth-abstract-grid" http />
+<Example name="bubble-map-abstract-grid" http />
 
 主要な型:
 
 - `datasets[i].outline` — 地図の境界を表す GeoJSON `Feature` 配列
-  （`showOutline: true` のときはアウトラインの描画にも使われる）
-- `datasets[i].data[i]` — `{ feature, value }`。`feature` の内側が
-  塗られ、`value` がカラースケールを駆動
+- `datasets[i].data[i]` — `{ longitude, latitude, value }`。`value`
+  が `options.scales.size.size: [min, max]` 経由でバブル半径に変換
 - `options.scales.projection` —
   [d3-geo projection](https://github.com/d3/d3-geo#projections) 名
-- `options.scales.color.interpolate` — d3 のインターポレータ名
-  (`"blues"`、`"viridis"`、`"reds"` …)
+  (`"equirectangular"`、`"equalEarth"`、`"mercator"` など)
 
-## バブルマップ (chartjs-chart-geo)
-
-同じプラグインで、`outline` も同じですが、データは
-`{longitude, latitude, value}` 点列です。バブルの半径は `value`
-から `size` スケール経由で決まります。
-
-<Example name="bubble-map-abstract-grid" http />
-
-抽象 outline を実地の FeatureCollection に差し替えれば、バブル
-位置は現実の地理に揃います。データセットが多い地図（地域ごとに
-1 シリーズなど）は複数の `datasets` を定義し、各々が同じ
-`outline` を共有する形にします。
+`choropleth` を使う場合は同じ `outline` / 投影設定のまま、データ
+を `{ feature, value }` の配列として渡します。各フィーチャの内側
+が `options.scales.color` 経由で色付けされます。
 
 > **ペイロード Tips:** 実地 TopoJSON は数百 KB になりがちです。
 > HTTP クライアントから使うときは `GET /render?chart=…` ではなく
