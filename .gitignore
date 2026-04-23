@@ -32,3 +32,8 @@ docs/public/examples/
 docs/public/llms.txt
 docs/public/llms-full.txt
 src/llm-docs/.generated-reference.md
+
+# Claude Code local state (commit rules/ and skills/, ignore per-user state)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/cache/
