@@ -143,21 +143,9 @@ Chart.js モジュール 1 つに 1 つの TS ファイル。各ファイルは 
 
 ## 依存グラフ (ざっくり)
 
-```
-      index.ts
-      /     \
-  server.ts  cli.ts
-      \     /       \
-      renderer.ts    examples.ts
-         │
-         ├── template.ts
-         ├── cache.ts
-         └── semaphore.ts
+<img src="/diagrams/module-deps.svg" alt="モジュール依存グラフ: index.ts が server.ts と cli.ts をディスパッチし、両者が renderer.ts を呼ぶ。renderer.ts は template.ts / cache.ts / semaphore.ts に依存。cli.ts は examples.ts も参照。llm サブコマンド用に llm-docs/index.ts が多数の llm-docs/*.ts を束ねる。" />
 
-  llm-docs/index.ts ─── llm-docs/<多数>.ts
-          │
-      chartjs2img llm (index.ts → getLlmDocs 経由)
-```
+<!-- 図の元データ: docs/diagrams/module-deps.gg（`bun run docs:diagrams` で再生成） -->
 
 循環依存なし。`server.ts` と `cli.ts` は `index.ts` 以外から import されません —
 エントリポイントを薄く保つため。

@@ -1,0 +1,29 @@
+# chartjs2img — source module dependency graph.
+# index.ts がエントリで、server.ts / cli.ts の 2 つの公開ラッパーを持つ。
+# どちらも renderer.ts に集まり、template / cache / semaphore を利用。
+# llm-docs は独立した文字列集合。
+doc { cols: 3 }
+
+icon :index  @B1 tabler/terminal-2       "index.ts"    labelScale=0.9
+icon :srv    @A2 tabler/world            "server.ts"   labelScale=0.9
+icon :cli    @C2 tabler/command          "cli.ts"      labelScale=0.9
+icon :ren    @B3 tabler/components       "renderer.ts" labelScale=0.9
+icon :ex     @C3 tabler/list-details     "examples.ts" labelScale=0.9
+icon :tpl    @A4 tabler/file-code        "template.ts" labelScale=0.9
+icon :ca     @B4 tabler/database         "cache.ts"    labelScale=0.9
+icon :sem    @C4 tabler/lock             "semaphore.ts" labelScale=0.9
+
+icon :llm    @A5 tabler/book             "llm-docs/index.ts" labelScale=0.8
+icon :llms   @B5 tabler/books            "llm-docs/*.ts"     labelScale=0.8
+
+index --> srv
+index --> cli
+srv   --> ren
+cli   --> ren
+cli   --> ex
+ren   --> tpl
+ren   --> ca
+ren   --> sem
+
+index --> llm
+llm   --> llms

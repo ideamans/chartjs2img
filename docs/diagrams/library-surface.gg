@@ -1,0 +1,19 @@
+# chartjs2img — library API は CLI / HTTP サーバーの共通基盤。
+# lib.ts は外部公開面、その下の renderer / template / cache / semaphore は
+# 実装詳細。
+doc { cols: 2 }
+
+icon :cli  @A1 tabler/terminal-2 "CLI binary"  labelScale=0.9
+icon :srv  @B1 tabler/world      "HTTP server" labelScale=0.9
+icon :lib  @A2 tabler/package    "lib.ts (public surface)" labelScale=0.85
+icon :ren  @A3 tabler/components "renderer.ts" labelScale=0.9
+icon :tpl  @B3 tabler/file-code  "template.ts" labelScale=0.9
+icon :ca   @A4 tabler/database   "cache.ts"    labelScale=0.9
+icon :sem  @B4 tabler/lock       "semaphore.ts" labelScale=0.9
+
+cli --> lib
+srv --> lib
+lib --> ren
+ren --> tpl
+ren --> ca
+ren --> sem

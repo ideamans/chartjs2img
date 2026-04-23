@@ -294,29 +294,15 @@ app.listen(3000)
 組み込みの CLI (`src/index.ts` / `src/cli.ts`) と組み込みの HTTP サーバー
 (`src/server.ts`) は、いずれもこのライブラリの **薄いラッパー** です:
 
-```
-┌──────────────────┐     ┌──────────────────┐
-│  chartjs2img     │     │  chartjs2img     │
-│  (CLI バイナリ)  │     │  (HTTP サーバー) │
-└─────────┬────────┘     └────────┬─────────┘
-          │                       │
-          └─────┬─────────────────┘
-                ▼
-       ┌─────────────────┐
-       │   lib.ts        │   ← 公開 surface
-       │   renderChart   │
-       │   closeBrowser  │
-       │   ...           │
-       └─────────────────┘
-                │
-                ▼
-       ┌─────────────────┐
-       │   renderer.ts   │   ← 実装 (セマフォ、キャッシュ、
-       │   template.ts   │     Puppeteer ライフサイクル、HTML
-       │   cache.ts      │     テンプレート)。公開 surface には
-       │   semaphore.ts  │     含まれず、マイナーバージョン間で
-       └─────────────────┘     変わる可能性あり。
-```
+<img src="/diagrams/library-surface.svg" alt="CLI バイナリと HTTP サーバーは共に lib.ts を介し、lib.ts は renderer / template / cache / semaphore を再輸出する。" />
+
+<!-- 図の元データ: docs/diagrams/library-surface.gg（`bun run docs:diagrams` で再生成） -->
+
+- **`lib.ts`** が公開 surface。`renderChart`、`closeBrowser`、
+  `rendererStats`、`computeHash` などを export。semver 対象。
+- **`renderer.ts`**、**`template.ts`**、**`cache.ts`**、
+  **`semaphore.ts`** は実装詳細。semver の対象外で、マイナーバージョン
+  間で変わる可能性があります。
 
 `chartjs2img/*` (パッケージルート以外) から import する場合、実装に手を伸ばすことに
 なります — これらのパスは semver の対象外です。[Exports](#exports) に列挙された
