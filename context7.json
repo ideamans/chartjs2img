@@ -1,0 +1,26 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "chartjs2img",
+  "description": "Server-side Chart.js rendering service. CLI + HTTP API that takes a Chart.js configuration JSON and returns a PNG/JPEG/WebP image via headless Chromium. Bundles Chart.js 4.4 + 12 ecosystem plugins (datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, dayjs adapter). Designed for contexts without a browser (email, PDF, slides) and for LLM agents that author Chart.js configs.",
+  "folders": ["docs/en", "examples", "src/llm-docs"],
+  "excludeFolders": [
+    "docs/.vitepress",
+    "docs/public",
+    "docs/ja",
+    "node_modules",
+    "dist",
+    "tests"
+  ],
+  "excludeFiles": ["CHANGELOG.md", "bun.lock", "package-lock.json"],
+  "rules": [
+    "Input is always Chart.js configuration JSON. The HTTP API wraps it as `{ chart: {...}, width, height, devicePixelRatio, backgroundColor, format, quality }`; the CLI render subcommand takes the Chart.js config directly (no outer `chart` key).",
+    "JSON cannot express functions. Chart.js options that take a function (e.g. `options.scales.y.ticks.callback`, datalabels `formatter`) must be omitted or replaced with declarative equivalents. Propose `chartjs2img llm` to the user if they need the list of affected options.",
+    "Animation is forced OFF internally (`options.animation = false`, all transitions zeroed). Do not propose animated configs — they would be cropped mid-frame by the headless screenshot.",
+    "Chart.js errors and warnings are captured from the browser console and returned via the `X-Chart-Messages` header (HTTP) or stderr prefixed with `[chart ERROR]` / `[chart WARN]` (CLI). The render always succeeds HTTP-wise (200) even when messages are non-empty — always inspect them before declaring success.",
+    "Cache key is SHA-256 over the canonicalized `{ chart, width, height, devicePixelRatio, backgroundColor, format, quality }`. Identical inputs return the same image with `X-Cache-Hit: true`. The hash is also accessible as a direct URL via `X-Cache-Url` pointing at `/cache/:hash`.",
+    "Datalabels (chartjs-plugin-datalabels) is registered but **hidden by default** in chartjs2img (opposite of the plugin's upstream default). Always set `options.plugins.datalabels.display: true` explicitly when you want values on the chart.",
+    "The canonical reference for every bundled plugin's options is `chartjs2img llm` (Markdown output ~1400 lines). Pipe that as the opening turn of an LLM session if the agent is authoring configs.",
+    "Exit codes: `0` success; non-zero for argument errors, JSON parse failures, or Chromium-level failures. Chart.js runtime errors (invalid type, missing dataset shape) do NOT change the exit code — they surface via `X-Chart-Messages` only.",
+    "Chromium is auto-downloaded on first run for macOS (x64/arm64), Windows (x64/x86), and Linux (x64). On linux-arm64 the user must install Chromium manually (e.g. `apt install chromium-browser`) and set `CHROMIUM_PATH`. Suggest the manual path when the host is linux-arm64."
+  ]
+}
