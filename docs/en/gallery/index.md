@@ -18,8 +18,8 @@ Copy, tweak, POST to `/render`.
 | ------------------------------------------ | ---------------------------------------------------------------------- |
 | [Basic chart types](./basic)               | bar, line, pie, doughnut, radar, polarArea, scatter, bubble, horizontal bar |
 | [Composite charts](./composite)            | filled area, stacked bar, mixed bar + line                             |
-| [Labels & annotation](./decorations)       | bar with data labels, line with threshold annotation                   |
-| [Exotic plugins](./exotic)                 | treemap (and pointers to sankey, matrix, wordcloud, geo, graph, venn)  |
+| [Labels & annotation](./decorations)       | data labels, annotation (line / box / point), gradient fills, zoom framing, time-series axis |
+| [Exotic plugins](./exotic)                 | treemap, matrix / heatmap, sankey, wordcloud, venn / euler, force-directed graph, tidy tree, choropleth skeleton |
 | [Sizing](./sizing)                         | small 400×300 and wide 1200×400 canvases                               |
 | [Internationalization](./i18n)             | Japanese labels with Noto Sans CJK                                     |
 
