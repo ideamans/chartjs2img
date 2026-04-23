@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { startServer } from './server'
 import { cliRender, cliExamples } from './cli'
+import { closeBrowser } from './renderer'
 import { VERSION } from './version'
 import { getLlmDocs } from './llm-docs'
 
@@ -263,7 +264,27 @@ async function main(): Promise<void> {
     const host = String(args['host'] ?? process.env.HOST ?? '0.0.0.0')
     const apiKey = String(args['api-key'] ?? process.env.API_KEY ?? '') || undefined
 
-    await startServer({ port, host, apiKey })
+    const handle = await startServer({ port, host, apiKey })
+
+    // Signal handlers belong to the CLI (process entrypoint), not the
+    // server library. `once` avoids accumulating handlers if startServer
+    // is ever called multiple times in the same process.
+    let shuttingDown = false
+    const shutdown = async () => {
+      if (shuttingDown) return
+      shuttingDown = true
+      console.log('\nShutting down...')
+      try {
+        await handle.stop()
+      } catch (err) {
+        console.error('[cli] server stop failed:', err)
+      }
+      await closeBrowser()
+      process.exit(0)
+    }
+    process.once('SIGINT', shutdown)
+    process.once('SIGTERM', shutdown)
+    // Bun.serve keeps the event loop alive; main() returning is fine.
   } else if (command === 'examples') {
     const outdir = (args['outdir'] as string) ?? (args['o'] as string) ?? './examples'
     const format = ((args['format'] ?? args['f']) as string) ?? 'png'

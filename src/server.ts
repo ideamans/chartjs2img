@@ -8,7 +8,7 @@
 // ./lib is the *public* surface for external TypeScript consumers and
 // must not be a dependency of internal code — that would make its
 // export list a constraint on internal refactoring.
-import { renderChart, closeBrowser, rendererStats } from './renderer'
+import { renderChart, rendererStats } from './renderer'
 import type { RenderOptions } from './template'
 import { getCache, cacheStats } from './cache'
 import { buildExamplesHtml } from './examples'
@@ -18,6 +18,19 @@ export interface ServerConfig {
   port: number
   host: string
   apiKey?: string
+}
+
+/**
+ * Handle returned by startServer. The caller owns the server lifetime
+ * and is responsible for deciding when to stop it. Signal handling
+ * (SIGINT/SIGTERM) is intentionally NOT installed here — a library
+ * function must not mutate process-global state. The CLI installs its
+ * own handler in src/index.ts.
+ */
+export interface ServerHandle {
+  port: number
+  hostname: string
+  stop(): Promise<void>
 }
 
 function checkAuth(req: Request, apiKey?: string): boolean {
@@ -67,7 +80,7 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
   }
 }
 
-export async function startServer(config: ServerConfig): Promise<void> {
+export async function startServer(config: ServerConfig): Promise<ServerHandle> {
   const server = Bun.serve({
     port: config.port,
     hostname: config.host,
@@ -199,7 +212,7 @@ export async function startServer(config: ServerConfig): Promise<void> {
       }
   }
 
-  console.log(`chartjs2img v${VERSION} listening on http://${config.host}:${config.port}`)
+  console.log(`chartjs2img v${VERSION} listening on http://${server.hostname}:${server.port}`)
   console.log(`  POST /render      - render chart from JSON body`)
   console.log(`  GET  /render      - render chart from query params`)
   console.log(`  GET  /cache/:hash - retrieve cached image`)
@@ -209,13 +222,14 @@ export async function startServer(config: ServerConfig): Promise<void> {
     console.log(`  Authentication: enabled (API key)`)
   }
 
-  process.on('SIGINT', async () => {
-    console.log('\nShutting down...')
-    await closeBrowser()
-    process.exit(0)
-  })
-  process.on('SIGTERM', async () => {
-    await closeBrowser()
-    process.exit(0)
-  })
+  // Bun's Server types port/hostname as optional, but after a successful
+  // listen both are always populated. Fall back to the requested values
+  // if needed to keep the Handle shape strict.
+  return {
+    port: server.port ?? config.port,
+    hostname: server.hostname ?? config.host,
+    async stop() {
+      await server.stop()
+    },
+  }
 }

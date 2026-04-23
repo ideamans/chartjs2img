@@ -13,7 +13,7 @@ import { join } from 'path'
 import { $ } from 'bun'
 
 import { renderChart, closeBrowser } from '../../src/lib'
-import { startServer } from '../../src/server'
+import { startServer, type ServerHandle } from '../../src/server'
 import { FIXTURES } from './fixtures'
 import { imageDiffFraction } from './compare'
 
@@ -33,7 +33,7 @@ async function pickFreePort(): Promise<number> {
 
 describe('3-interface equivalence vs. baseline', () => {
   let serverPort: number
-  let stopServer: (() => Promise<void>) | null = null
+  let handle: ServerHandle | null = null
 
   beforeAll(async () => {
     mkdirSync(TMP, { recursive: true })
@@ -47,17 +47,12 @@ describe('3-interface equivalence vs. baseline', () => {
     }
 
     serverPort = await pickFreePort()
-    // startServer is fire-and-forget; we don't await it (it never resolves).
-    // It installs SIGINT/SIGTERM handlers which are process-wide — acceptable
-    // for a one-off test run; we clean up via closeBrowser() in afterAll.
-    void startServer({ port: serverPort, host: '127.0.0.1' })
-    // Give Bun.serve a moment to bind.
-    await new Promise((r) => setTimeout(r, 200))
+    handle = await startServer({ port: serverPort, host: '127.0.0.1' })
   })
 
   afterAll(async () => {
+    if (handle) await handle.stop()
     await closeBrowser()
-    if (stopServer) await stopServer()
   })
 
   // --------------------------------------------------------------- TS lib
