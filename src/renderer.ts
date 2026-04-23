@@ -115,7 +115,7 @@ function findChromiumExecutable(): string | null {
 /** Resolve the Chrome for Testing platform string for the current OS/arch, or null if unsupported */
 function getCftPlatform(): string | null {
   const os = platform()
-  const a = arch()
+  const a = arch() as string
   if (os === 'darwin') return a === 'arm64' ? 'mac-arm64' : 'mac-x64'
   if (os === 'win32') return a === 'x64' ? 'win64' : 'win32'
   // Chrome for Testing only provides linux64 (x86_64) — no linux-arm64
@@ -368,15 +368,15 @@ export async function renderChart(options: RenderOptions): Promise<RenderResult>
     const messages: ConsoleMessage[] = []
     const IGNORED_PATTERNS = ['A parser-blocking, cross site', 'Third-party cookie will be blocked']
     page.on('console', (msg) => {
-      const type = msg.type()
+      const type = msg.type() as string
       if (type === 'error' || type === 'warning' || type === 'warn') {
         const text = msg.text()
         if (IGNORED_PATTERNS.some((p) => text.includes(p))) return
         messages.push({ level: type === 'warning' || type === 'warn' ? 'warn' : 'error', message: text })
       }
     })
-    page.on('pageerror', (err) => {
-      messages.push({ level: 'error', message: err.message })
+    page.on('pageerror', (err: unknown) => {
+      messages.push({ level: 'error', message: err instanceof Error ? err.message : String(err) })
     })
 
     try {

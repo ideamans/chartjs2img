@@ -92,7 +92,7 @@ export async function startServer(config: ServerConfig): Promise<void> {
         if (!cached) {
           return Response.json({ error: 'Cache miss - image not found or expired' }, { status: 404 })
         }
-        return new Response(cached.buffer, {
+        return new Response(cached.buffer as unknown as BodyInit, {
           headers: {
             'Content-Type': cached.contentType,
             'Content-Length': cached.buffer.length.toString(),
@@ -152,7 +152,7 @@ export async function startServer(config: ServerConfig): Promise<void> {
           headers['X-Chart-Messages'] = JSON.stringify(result.messages)
         }
 
-        return new Response(result.buffer, { headers })
+        return new Response(result.buffer as unknown as BodyInit, { headers })
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Internal server error'
         console.error('[server] Render error:', message)
