@@ -615,17 +615,18 @@ watchEffect(async () => {
   font-family: inherit;
 }
 
-/* Shiki-highlighted panel. Leans on VitePress's own `.vp-doc
-   div[class*="language-"]` background/padding rules by wrapping the
-   <pre> in `class="language-json"`; we only tweak layout — kill the
-   outer margin the fence gets as a block, round only the bottom, and
-   let the code scroll inside a fixed max-height instead of bursting
-   the card. */
+/* Shiki-highlighted panel. Match the VitePress fenced-block look
+   exactly: the outer wrapper carries `--vp-code-block-bg` (same
+   variable `.vp-doc div[class*="language-"]` reads), and the inner
+   <pre> is made transparent — otherwise Shiki's inline
+   `background-color: var(--shiki-light)` on <pre> wins and paints
+   the block white instead of the docs' soft gray. */
 .c2i-ex__shiki {
   margin: 0 !important;
   border: 1px solid var(--vp-c-divider);
   border-top: 0;
   border-radius: 0 0 10px 10px;
+  background: var(--vp-code-block-bg, var(--vp-c-bg-alt));
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -634,7 +635,10 @@ watchEffect(async () => {
 .c2i-ex__shiki :deep(pre.vp-code) {
   margin: 0;
   padding: 16px 20px;
-  background: var(--vp-code-block-bg, var(--vp-c-bg-alt));
+  /* Override the inline style Shiki emits on <pre> so the outer
+     wrapper's `--vp-code-block-bg` shows through. Same trick VitePress
+     uses for its own fenced blocks. */
+  background: transparent !important;
   font-size: 12.5px;
   line-height: 1.55;
   overflow: auto;
@@ -646,6 +650,7 @@ watchEffect(async () => {
   font-family: var(--vp-font-family-mono);
   white-space: pre;
   display: block;
+  background: transparent !important;
 }
 /* Pick the right Shiki color per theme — the `defaultColor: false`
    option above emits both --shiki-light and --shiki-dark on every
