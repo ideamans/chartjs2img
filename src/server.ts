@@ -11,7 +11,7 @@
 import { renderChart, rendererStats } from './renderer'
 import type { RenderOptions } from './template'
 import { getCache, cacheStats } from './cache'
-import { buildExamplesHtml } from './examples'
+import { buildExamplesHtml } from './examples-gallery'
 import { VERSION } from './version'
 
 export interface ServerConfig {
