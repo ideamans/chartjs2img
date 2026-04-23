@@ -79,8 +79,14 @@ export async function startServer(config: ServerConfig): Promise<void> {
         })
       }
 
-      // Examples gallery (no auth required for viewing)
+      // Examples gallery. When API_KEY is configured, viewing the page
+      // also requires auth — otherwise the page would embed the key in
+      // its HTML for the subsequent /render calls and any unauthenticated
+      // fetch would leak it.
       if (url.pathname === '/examples') {
+        if (!checkAuth(req, config.apiKey)) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         const baseUrl = `${url.protocol}//${url.host}`
         const html = buildExamplesHtml(baseUrl, config.apiKey, VERSION)
         return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })

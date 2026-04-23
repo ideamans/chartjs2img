@@ -64,7 +64,9 @@ AUTHENTICATION (when API_KEY is set)
     - Header:  Authorization: Bearer <key>
     - Header:  X-API-Key: <key>
     - Query:   ?api_key=<key>
-  /health and /examples are accessible without authentication.
+  /health is accessible without authentication.
+  /examples requires the API key as well (otherwise the page would leak
+    the key in its HTML since it calls /render from the browser).
 
 INPUT JSON SCHEMA (for "render" CLI and POST /render)
   The input is a JSON object. For CLI "render", the top-level object IS the
