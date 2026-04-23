@@ -9,8 +9,27 @@ import { LIBS } from './template'
 
 const LIBS_INFO = Object.fromEntries(Object.entries(LIBS).map(([k, v]) => [k, v.version]))
 
+/**
+ * Serialize a value for embedding inside an HTML <script> tag.
+ *
+ * JSON.stringify escapes JSON string delimiters (") but not HTML tag
+ * delimiters. A string containing `</script>` would close the enclosing
+ * script block when parsed as HTML, letting an attacker break out of
+ * the JS string literal and inject new markup. That matters here
+ * because `baseUrl` is derived from the request's Host header and
+ * `apiKey` is operator-controlled — neither is assumed sanitized for
+ * HTML context.
+ *
+ * Escape `<` to the unicode form `<`; it still parses as `<` inside
+ * a JS string but the HTML tokenizer never sees the literal character
+ * so it can't match `</script>` or any other end-tag pattern.
+ */
+function jsEmbed(v: unknown): string {
+  return JSON.stringify(v).replace(/</g, '\\u003c')
+}
+
 export function buildExamplesHtml(baseUrl: string, apiKey?: string, version?: string): string {
-  const examplesJson = JSON.stringify(EXAMPLES)
+  const examplesJson = jsEmbed(EXAMPLES)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -44,8 +63,8 @@ export function buildExamplesHtml(baseUrl: string, apiKey?: string, version?: st
 </header>
 <main class="grid-gallery" id="gallery"></main>
 <script>
-const BASE = ${JSON.stringify(baseUrl)};
-const API_KEY = ${JSON.stringify(apiKey ?? '')};
+const BASE = ${jsEmbed(baseUrl)};
+const API_KEY = ${jsEmbed(apiKey ?? '')};
 const EXAMPLES = ${examplesJson};
 
 const headers = { 'Content-Type': 'application/json' };
