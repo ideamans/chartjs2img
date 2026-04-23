@@ -26,9 +26,14 @@
  * dependency surface on the exports below so upgrades stay drop-in.
  */
 
-// Core render pipeline.
-export { renderChart, closeBrowser, rendererStats } from './renderer'
-export type { RenderResult, ConsoleMessage } from './renderer'
+// Core render pipeline. Most callers just need the module-level
+// renderChart / closeBrowser helpers, which back onto a lazily-created
+// default Renderer. Advanced callers (test harnesses, multi-tenant
+// servers that want isolated browser pools, or programs that want to
+// configure concurrency per-instance) can instantiate `Renderer`
+// directly.
+export { renderChart, closeBrowser, rendererStats, Renderer } from './renderer'
+export type { RenderResult, ConsoleMessage, RendererConfig, RendererStats } from './renderer'
 
 // Input shape.
 export type { RenderOptions } from './template'
