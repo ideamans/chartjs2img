@@ -1,0 +1,46 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+      - docs
+      - llm
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Validate plugin skills
+        run: bun run validate-plugin-skills
+
+      - name: Build LLM text bundles
+        run: bun run build-llms-txt
+
+      # The docs:build script invokes build-llms-txt internally. Running it
+      # standalone above surfaces LLM-doc problems with a smaller blast radius
+      # if something goes wrong.
+      - name: Build VitePress site
+        run: bun run docs:build
+
+      - name: Upload docs artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-dist
+          path: docs/.vitepress/dist
+          retention-days: 14

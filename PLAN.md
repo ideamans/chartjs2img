@@ -318,3 +318,35 @@ chartjs2img/
 - 2026-04-23 — Phase 1-D 完了。Developer Guide 英日 14 ページ執筆。`src/*.ts` の実装を読み込み、アーキテクチャ / モジュール / 型 / プラグイン追加 / LLM docs 追加 / エラーハンドリングを起草。
 - 2026-04-23 — Phase 1-E 完了。Gallery 14 ページ (7 カテゴリ × 2 言語)。`scripts/build-docs-examples.ts` を追加、`docs:examples` を package.json に登録。18 件の PNG + JSON を `docs/public/examples/` に配置 (gitignore 対象)。
 - 2026-04-23 — Phase 1-F 作業中。typecheck 実行時に src/renderer.ts と src/server.ts に pre-existing な型エラー 6 件を発見 (main にも存在)。puppeteer-core v24 の型更新と Bun の Response 型の不整合。最小限のキャスト追加で解消。typecheck クリーン。
+- 2026-04-23 — Phase 1 完了。`docs` ブランチで 5 commit、合計 48 ドキュメントページ (en/ja) 。`git switch -c llm` で Phase 2 用ブランチを派生。
+- 2026-04-23 — Phase 2-A 完了。context7.json を作成。folders=docs/en/examples/src/llm-docs、chartjs2img 固有の落とし穴 9 本を rules に。
+- 2026-04-23 — Phase 2-B 完了。scripts/build-llms-txt.ts を gridgram からポート、`getLlmDocs()` を直接 import する形に簡素化。package.json に build-llms-txt と ai:regen を追加。llms.txt (3077 chars) と llms-full.txt (165014 chars, 31 docs) を生成確認。
+- 2026-04-23 — Phase 2-C 完了。plugins/chartjs2img/ 一式 (plugin.json + 4 SKILL.md + README.md + PUBLISH.md)。Agent Skills 標準 frontmatter のみ。
+- 2026-04-23 — Phase 2-D 完了。scripts/validate-plugin-skills.ts を gridgram ベースにポート、plugin.json version 一致チェックとキーワードアサーションを追加。0 error / 0 warning。
+- 2026-04-23 — Phase 2-E 完了。.claude/rules/{ai-artifacts-policy,regen-triggers}.md と .claude/skills/regen-ai/SKILL.md。.gitignore で .claude/settings.local.json と scheduled_tasks.lock を除外。
+- 2026-04-23 — Phase 2-F 完了。AI Guide 12 ページ (en/ja × 6: index / claude-plugin / gh-skill / context7 / llms-txt / cli)。llms-full.txt の concat 数が 26 → 31 に。
+- 2026-04-23 — Phase 2-G 完了。.github/workflows/docs.yml を新設 (typecheck + validate-plugin-skills + build-llms-txt + docs:build)。package.json のスクリプト構成を確認。既存 test.yml には手を加えていない。
+- 2026-04-23 — Phase 2-H 完了。最終検証スイート全パス:
+  - `bun run typecheck` — clean
+  - `bun run validate-plugin-skills` — 0 error / 0 warning, 4 skills checked
+  - `bun run build-llms-txt` — 31 docs concatenated
+  - `bun run docs:build` — 1.90s, 0 error
+  - `chartjs2img llm` — 1442 lines, expected usage disclaimer header
+  - LLM.md §8 横展開チェックリスト全項目に対応 (1. CLI → 2. 索引不要 → 3. llms.txt → 4. context7 → 5. .claude/ → 6. plugins/ → 7. marketplace は別リポの GitHub 操作待ち)。ミッション完了。
+
+## 8. LLM.md §8 横展開チェックリスト対応表
+
+- ✅ 1. `gg llm` 相当 = 既存の `chartjs2img llm` と `src/llm-docs/` を SSOT として活用
+- ⚠️ 2. アイコン索引は chartjs2img に存在しない (代わりに同梱プラグイン 12 本の LLM docs)
+- ✅ 3. `docs/public/llms.txt` + `llms-full.txt` 生成、docs:build に組み込み
+- ✅ 4. `context7.json` 作成 (登録自体は https://context7.com/add-package でユーザー操作)
+- ✅ 5. `.claude/rules/` + `.claude/skills/regen-ai/` 設置
+- ✅ 6. `plugins/chartjs2img/` 同梱 (4 スキル + README + PUBLISH)、validator 0 error
+- ⚠️ 7. `ideamans/claude-public-plugins` は GitHub 上の新規リポジトリ作成が必要 (ユーザー操作、本セッションでは触れず)
+
+## 9. 次のアクション (ユーザー側)
+
+1. `git switch docs` して `git merge llm` で両ブランチを統合するか、`llm` から直接 main に PR を出す。
+2. `https://context7.com/add-package` で chartjs2img を登録 (約数時間でクロール完了)。
+3. `ideamans/claude-public-plugins` リポジトリを作成し、`.claude-plugin/marketplace.json` に chartjs2img エントリを追加 (gridgram 既存エントリと同じ shape、`path: "plugins/chartjs2img"`)。
+4. 初回 docs 公開時に `chartjs2img.ideamans.com` の DNS / 配信先を決定し、`scripts/build-llms-txt.ts` の SITE_BASE を必要なら環境変数で上書き。
