@@ -1,18 +1,54 @@
 {
   "name": "chartjs2img",
   "version": "0.2.2",
-  "description": "Render Chart.js charts to images via CLI or HTTP API using headless Chrome",
+  "description": "Render Chart.js charts to images via a TypeScript API, CLI, or HTTP server — headless Chromium under the hood. Chart.js 4.4 + 12 plugins bundled.",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "./dist/lib.js",
+  "module": "./dist/lib.js",
+  "types": "./dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
   "bin": {
     "chartjs2img": "src/index.ts"
   },
+  "keywords": [
+    "chart",
+    "chartjs",
+    "chart.js",
+    "image",
+    "png",
+    "jpeg",
+    "webp",
+    "puppeteer",
+    "headless-chromium",
+    "visualization",
+    "llm"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ideamans/chartjs2img.git"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "bun run src/index.ts serve",
     "build": "bun build src/index.ts --compile --outfile chartjs2img",
     "start": "bun run src/index.ts serve",
     "cli": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
+    "clean:dist": "rm -rf dist",
+    "build:lib": "bun run clean:dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build:lib",
     "build-llms-txt": "bun scripts/build-llms-txt.ts",
     "validate-plugin-skills": "bun scripts/validate-plugin-skills.ts",
     "ai:regen": "bun scripts/build-llms-txt.ts",

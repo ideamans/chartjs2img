@@ -111,6 +111,7 @@ plus the sidebar/nav defined in `docs/.vitepress/config.ts`.
 
 ## Where to go next
 
+- **[Library API (TypeScript)](./library-api)** — import `renderChart` and friends from any Bun / Node program.
 - **[Architecture](./architecture)** — request flow from HTTP to PNG.
 - **[Modules](./modules)** — one-line summary of each `src/*.ts` file.
 - **[Types & HTTP schema](./types)** — every interface and every HTTP body.

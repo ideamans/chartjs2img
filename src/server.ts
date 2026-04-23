@@ -1,8 +1,12 @@
-import { renderChart, closeBrowser, rendererStats } from './renderer'
+// Server entry — a thin HTTP wrapper around the library API in
+// src/lib.ts. All rendering semantics (plugin registration, cache,
+// concurrency, Chromium lifecycle) live in the library; this file
+// only adds transport concerns (auth, routing, cache-hash URL).
+import { renderChart, closeBrowser, rendererStats } from './lib'
+import type { RenderOptions } from './lib'
 import { getCache, cacheStats } from './cache'
 import { buildExamplesHtml } from './examples'
 import { VERSION } from './version'
-import type { RenderOptions } from './template'
 
 export interface ServerConfig {
   port: number

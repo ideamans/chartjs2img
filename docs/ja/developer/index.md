@@ -111,6 +111,7 @@ bun run docs:dev         # VitePress 開発サーバーが :5173 で起動
 
 ## 次のページ
 
+- **[ライブラリ API (TypeScript)](./library-api)** — 任意の Bun / Node プログラムから `renderChart` などを import。
 - **[アーキテクチャ](./architecture)** — HTTP から PNG までのリクエストフロー。
 - **[モジュール](./modules)** — `src/*.ts` の各ファイル 1 行サマリ。
 - **[型と HTTP スキーマ](./types)** — 全インターフェースと全 HTTP ボディ。

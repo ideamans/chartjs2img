@@ -121,6 +121,7 @@ const config: ReturnType<typeof withTheme> = withTheme({
               text: 'Developer Guide',
               items: [
                 { text: 'Overview', link: '/en/developer/' },
+                { text: 'Library API (TypeScript)', link: '/en/developer/library-api' },
                 { text: 'Architecture', link: '/en/developer/architecture' },
                 { text: 'Modules', link: '/en/developer/modules' },
                 { text: 'Types & HTTP schema', link: '/en/developer/types' },
@@ -211,6 +212,7 @@ const config: ReturnType<typeof withTheme> = withTheme({
               text: '開発者ガイド',
               items: [
                 { text: '概要', link: '/ja/developer/' },
+                { text: 'ライブラリ API (TypeScript)', link: '/ja/developer/library-api' },
                 { text: 'アーキテクチャ', link: '/ja/developer/architecture' },
                 { text: 'モジュール', link: '/ja/developer/modules' },
                 { text: '型と HTTP スキーマ', link: '/ja/developer/types' },

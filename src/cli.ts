@@ -1,8 +1,11 @@
+// CLI render / examples — a thin wrapper around the library API in
+// src/lib.ts. stdin/stdout + stderr-message plumbing is the only
+// CLI-specific concern; chart rendering itself is delegated.
 import { mkdirSync } from 'fs'
 import { join } from 'path'
-import { renderChart, closeBrowser } from './renderer'
+import { renderChart, closeBrowser } from './lib'
+import type { RenderOptions } from './lib'
 import { EXAMPLES } from './examples'
-import type { RenderOptions } from './template'
 
 export interface CliRenderArgs {
   input?: string

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": false
+  },
+  "include": ["src/lib.ts", "src/renderer.ts", "src/template.ts", "src/cache.ts", "src/semaphore.ts", "src/version.ts"]
+}
