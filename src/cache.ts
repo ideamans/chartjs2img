@@ -15,8 +15,28 @@ const MAX_ENTRIES = Number(process.env.CACHE_MAX_ENTRIES ?? '1000')
 /** Cache TTL in ms (env: CACHE_TTL_SECONDS, default: 3600) */
 const TTL_MS = Number(process.env.CACHE_TTL_SECONDS ?? '3600') * 1000
 
+/**
+ * JSON stringifier with a stable key order. Two semantically identical
+ * objects ({a:1,b:2} and {b:2,a:1}) must produce the same output so
+ * the cache hash depends only on meaning, not on how the caller happened
+ * to construct the object. Arrays keep their order (meaningful); object
+ * keys are sorted.
+ */
+function stableStringify(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v)
+  if (Array.isArray(v)) return '[' + v.map(stableStringify).join(',') + ']'
+  const keys = Object.keys(v as object).sort()
+  return (
+    '{' +
+    keys
+      .map((k) => JSON.stringify(k) + ':' + stableStringify((v as Record<string, unknown>)[k]))
+      .join(',') +
+    '}'
+  )
+}
+
 export function computeHash(options: RenderOptions): string {
-  const json = JSON.stringify({
+  const json = stableStringify({
     chart: options.chart,
     width: options.width ?? 800,
     height: options.height ?? 600,
