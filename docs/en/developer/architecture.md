@@ -171,4 +171,5 @@ Upside: upgrading a plugin is a one-line change in
 | `CACHE_MAX_ENTRIES`      | `1000`  | LRU capacity                                                      |
 | `CACHE_TTL_SECONDS`      | `3600`  | Per-entry TTL                                                     |
 
-See [Env vars](../guide/env-vars) for the user-facing doc.
+See [Env vars (HTTP server)](../guide/http/env-vars) and
+[Env vars (CLI)](../guide/cli/env-vars) for the user-facing docs.

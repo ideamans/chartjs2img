@@ -40,7 +40,8 @@ chartjs2img's contract here:
 
 This is on purpose: LLM agents can introspect messages, fix the config,
 and retry without having to guess why an image is empty. See the user-
-facing [Error feedback](../guide/error-feedback) page for the caller
+facing [Error feedback (HTTP)](../guide/http/error-feedback) or
+[Error feedback (CLI)](../guide/cli/error-feedback) page for the caller
 experience.
 
 ### How messages are captured

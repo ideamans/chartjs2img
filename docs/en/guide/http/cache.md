@@ -1,26 +1,27 @@
 ---
 title: Cache
-description: How chartjs2img's hash-based cache works, how to read X-Cache headers, and how to drive CDN-friendly URLs from cache hashes.
+description: How chartjs2img's hash-based cache works, how to read X-Cache headers, and how to turn cache hashes into CDN-friendly URLs.
 ---
 
 # Cache
 
 Every `POST /render` computes a SHA-256 hash of the canonicalized
-request (chart config + size + format + options). If the same hash has
-been rendered recently, the cached image is returned instantly.
+request (chart config + size + format + options). If the same hash
+has been rendered recently, the cached image is returned instantly.
 
 ## How the hash is computed
 
 The cache key is deterministic over:
 
-- `chart` (full JSON, canonicalized key order)
+- `chart` (full JSON, canonicalized key order — `{a:1,b:2}` and
+  `{b:2,a:1}` hash the same)
 - `width`, `height`, `devicePixelRatio`
 - `backgroundColor`, `format`, `quality`
 
-Reorder the keys, change a whitespace, or use a floating-point rep that
-differs by an epsilon — the hash still matches, because input is
-normalized before hashing. Change a single data point, though, and
-you'll get a new hash.
+Reorder the keys, change whitespace, or swap a float for an
+equivalent integer — the hash still matches, because the input is
+normalized before hashing. Change a single data point and you'll get
+a new hash.
 
 The hash is the first 16 hex chars of the SHA-256 digest. Collision
 probability at this length is negligible for a cache layer.
@@ -29,18 +30,18 @@ probability at this length is negligible for a cache layer.
 
 Every `/render` response carries:
 
-| Header          | Example                                               | Meaning                             |
-| --------------- | ----------------------------------------------------- | ----------------------------------- |
-| `X-Cache-Hash`  | `6b4cc4e8940fd921`                                    | The key for this image              |
-| `X-Cache-Url`   | `http://host:3000/cache/6b4cc4e8940fd921`             | Direct URL to re-fetch              |
-| `X-Cache-Hit`   | `true` / `false`                                      | Was this served from the cache?     |
+| Header         | Example                                     | Meaning                      |
+| -------------- | ------------------------------------------- | ---------------------------- |
+| `X-Cache-Hash` | `6b4cc4e8940fd921`                          | The key for this image       |
+| `X-Cache-Url`  | `http://host:3000/cache/6b4cc4e8940fd921`   | Direct URL to re-fetch       |
+| `X-Cache-Hit`  | `true` / `false`                            | Served from cache?           |
 
 ## CDN-friendly URLs
 
-Because `X-Cache-Url` points at `/cache/:hash` — a GET endpoint — you
-can hand that URL to a browser, a Markdown document, or a CDN. Once
-fetched, most CDNs can cache it indefinitely (cache entries are
-immutable for their hash).
+Because `X-Cache-Url` points at `/cache/:hash` — a plain GET
+endpoint — you can hand that URL to a browser, a Markdown document,
+or a CDN. Once fetched, most CDNs can cache it indefinitely (entries
+are immutable for their hash).
 
 ```html
 <!-- Rendered once; reused forever -->
@@ -54,8 +55,8 @@ immutable for their hash).
 | Max entries in memory  | 1000    | `CACHE_MAX_ENTRIES`  |
 | Time-to-live (seconds) | 3600    | `CACHE_TTL_SECONDS`  |
 
-The cache is LRU + TTL. Once either limit is hit, the oldest entries
-are evicted. Fetching an evicted `/cache/:hash` returns `404`.
+The cache is bounded (FIFO eviction when full) plus per-entry TTL.
+Fetching an evicted or expired `/cache/:hash` returns `404`.
 
 ## When to rely on the cache
 
@@ -71,7 +72,10 @@ are evicted. Fetching an evicted `/cache/:hash` returns `404`.
 - Live data streams where every render has new inputs — the hash will
   always miss.
 - Compliance scenarios where each request must physically re-render
-  (to prove fresh data). In that case set `CACHE_MAX_ENTRIES=0`.
+  (to prove fresh data). Set `CACHE_MAX_ENTRIES=0` or skip the cache
+  by always sending unique inputs.
+- Horizontal-scale-out deployments — the cache is per-process, not
+  shared. Put a CDN in front to coalesce across instances.
 
 ## Smoke test
 

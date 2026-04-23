@@ -1,13 +1,17 @@
 ---
 title: Bundled plugins
-description: The 12 Chart.js plugins bundled with chartjs2img - datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the dayjs date adapter.
+description: The 12 Chart.js plugins bundled with chartjs2img - datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the date-fns adapter.
 ---
 
 # Bundled plugins
 
-chartjs2img ships with Chart.js core **plus 12 ecosystem plugins**, all
-pre-loaded in the headless browser. You don't install anything — just
-use the options in your config JSON.
+The plugin bundle is the same whether you render via the
+[CLI](./cli/) or the [HTTP server](./http/) — both share a single
+renderer. This page is the reference both tracks point back to.
+
+chartjs2img ships with Chart.js core **plus 12 ecosystem plugins**,
+all pre-loaded in the headless browser. You don't install anything —
+just use the options in your config JSON.
 
 For each plugin's full option schema, run `chartjs2img llm` and grep
 the relevant section, or see the upstream docs linked below.
@@ -48,9 +52,9 @@ Supported `chart.type` values out of the box: `bar`, `line`, `pie`,
 
 ## Date adapter
 
-| Plugin                                                                                      | Version | Use for                                       |
-| ------------------------------------------------------------------------------------------- | ------- | --------------------------------------------- |
-| [chartjs-adapter-dayjs-4](https://github.com/sgratzl/chartjs-adapter-dayjs-4)                | 1.0.4   | Time-scale axes (`scales.x.type: "time"`)     |
+| Plugin                                                                                       | Version | Use for                                       |
+| -------------------------------------------------------------------------------------------- | ------- | --------------------------------------------- |
+| [chartjs-adapter-date-fns](https://github.com/chartjs/chartjs-adapter-date-fns)              | 3.0.0   | Time-scale axes (`scales.x.type: "time"`)     |
 
 ## What's NOT bundled
 

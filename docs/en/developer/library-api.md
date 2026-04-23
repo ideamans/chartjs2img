@@ -21,8 +21,8 @@ regardless of which entry point you use.
   dashboard snapshots for an email campaign).
 
 If you don't need any of the above, the HTTP or CLI entry points are
-simpler to operate. See [HTTP API](/en/guide/http-api) and
-[CLI](/en/guide/cli).
+simpler to operate. See [HTTP server](/en/guide/http/) and
+[CLI rendering](/en/guide/cli/).
 
 ## Install
 
