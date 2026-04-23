@@ -4,6 +4,7 @@ import { cliRender, cliExamples } from './cli'
 import { closeBrowser } from './renderer'
 import { VERSION } from './version'
 import { getLlmDocs } from './llm-docs'
+import { parseArgs, CliArgError } from './cli-args'
 
 function printUsage(): void {
   console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images using Playwright (headless Chromium)
@@ -223,52 +224,18 @@ USAGE EXAMPLES
 `)
 }
 
-/**
- * Flags (long and short names) that always take a value — needed so
- * `render -w -100` parses -100 as the value rather than "next flag"
- * and so truly-boolean flags (none today, but future) are not mistaken
- * for value-takers when the following token happens to start with `-`.
- * Keep this list aligned with the command schemas below.
- */
-const VALUE_FLAGS = new Set([
-  'port', 'p',
-  'host',
-  'api-key',
-  'input', 'i',
-  'output', 'o',
-  'outdir',
-  'width', 'w',
-  'height', 'h',
-  'device-pixel-ratio',
-  'background-color',
-  'format', 'f',
-  'quality', 'q',
-])
-
-function parseArgs(args: string[]): Record<string, string | boolean> {
-  const result: Record<string, string | boolean> = {}
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (!arg.startsWith('-')) continue
-    const key = arg.replace(/^-+/, '')
-    if (VALUE_FLAGS.has(key)) {
-      const next = args[i + 1]
-      if (next === undefined) {
-        console.error(`Missing value for --${key}`)
-        process.exit(2)
-      }
-      result[key] = next
-      i++
-    } else {
-      result[key] = true
-    }
-  }
-  return result
-}
-
 async function main(): Promise<void> {
   const command = process.argv[2]
-  const args = parseArgs(process.argv.slice(3))
+  let args: Record<string, string | boolean>
+  try {
+    args = parseArgs(process.argv.slice(3))
+  } catch (err) {
+    if (err instanceof CliArgError) {
+      console.error(err.message)
+      process.exit(2)
+    }
+    throw err
+  }
 
   if (command === '--version' || command === 'version') {
     console.log(`chartjs2img v${VERSION}`)
