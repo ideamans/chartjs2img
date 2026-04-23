@@ -73,6 +73,10 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
   Chart.js config. For HTTP POST /render, wrap it in a "chart" field alongside
   optional render settings.
 
+  JSON only — function / callback values (e.g. tooltip.callbacks, scale.ticks
+  callback, treemap labels.formatter) are silently dropped by JSON
+  serialization and never reach the browser. Use static values instead.
+
   CLI stdin/file (Chart.js config directly):
     {
       "type": "bar",

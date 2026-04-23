@@ -1,4 +1,13 @@
-// Gallery / Examples page served at /examples
+// Gallery / Examples page served at /examples.
+//
+// Every example `config` below MUST be JSON-serializable end to end.
+// The render pipeline stringifies the chart config into a browser
+// context via JSON.stringify, which silently drops function values,
+// symbols, undefined, and class instances. If you add a new example
+// using callback options (e.g. scale.ticks.callback, tooltip.callbacks,
+// treemap labels.formatter), the function will vanish in transit and
+// the example will render differently from its source — see P0-4 in
+// REVIEW.md for the historical bug that motivated this comment.
 import { LIBS } from './template'
 
 const LIBS_INFO = Object.fromEntries(Object.entries(LIBS).map(([k, v]) => [k, v.version]))
@@ -336,7 +345,12 @@ export const EXAMPLES: ExampleChart[] = [
   },
   {
     title: 'Treemap Chart',
-    description: 'Using chartjs-chart-treemap plugin',
+    description: 'Using chartjs-chart-treemap plugin (values shown as labels)',
+    // Chart configs MUST be JSON-serializable. Function values are
+    // silently dropped by JSON.stringify and never reach the browser —
+    // so we intentionally use `labels: { display: true }` and let the
+    // treemap plugin format the node `v` value itself, instead of a
+    // custom formatter function that would be stripped in transit.
     config: {
       type: 'treemap',
       data: {
@@ -345,7 +359,6 @@ export const EXAMPLES: ExampleChart[] = [
             tree: [15, 6, 6, 5, 4, 3, 2, 2, 1],
             labels: {
               display: true,
-              formatter: (ctx: unknown) => `Item ${(ctx as { dataIndex: number }).dataIndex + 1}`,
             },
             backgroundColor: [
               'rgba(255,99,132,0.7)',
