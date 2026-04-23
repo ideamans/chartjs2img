@@ -1,21 +1,26 @@
-# chartjs2img — single-request pipeline.
-# HTTP (/render) または CLI render から始まり、認証、キャッシュ確認、
-# セマフォ取得、レンダリング、スクリーンショット、キャッシュ格納、
-# レスポンスまでを単一フローで表現。
-doc { cols: 1 }
+# chartjs2img — single-request pipeline (12 steps, snake layout).
+# 縦に伸びるフローを 4×3 のグリッドで折り返して表現。行ごとに左右
+# 方向が反転するので、キャッシュ再チェック以降は右→左に流れる点に
+# 注意。
+doc { cols: 4 }
 
-icon :auth   @A1 tabler/shield-check  "Auth check"          labelScale=0.9
-icon :hash   @A2 tabler/hash          "Compute hash"        labelScale=0.9
-icon :look   @A3 tabler/database-search "Cache lookup"      labelScale=0.9
-icon :sem    @A4 tabler/lock          "Semaphore acquire"   labelScale=0.9
-icon :recheck @A5 tabler/refresh      "Cache re-check"      labelScale=0.9
-icon :brow   @A6 tabler/browser       "Ensure browser"      labelScale=0.9
-icon :page   @A7 tabler/square-plus   "New page"            labelScale=0.9
-icon :render @A8 tabler/chart-bar     "Render chart"        labelScale=0.9
-icon :shot   @A9 tabler/camera        "Screenshot"          labelScale=0.9
-icon :store  @A10 tabler/device-floppy "Store in cache"     labelScale=0.9
-icon :close  @A11 tabler/square-x     "Close page"          labelScale=0.9
-icon :rel    @A12 tabler/lock-open    "Release semaphore"   labelScale=0.9
+# Row 1: auth → hash → lookup → semaphore (left → right)
+icon :auth    @A1 tabler/shield-check    "Auth check"        labelScale=0.72
+icon :hash    @B1 tabler/hash            "Compute hash"      labelScale=0.72
+icon :look    @C1 tabler/database-search "Cache lookup"      labelScale=0.72
+icon :sem     @D1 tabler/lock            "Semaphore acquire" labelScale=0.7
+
+# Row 2: re-check → ensure → new page → render (right → left)
+icon :render  @A2 tabler/chart-bar       "Render chart"      labelScale=0.72
+icon :page    @B2 tabler/square-plus     "New page"          labelScale=0.72
+icon :brow    @C2 tabler/browser         "Ensure browser"    labelScale=0.72
+icon :recheck @D2 tabler/refresh         "Cache re-check"    labelScale=0.72
+
+# Row 3: screenshot → store → close → release (left → right)
+icon :shot    @A3 tabler/camera          "Screenshot"        labelScale=0.72
+icon :store   @B3 tabler/device-floppy   "Store in cache"    labelScale=0.72
+icon :close   @C3 tabler/square-x        "Close page"        labelScale=0.72
+icon :rel     @D3 tabler/lock-open       "Release semaphore" labelScale=0.7
 
 auth    --> hash    "401 on fail"
 hash    --> look
