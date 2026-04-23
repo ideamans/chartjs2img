@@ -15,6 +15,7 @@
  */
 import { computed, ref, watchEffect } from 'vue'
 import { useData } from 'vitepress'
+import { createHighlighter, type Highlighter } from 'shiki'
 
 interface CtaLink {
   text: string
@@ -162,8 +163,23 @@ const siteLang = computed<string>(() => {
 })
 
 // ----- Live example: fetch the JSON that produced the preview PNG, so the
-//       right-hand side of the split stays in sync with src/examples.ts. -----
+//       left-hand side of the split stays in sync with src/examples.ts.
+//       Shiki highlights the JSON so it reads like a normal fenced code block
+//       (matches the rest of the docs' ``` syntax styling). -----
 const exampleJson = ref<string>('')
+const exampleJsonHtml = ref<string>('')
+
+let highlighterPromise: Promise<Highlighter> | null = null
+function getHighlighter(): Promise<Highlighter> {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      langs: ['json'],
+      themes: ['github-light', 'github-dark'],
+    })
+  }
+  return highlighterPromise
+}
+
 watchEffect(async () => {
   const slug = content.value.example?.name
   if (!slug || typeof fetch === 'undefined') return
@@ -171,10 +187,27 @@ watchEffect(async () => {
     const r = await fetch(`/examples/${slug}.json`)
     if (!r.ok) return
     const raw = await r.text()
+    const pretty = (() => {
+      try {
+        return JSON.stringify(JSON.parse(raw), null, 2)
+      } catch {
+        return raw
+      }
+    })()
+    exampleJson.value = pretty
     try {
-      exampleJson.value = JSON.stringify(JSON.parse(raw), null, 2)
+      const hl = await getHighlighter()
+      const html = hl.codeToHtml(pretty.replace(/\s+$/, ''), {
+        lang: 'json',
+        themes: { light: 'github-light', dark: 'github-dark' },
+        defaultColor: false,
+      })
+      // Mirror VitePress's markdown ```json fence styling: wrap with
+      // `language-json` + `vp-doc` bits so our custom-css rules (and
+      // the theme's own ones) can pick the same colors + bg.
+      exampleJsonHtml.value = html.replace(/<pre class="shiki/, '<pre class="shiki vp-code')
     } catch {
-      exampleJson.value = raw
+      /* non-fatal — fall back to plain <pre> in the template */
     }
   } catch {
     /* ignore — the section simply shows a loading state */
@@ -255,14 +288,19 @@ watchEffect(async () => {
         </header>
         <div class="c2i-ex__split">
           <figure class="c2i-ex__figure">
+            <figcaption class="c2i-ex__caption">{{ content.example.sourceLabel || 'Source JSON' }}</figcaption>
+            <div
+              v-if="exampleJsonHtml"
+              class="language-json c2i-ex__shiki"
+              v-html="exampleJsonHtml"
+            />
+            <pre v-else class="c2i-ex__code"><code>{{ exampleJson || '…' }}</code></pre>
+          </figure>
+          <figure class="c2i-ex__figure">
             <figcaption class="c2i-ex__caption">{{ content.example.previewLabel || 'Rendered PNG' }}</figcaption>
             <div class="c2i-ex__image">
               <img :src="`/examples/${content.example.name}.png`" :alt="content.example.name" />
             </div>
-          </figure>
-          <figure class="c2i-ex__figure">
-            <figcaption class="c2i-ex__caption">{{ content.example.sourceLabel || 'Source JSON' }}</figcaption>
-            <pre class="c2i-ex__code"><code>{{ exampleJson || '…' }}</code></pre>
           </figure>
         </div>
       </div>
@@ -575,6 +613,50 @@ watchEffect(async () => {
 .c2i-ex__code code {
   white-space: pre;
   font-family: inherit;
+}
+
+/* Shiki-highlighted panel. Leans on VitePress's own `.vp-doc
+   div[class*="language-"]` background/padding rules by wrapping the
+   <pre> in `class="language-json"`; we only tweak layout — kill the
+   outer margin the fence gets as a block, round only the bottom, and
+   let the code scroll inside a fixed max-height instead of bursting
+   the card. */
+.c2i-ex__shiki {
+  margin: 0 !important;
+  border: 1px solid var(--vp-c-divider);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+}
+.c2i-ex__shiki :deep(pre.shiki),
+.c2i-ex__shiki :deep(pre.vp-code) {
+  margin: 0;
+  padding: 16px 20px;
+  background: var(--vp-code-block-bg, var(--vp-c-bg-alt));
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow: auto;
+  max-height: 460px;
+  width: 100%;
+  border-radius: 0;
+}
+.c2i-ex__shiki :deep(code) {
+  font-family: var(--vp-font-family-mono);
+  white-space: pre;
+  display: block;
+}
+/* Pick the right Shiki color per theme — the `defaultColor: false`
+   option above emits both --shiki-light and --shiki-dark on every
+   token, and VitePress's own light/dark rules apply to any .vp-code
+   inside a `.vp-doc` block. These rules repeat that logic for our
+   outer-container case (Landing isn't inside `.vp-doc`). */
+.c2i-ex__shiki :deep(.shiki span) {
+  color: var(--shiki-light);
+}
+:root.dark .c2i-ex__shiki :deep(.shiki span) {
+  color: var(--shiki-dark);
 }
 
 /* Showcase — two complex examples side-by-side */
