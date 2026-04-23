@@ -1,3 +1,46 @@
+---
+title: ギャラリー
+description: chartjs2img で描画された 18 種類の Chart.js チャートをカテゴリ別に掲載。ソース JSON を含む。
+---
+
 # ギャラリー
 
-*このページは Phase 1-E でコンテンツを追加予定です（[PLAN.md](https://github.com/ideamans/chartjs2img/blob/docs/PLAN.md) 参照）。*
+18 種類のサンプルチャート。全て chartjs2img 自身でレンダリング済み。
+下に出ている画像は `src/examples.ts` から `bun run docs:examples` で
+再生成したもので、本番サービスの出力とビット単位で同じです。
+
+各ページは PNG 画像と Chart.js 設定 JSON を並べて表示します。コピーして
+改造し、`/render` に POST してください。
+
+## カテゴリ
+
+| カテゴリ                                   | チャート                                                               |
+| ------------------------------------------ | ---------------------------------------------------------------------- |
+| [基本チャートタイプ](./basic)              | bar, line, pie, doughnut, radar, polarArea, scatter, bubble, 横棒       |
+| [複合チャート](./composite)                | 塗りつぶしエリア、積み上げ、bar + line ミックス                         |
+| [ラベルと注釈](./decorations)              | 値ラベル付き bar、閾値線付き line                                       |
+| [拡張プラグイン](./exotic)                 | treemap (ほか sankey, matrix, wordcloud, geo, graph, venn のポインタ)  |
+| [サイズ](./sizing)                         | 小 400×300 と 横長 1200×400                                             |
+| [国際化](./i18n)                           | Noto Sans CJK による日本語ラベル                                        |
+
+## 生成方法
+
+```bash
+# 1 コマンドで docs/public/examples/ に全件出力
+bun run docs:examples
+
+# 同じ内容がライブギャラリーでも表示される
+bun run dev     # その後 http://localhost:3000/examples
+```
+
+稼働中サーバーの `/examples` エンドポイントは同じソースから同じ画像を
+生成します。自分のサイトに埋め込む場合は、ドキュメントサイトをスクレイプ
+するより HTTP API (`GET /render?chart=...`) またはキャッシュ URL パターン
+(`/cache/:hash`) の方が通常簡単です。
+
+## 自分のサンプルを追加する
+
+完全レシピは [開発者ガイド → Chart.js プラグインの追加](/ja/developer/adding-plugin)
+を参照。要点は `src/examples.ts` の `EXAMPLES` にエントリを追加し、
+`bun run docs:examples` を実行するだけ。新チャートは CLI 出力ディレクトリと
+ギャラリーの両方に自動で反映されます。

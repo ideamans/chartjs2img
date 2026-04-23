@@ -13,6 +13,7 @@
     "start": "bun run src/index.ts serve",
     "cli": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
+    "docs:examples": "bun scripts/build-docs-examples.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

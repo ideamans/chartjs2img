@@ -312,5 +312,9 @@ chartjs2img/
 
 ## 7. 進捗ログ（随時追記）
 
-- `YYYY-MM-DD` — (ここに日時・完了フェーズ・備考を書く)
-- 2026-04-23 — Phase 0 完了。docs ブランチ上で本 PLAN.md を commit 予定。
+- 2026-04-23 — Phase 0 完了。docs ブランチ上で本 PLAN.md を commit。
+- 2026-04-23 — Phase 1-A, 1-B 完了。VitePress v2.0.0-alpha.17 バイリンガル骨組み構築、`bun run docs:build` が通過。
+- 2026-04-23 — Phase 1-C 完了。User Guide 英日 20 ページ執筆、dead link ゼロ。
+- 2026-04-23 — Phase 1-D 完了。Developer Guide 英日 14 ページ執筆。`src/*.ts` の実装を読み込み、アーキテクチャ / モジュール / 型 / プラグイン追加 / LLM docs 追加 / エラーハンドリングを起草。
+- 2026-04-23 — Phase 1-E 完了。Gallery 14 ページ (7 カテゴリ × 2 言語)。`scripts/build-docs-examples.ts` を追加、`docs:examples` を package.json に登録。18 件の PNG + JSON を `docs/public/examples/` に配置 (gitignore 対象)。
+- 2026-04-23 — Phase 1-F 作業中。typecheck 実行時に src/renderer.ts と src/server.ts に pre-existing な型エラー 6 件を発見 (main にも存在)。puppeteer-core v24 の型更新と Bun の Response 型の不整合。最小限のキャスト追加で解消。typecheck クリーン。
