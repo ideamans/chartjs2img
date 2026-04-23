@@ -1,9 +1,9 @@
 node_modules/
 dist/
 
-# Bun compiled binary
-chartjs2img
-chartjs2img-darwin-arm64
+# Bun compiled binary (anchored to repo root so plugins/chartjs2img is not blocked)
+/chartjs2img
+/chartjs2img-darwin-arm64
 
 # Output files (example renders are regenerable via `chartjs2img examples`)
 *.png

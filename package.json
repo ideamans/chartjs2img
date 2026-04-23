@@ -14,6 +14,7 @@
     "cli": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "build-llms-txt": "bun scripts/build-llms-txt.ts",
+    "validate-plugin-skills": "bun scripts/validate-plugin-skills.ts",
     "ai:regen": "bun scripts/build-llms-txt.ts",
     "docs:examples": "bun scripts/build-docs-examples.ts",
     "docs:dev": "bun run build-llms-txt && vitepress dev docs",
