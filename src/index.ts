@@ -45,7 +45,8 @@ ENVIRONMENT VARIABLES
   CONCURRENCY            Max simultaneous renders (default: 8)
   CACHE_MAX_ENTRIES      Max cached images in memory (default: 1000)
   CACHE_TTL_SECONDS      Cache entry TTL in seconds (default: 3600)
-  PAGE_TIMEOUT_SECONDS   Force-close orphaned browser tabs (default: 60)
+  MAX_RENDER_TIME_SECONDS   Per-render upper bound for goto/waitForFunction (default: 30)
+  PAGE_TIMEOUT_SECONDS      Override the safety-net force-close timer (default: MAX_RENDER_TIME * 2 + 10)
 
 HTTP ENDPOINTS (serve mode)
   POST /render           Render chart. Body: JSON (see schema below). Returns image.

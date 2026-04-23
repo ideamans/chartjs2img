@@ -357,7 +357,8 @@ All settings can be configured via environment variables, making it easy to conf
 | `CONCURRENCY` | `8` | Max simultaneous renders |
 | `CACHE_MAX_ENTRIES` | `1000` | Max cached images in memory |
 | `CACHE_TTL_SECONDS` | `3600` | Cache entry lifetime (seconds) |
-| `PAGE_TIMEOUT_SECONDS` | `60` | Force-close orphaned browser tabs after this |
+| `MAX_RENDER_TIME_SECONDS` | `30` | Per-render upper bound (goto + waitForFunction timeout) |
+| `PAGE_TIMEOUT_SECONDS` | *(derived)* | Override the safety-net force-close timer. Defaults to `MAX_RENDER_TIME_SECONDS * 2 + 10s` |
 
 ## Included Plugins
 

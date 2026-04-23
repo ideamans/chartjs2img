@@ -38,17 +38,38 @@ export interface RendererConfig {
   /** Max simultaneous renders. Defaults to CONCURRENCY env or 8. */
   maxConcurrency?: number
   /**
-   * Safety-net timeout for force-closing a page if the render flow
-   * somehow never reaches its finally block. Defaults to
-   * PAGE_TIMEOUT_SECONDS env or 60s.
+   * Hard upper bound on a single render (applied to page.goto and
+   * page.waitForFunction). Defaults to MAX_RENDER_TIME_SECONDS env or
+   * 30s. Chart rendering itself is sub-second; 30s accommodates slow
+   * CDN fetches of Chart.js + plugins on cold start.
    */
-  pageTimeoutMs?: number
+  maxRenderTimeMs?: number
+  /**
+   * Safety-net timeout for force-closing a page if the render flow
+   * somehow never reaches its finally block. This is a LAST-RESORT
+   * leak guard, not a render budget — the per-render timeout above is
+   * what you want to tune for slow environments.
+   *
+   * Defaults to `maxRenderTimeMs * 2 + 10s`, which leaves room for
+   * both goto and waitForFunction to fail with their own timeout and
+   * still have the finally block clean up before this fires. Can be
+   * overridden via PAGE_TIMEOUT_SECONDS env for legacy operators.
+   */
+  pageSafetyNetMs?: number
 }
 
 export interface RendererStats {
   browserConnected: boolean
   concurrency: { max: number; active: number; pending: number }
   activePages: number
+  /** Rendering-budget timeout (goto + waitForFunction) in seconds. */
+  maxRenderTimeSeconds: number
+  /** Last-resort page force-close timer in seconds. Always > maxRenderTimeSeconds. */
+  pageSafetyNetSeconds: number
+  /**
+   * @deprecated alias of pageSafetyNetSeconds for /health consumers
+   * that shipped before the field was renamed. Will be removed.
+   */
   pageTimeoutSeconds: number
 }
 
@@ -58,7 +79,18 @@ const CONTENT_TYPES: Record<string, string> = {
 }
 
 const DEFAULT_MAX_CONCURRENCY = Number(process.env.CONCURRENCY ?? '8')
-const DEFAULT_PAGE_TIMEOUT_MS = Number(process.env.PAGE_TIMEOUT_SECONDS ?? '60') * 1000
+const DEFAULT_MAX_RENDER_TIME_MS = Number(process.env.MAX_RENDER_TIME_SECONDS ?? '30') * 1000
+
+function defaultSafetyNetMs(maxRenderTimeMs: number): number {
+  // Legacy operators may still set PAGE_TIMEOUT_SECONDS; honor it
+  // verbatim rather than silently override.
+  if (process.env.PAGE_TIMEOUT_SECONDS) {
+    return Number(process.env.PAGE_TIMEOUT_SECONDS) * 1000
+  }
+  // goto + waitForFunction + cleanup margin. If the finally block
+  // runs, it clears this timer before it ever fires.
+  return maxRenderTimeMs * 2 + 10_000
+}
 
 // Console noise from Chromium that should never surface to the caller.
 const IGNORED_CONSOLE_PATTERNS = [
@@ -72,7 +104,8 @@ const IGNORED_CONSOLE_PATTERNS = [
 
 export class Renderer {
   private readonly maxConcurrency: number
-  private readonly pageTimeoutMs: number
+  private readonly maxRenderTimeMs: number
+  private readonly pageSafetyNetMs: number
   private readonly semaphore: Semaphore
 
   private browser: Browser | null = null
@@ -86,7 +119,8 @@ export class Renderer {
 
   constructor(config: RendererConfig = {}) {
     this.maxConcurrency = config.maxConcurrency ?? DEFAULT_MAX_CONCURRENCY
-    this.pageTimeoutMs = config.pageTimeoutMs ?? DEFAULT_PAGE_TIMEOUT_MS
+    this.maxRenderTimeMs = config.maxRenderTimeMs ?? DEFAULT_MAX_RENDER_TIME_MS
+    this.pageSafetyNetMs = config.pageSafetyNetMs ?? defaultSafetyNetMs(this.maxRenderTimeMs)
     this.semaphore = new Semaphore(this.maxConcurrency)
   }
 
@@ -145,13 +179,16 @@ export class Renderer {
       this.activePages.delete(page)
       try {
         if (!page.isClosed()) {
-          console.warn('[renderer] Force-closing orphaned page after timeout')
+          console.warn(
+            `[renderer] Safety net fired after ${this.pageSafetyNetMs}ms — force-closing orphaned page. ` +
+              'This indicates the render finally block did not run; please file a bug.',
+          )
           await page.close()
         }
       } catch {
         // page already closed
       }
-    }, this.pageTimeoutMs)
+    }, this.pageSafetyNetMs)
     this.activePages.set(page, timer)
   }
 
@@ -222,8 +259,8 @@ export class Renderer {
         // <script src> loading, so charts would sometimes screenshot
         // before Chart.js was even parsed.
         const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
-        await page.goto(dataUrl, { waitUntil: 'networkidle0', timeout: 30000 })
-        await page.waitForFunction('window.__chartRendered === true', { timeout: 30000 })
+        await page.goto(dataUrl, { waitUntil: 'networkidle0', timeout: this.maxRenderTimeMs })
+        await page.waitForFunction('window.__chartRendered === true', { timeout: this.maxRenderTimeMs })
         await new Promise((r) => setTimeout(r, 100))
 
         // Collect messages captured inside the page (Chart.js warnings/errors)
@@ -290,11 +327,14 @@ export class Renderer {
   }
 
   stats(): RendererStats {
+    const safetyNetSeconds = this.pageSafetyNetMs / 1000
     return {
       browserConnected: this.browser?.connected ?? false,
       concurrency: { max: this.maxConcurrency, active: this.semaphore.active, pending: this.semaphore.pending },
       activePages: this.activePages.size,
-      pageTimeoutSeconds: this.pageTimeoutMs / 1000,
+      maxRenderTimeSeconds: this.maxRenderTimeMs / 1000,
+      pageSafetyNetSeconds: safetyNetSeconds,
+      pageTimeoutSeconds: safetyNetSeconds, // deprecated alias
     }
   }
 }
@@ -323,11 +363,14 @@ export async function closeBrowser(): Promise<void> {
 
 export function rendererStats(): RendererStats {
   if (!defaultRenderer) {
+    const safetyNetSeconds = defaultSafetyNetMs(DEFAULT_MAX_RENDER_TIME_MS) / 1000
     return {
       browserConnected: false,
       concurrency: { max: DEFAULT_MAX_CONCURRENCY, active: 0, pending: 0 },
       activePages: 0,
-      pageTimeoutSeconds: DEFAULT_PAGE_TIMEOUT_MS / 1000,
+      maxRenderTimeSeconds: DEFAULT_MAX_RENDER_TIME_MS / 1000,
+      pageSafetyNetSeconds: safetyNetSeconds,
+      pageTimeoutSeconds: safetyNetSeconds, // deprecated alias
     }
   }
   return defaultRenderer.stats()
