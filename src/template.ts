@@ -41,9 +41,9 @@ export interface RenderOptions {
   devicePixelRatio?: number
   /** Background color (default: 'white') */
   backgroundColor?: string
-  /** Output format: png, jpeg, webp (default: 'png') */
-  format?: 'png' | 'jpeg' | 'webp'
-  /** JPEG/WebP quality 0-100 (default: 90) */
+  /** Output format: png or jpeg (default: 'png') */
+  format?: 'png' | 'jpeg'
+  /** JPEG quality 0-100 (default: 90) */
   quality?: number
 }
 

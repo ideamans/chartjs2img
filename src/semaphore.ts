@@ -19,6 +19,14 @@ export class Semaphore {
   }
 
   release(): void {
+    if (this.running <= 0) {
+      // release() was called more times than acquire() — always a bug
+      // in the caller's try/finally pairing. Refuse to go negative
+      // (which would silently break the max-concurrency invariant) and
+      // surface the mistake instead.
+      console.warn('[semaphore] release() called with no active holders — mismatched acquire/release in caller')
+      return
+    }
     this.running--
     const next = this.queue.shift()
     if (next) next()

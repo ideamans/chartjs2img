@@ -1,13 +1,15 @@
 #!/usr/bin/env bun
 import { startServer } from './server'
 import { cliRender, cliExamples } from './cli'
+import { closeBrowser } from './renderer'
 import { VERSION } from './version'
 import { getLlmDocs } from './llm-docs'
+import { parseArgs, CliArgError } from './cli-args'
 
 function printUsage(): void {
   console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images using Playwright (headless Chromium)
 
-Converts a Chart.js configuration JSON into a PNG/JPEG/WebP image. Works as an
+Converts a Chart.js configuration JSON into a PNG or JPEG image. Works as an
 HTTP server or a one-shot CLI. Chromium is installed automatically on first run.
 
 COMMANDS
@@ -29,8 +31,8 @@ RENDER OPTIONS
   --height, -h <px>              Canvas height in pixels (default: 600)
   --device-pixel-ratio <n>       Retina scale factor (default: 2)
   --background-color <color>     CSS color or "transparent" (default: white)
-  --format, -f <fmt>             png | jpeg | webp (default: png)
-  --quality, -q <0-100>          JPEG/WebP quality (default: 90)
+  --format, -f <fmt>             png | jpeg (default: png)
+  --quality, -q <0-100>          JPEG quality (default: 90)
 
 EXAMPLES OPTIONS
   --outdir, -o <dir>             Output directory (default: ./examples)
@@ -44,7 +46,8 @@ ENVIRONMENT VARIABLES
   CONCURRENCY            Max simultaneous renders (default: 8)
   CACHE_MAX_ENTRIES      Max cached images in memory (default: 1000)
   CACHE_TTL_SECONDS      Cache entry TTL in seconds (default: 3600)
-  PAGE_TIMEOUT_SECONDS   Force-close orphaned browser tabs (default: 60)
+  MAX_RENDER_TIME_SECONDS   Per-render upper bound for goto/waitForFunction (default: 30)
+  PAGE_TIMEOUT_SECONDS      Override the safety-net force-close timer (default: MAX_RENDER_TIME * 2 + 10)
 
 HTTP ENDPOINTS (serve mode)
   POST /render           Render chart. Body: JSON (see schema below). Returns image.
@@ -64,12 +67,18 @@ AUTHENTICATION (when API_KEY is set)
     - Header:  Authorization: Bearer <key>
     - Header:  X-API-Key: <key>
     - Query:   ?api_key=<key>
-  /health and /examples are accessible without authentication.
+  /health is accessible without authentication.
+  /examples requires the API key as well (otherwise the page would leak
+    the key in its HTML since it calls /render from the browser).
 
 INPUT JSON SCHEMA (for "render" CLI and POST /render)
   The input is a JSON object. For CLI "render", the top-level object IS the
   Chart.js config. For HTTP POST /render, wrap it in a "chart" field alongside
   optional render settings.
+
+  JSON only — function / callback values (e.g. tooltip.callbacks, scale.ticks
+  callback, treemap labels.formatter) are silently dropped by JSON
+  serialization and never reach the browser. Use static values instead.
 
   CLI stdin/file (Chart.js config directly):
     {
@@ -88,8 +97,8 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
       "height": 600,             // optional, default 600
       "devicePixelRatio": 2,     // optional, default 2
       "backgroundColor": "white",// optional, default "white"
-      "format": "png",           // optional, "png" | "jpeg" | "webp"
-      "quality": 90              // optional, 0-100 for jpeg/webp
+      "format": "png",           // optional, "png" | "jpeg"
+      "quality": 90              // optional, 0-100 for jpeg
     }
 
 CHART.JS CONFIGURATION REFERENCE
@@ -215,34 +224,25 @@ USAGE EXAMPLES
 `)
 }
 
-function parseArgs(args: string[]): Record<string, string | boolean> {
-  const result: Record<string, string | boolean> = {}
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
-    if (arg.startsWith('--') || arg.startsWith('-')) {
-      const key = arg.replace(/^-+/, '')
-      const next = args[i + 1]
-      if (next && !next.startsWith('-')) {
-        result[key] = next
-        i++
-      } else {
-        result[key] = true
-      }
-    }
-  }
-  return result
-}
-
 async function main(): Promise<void> {
   const command = process.argv[2]
-  const args = parseArgs(process.argv.slice(3))
+  let args: Record<string, string | boolean>
+  try {
+    args = parseArgs(process.argv.slice(3))
+  } catch (err) {
+    if (err instanceof CliArgError) {
+      console.error(err.message)
+      process.exit(2)
+    }
+    throw err
+  }
 
   if (command === '--version' || command === 'version') {
     console.log(`chartjs2img v${VERSION}`)
     process.exit(0)
   }
 
-  if (!command || command === '--help' || command === 'help') {
+  if (!command || command === '--help' || command === '-h' || command === '-?' || command === 'help') {
     printUsage()
     process.exit(0)
   }
@@ -257,7 +257,27 @@ async function main(): Promise<void> {
     const host = String(args['host'] ?? process.env.HOST ?? '0.0.0.0')
     const apiKey = String(args['api-key'] ?? process.env.API_KEY ?? '') || undefined
 
-    await startServer({ port, host, apiKey })
+    const handle = await startServer({ port, host, apiKey })
+
+    // Signal handlers belong to the CLI (process entrypoint), not the
+    // server library. `once` avoids accumulating handlers if startServer
+    // is ever called multiple times in the same process.
+    let shuttingDown = false
+    const shutdown = async () => {
+      if (shuttingDown) return
+      shuttingDown = true
+      console.log('\nShutting down...')
+      try {
+        await handle.stop()
+      } catch (err) {
+        console.error('[cli] server stop failed:', err)
+      }
+      await closeBrowser()
+      process.exit(0)
+    }
+    process.once('SIGINT', shutdown)
+    process.once('SIGTERM', shutdown)
+    // Bun.serve keeps the event loop alive; main() returning is fine.
   } else if (command === 'examples') {
     const outdir = (args['outdir'] as string) ?? (args['o'] as string) ?? './examples'
     const format = ((args['format'] ?? args['f']) as string) ?? 'png'
@@ -276,7 +296,7 @@ async function main(): Promise<void> {
       height: args['height'] ? Number(args['height']) : args['h'] ? Number(args['h']) : undefined,
       devicePixelRatio: args['device-pixel-ratio'] ? Number(args['device-pixel-ratio']) : undefined,
       backgroundColor: args['background-color'] as string,
-      format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | 'webp' | undefined,
+      format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | undefined,
       quality: args['quality'] ? Number(args['quality']) : args['q'] ? Number(args['q']) : undefined,
     })
   } else {

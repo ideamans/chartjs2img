@@ -1,10 +1,13 @@
-// CLI render / examples — a thin wrapper around the library API in
-// src/lib.ts. stdin/stdout + stderr-message plumbing is the only
+// CLI render / examples — a thin wrapper around the internal render
+// pipeline. stdin/stdout + stderr-message plumbing is the only
 // CLI-specific concern; chart rendering itself is delegated.
+//
+// Internal files import directly from source modules; see server.ts
+// for the rationale on not routing through ./lib.
 import { mkdirSync } from 'fs'
 import { join } from 'path'
-import { renderChart, closeBrowser } from './lib'
-import type { RenderOptions } from './lib'
+import { renderChart, closeBrowser } from './renderer'
+import type { RenderOptions } from './template'
 import { EXAMPLES } from './examples'
 
 export interface CliRenderArgs {
@@ -14,7 +17,7 @@ export interface CliRenderArgs {
   height?: number
   devicePixelRatio?: number
   backgroundColor?: string
-  format?: 'png' | 'jpeg' | 'webp'
+  format?: 'png' | 'jpeg'
   quality?: number
 }
 
