@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { withTheme } from 'vitepress-daisyui-theme/config'
 
 /**
  * Three-entry structure (mirrors gridgram):
@@ -11,7 +11,20 @@ import { defineConfig } from 'vitepress'
  * `/en/*`, matching the `/ja/*` shape.
  */
 
-export default defineConfig({
+/**
+ * Force light mode, even if a returning visitor's localStorage /
+ * prefers-color-scheme asks for dark. `appearance: false` in the config
+ * disables VitePress's own toggle, but vitepress-daisyui-theme still
+ * injects a FOUC script that sets `data-theme="dark"` based on
+ * localStorage / media query. This snippet runs AFTER that script (it's
+ * appended to the head array post-withTheme) and overrides both.
+ */
+const FORCE_LIGHT_SCRIPT = `(()=>{try{localStorage.removeItem('vitepress-theme-appearance');}catch(e){}document.documentElement.dataset.theme='light';document.documentElement.classList.remove('dark');})();`
+
+// `withTheme` returns a VitePress config with the daisyui FOUC script
+// already injected. We capture the result so we can append our own
+// force-light script *after* theirs.
+const config: ReturnType<typeof withTheme> = withTheme({
   title: 'chartjs2img',
   description:
     'Server-side Chart.js rendering service — CLI + HTTP API, 12 plugins bundled, image output via headless Chromium. Built for contexts without a browser (email, PDF, slides) and for LLM-authored charts.',
@@ -19,6 +32,12 @@ export default defineConfig({
   lastUpdated: true,
   // Skeleton pages won't all exist until Phase 1 completes — relax until content lands.
   ignoreDeadLinks: true,
+
+  // Lock to light mode. `appearance: false` disables VitePress's
+  // dark-mode machinery entirely. The daisyui theme still renders its
+  // ThemeSwitch button in the header, so we hide it via CSS in
+  // docs/.vitepress/theme/custom.css.
+  appearance: false,
 
   themeConfig: {
     search: {
@@ -67,6 +86,7 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
       themeConfig: {
+        logoLink: '/en/',
         nav: [
           { text: 'User Guide', link: '/en/guide/' },
           { text: 'Developer Guide', link: '/en/developer/' },
@@ -156,6 +176,7 @@ export default defineConfig({
       label: '日本語',
       lang: 'ja',
       themeConfig: {
+        logoLink: '/ja/',
         nav: [
           { text: 'ユーザーガイド', link: '/ja/guide/' },
           { text: '開発者ガイド', link: '/ja/developer/' },
@@ -243,3 +264,12 @@ export default defineConfig({
     },
   },
 })
+
+// Append the force-light script AFTER withTheme's FOUC block so it
+// runs last in document.head and wins.
+config.head = [
+  ...(config.head ?? []),
+  ['script', { id: 'c2i-force-light' }, FORCE_LIGHT_SCRIPT],
+]
+
+export default config

@@ -1,37 +1,69 @@
 ---
-layout: home
+layout: page
 title: chartjs2img
-
-hero:
-  name: chartjs2img
-  text: Chart.js charts, rendered anywhere.
-  tagline: A CLI + HTTP service that turns Chart.js JSON into PNG/JPEG/WebP via headless Chromium. Built for contexts without a browser — emails, PDFs, slide decks, Slack bots — and for LLM agents that write Chart.js configs.
-  actions:
-    - theme: brand
+landing:
+  hero:
+    name: chartjs2img
+    text: Chart.js charts, rendered anywhere.
+    primary:
       text: Get started
       link: /en/guide/
-    - theme: alt
+    ai:
       text: Use with AI agents
       link: /en/ai/
-    - theme: alt
+    secondary:
       text: View on GitHub
       link: https://github.com/ideamans/chartjs2img
 
-features:
-  - title: 12 Chart.js plugins bundled
-    details: Core + datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, dayjs adapter. No extra installation.
-  - title: HTTP API + CLI
-    details: POST JSON, get an image back. Or pipe JSON into the CLI and redirect to a file. Same engine, same cache, same plugins.
-  - title: Hash-based caching
-    details: Identical requests return cached images instantly. The SHA-256 hash travels in response headers so clients can build CDN-friendly URLs.
-  - title: Concurrency + crash recovery
-    details: Configurable semaphore, auto-restarting browser, orphan-tab reaper. Safe to run as a long-lived service.
-  - title: Error feedback
-    details: Chart.js errors and warnings are captured from the browser console and returned via X-Chart-Messages (HTTP) or stderr (CLI). Never guess why a chart is blank.
-  - title: Japanese text support
-    details: Noto Sans CJK bundled in the Docker image. No tofu, no font fallback drama, for JA / ZH / KO labels.
-  - title: Single binary
-    details: bun build --compile produces a standalone executable. Chromium is auto-downloaded on first run.
-  - title: LLM-native
-    details: "`chartjs2img llm` dumps the full Chart.js + plugin reference as Markdown. Pipe it into an agent to get valid configs first try."
+  features:
+    items:
+      - title: Chart.js + 12 plugins bundled
+        body: Core plus datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the dayjs adapter. No extra installation.
+      - title: HTTP API + CLI
+        body: POST JSON, get an image back. Or pipe JSON into the CLI and redirect to a file. Same engine, cache, and plugin bundle.
+      - title: Hash-based caching
+        body: Identical requests return cached images instantly. SHA-256 hashes travel in headers so clients can build CDN-friendly URLs.
+      - title: LLM-native
+        body: "`chartjs2img llm` dumps the full Chart.js + plugin reference as Markdown. Pipe it into an agent to get valid configs first try."
+
+  aiReady:
+    eyebrow: AI-native
+    title: Built for LLM agents out of the box
+    intro: Four first-class integration channels — pick whichever host you already use. Every path speaks the same Chart.js JSON shape, so your configs stay portable between agents.
+    items:
+      - title: Claude Code plugin
+        body: Marketplace plugin with /chartjs2img-install, /chartjs2img-llm, /chartjs2img-author, /chartjs2img-render slash commands.
+        link: /en/ai/claude-plugin
+        linkText: Tutorial →
+      - title: gh skill
+        body: Install the same skill bundle into Copilot, Cursor, Gemini CLI, or Codex with one `gh` command.
+        link: /en/ai/gh-skill
+        linkText: Tutorial →
+      - title: context7 (MCP)
+        body: Zero-install doc retrieval — any MCP-capable agent can query chartjs2img's full reference.
+        link: /en/ai/context7
+        linkText: Tutorial →
+      - title: llms.txt
+        body: Public discovery files at the site root. curl-able index and ~165 KB full-bundle for context windows.
+        link: /en/ai/llms-txt
+        linkText: Reference →
+
+  finalCta:
+    title: Ready to render?
+    text: No signup, no API key — everything runs locally.
+    primary:
+      text: Read the guide
+      link: /en/guide/
+    ai:
+      text: Use with AI agents
+      link: /en/ai/
+    secondary:
+      text: GitHub
+      link: https://github.com/ideamans/chartjs2img
+
+  acknowledgments:
+    title: Built on open source
+    intro: chartjs2img stands on the shoulders of these projects. Licenses and notices are reproduced inside the Docker image and the source tree.
 ---
+
+<Landing />

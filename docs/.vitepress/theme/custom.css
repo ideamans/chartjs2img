@@ -1,0 +1,34 @@
+/* Lock DaisyUI's brand tokens to a chartjs2img-flavoured palette
+   (blue-leaning, to match Chart.js's own "chartjs-blue" default
+   dataset colour). Matches the style of gridgram's custom.css but
+   with chartjs2img's own colour choices. */
+:root,
+html[data-theme='light'],
+[data-theme='light'] {
+  --color-primary: #36a2eb;
+  --color-primary-content: #ffffff;
+  --color-secondary: #4a6fa5;
+  --color-secondary-content: #ffffff;
+  --color-accent: #ff6384;
+  --color-accent-content: #ffffff;
+}
+
+html.dark,
+html[data-theme='dark'],
+[data-theme='dark'] {
+  --color-primary: #8ec6ff;
+  --color-primary-content: #0f172a;
+  --color-secondary: #a8c0e0;
+  --color-secondary-content: #0f172a;
+  --color-accent: #ff8fa6;
+  --color-accent-content: #0f172a;
+}
+
+/* Hide the daisyui theme's built-in dark/light toggle. We've set
+   `appearance: false` in VitePress config — the toggle no longer
+   flips anything, but the button still renders. Target it by
+   aria-label since that's the only stable hook on it. */
+button[aria-label*='dark theme' i],
+button[aria-label*='light theme' i] {
+  display: none !important;
+}
