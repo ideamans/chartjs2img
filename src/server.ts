@@ -1,9 +1,15 @@
-// Server entry — a thin HTTP wrapper around the library API in
-// src/lib.ts. All rendering semantics (plugin registration, cache,
-// concurrency, Chromium lifecycle) live in the library; this file
-// only adds transport concerns (auth, routing, cache-hash URL).
-import { renderChart, closeBrowser, rendererStats } from './lib'
-import type { RenderOptions } from './lib'
+// Server entry — a thin HTTP wrapper around the internal render
+// pipeline. All rendering semantics (plugin registration, cache,
+// concurrency, Chromium lifecycle) live in ./renderer; this file only
+// adds transport concerns (auth, routing, cache-hash URL).
+//
+// NOTE: internal files import directly from their source modules
+// (./renderer, ./cache, ./template) rather than going through ./lib.
+// ./lib is the *public* surface for external TypeScript consumers and
+// must not be a dependency of internal code — that would make its
+// export list a constraint on internal refactoring.
+import { renderChart, closeBrowser, rendererStats } from './renderer'
+import type { RenderOptions } from './template'
 import { getCache, cacheStats } from './cache'
 import { buildExamplesHtml } from './examples'
 import { VERSION } from './version'
@@ -59,11 +65,6 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
     format: body.format as RenderOptions['format'] | undefined,
     quality: body.quality as number | undefined,
   }
-}
-
-const CONTENT_TYPES: Record<string, string> = {
-  png: 'image/png',
-  jpeg: 'image/jpeg',
 }
 
 export async function startServer(config: ServerConfig): Promise<void> {

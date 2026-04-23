@@ -15,9 +15,10 @@
  *     await closeBrowser() // on process shutdown
  *
  * The `chartjs2img` CLI (`src/index.ts`) and the HTTP server
- * (`src/server.ts`) are both thin wrappers around this surface — the
- * rendering behavior is identical regardless of which entry point the
- * caller uses.
+ * (`src/server.ts`) share the same render pipeline but import it
+ * directly from ./renderer etc. — NOT from this file. That way the
+ * public surface exported here is a constraint for external consumers
+ * only, and internal refactoring does not have to preserve it.
  *
  * This module intentionally **does not** export the in-memory cache
  * internals, the Puppeteer launch helpers, the HTML template, or the
