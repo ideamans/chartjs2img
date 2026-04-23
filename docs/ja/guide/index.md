@@ -62,7 +62,9 @@ echo '{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"S
 ```
 
 `hello.png` を画像ビューワで開くと、3 本のバーが並んだチャートが
-表示されます。これで CLI 動作確認は完了です。
+表示されます。結果はこのようになります:
+
+<Example name="bar-chart" caption="上記コマンドの出力例。" />
 
 JPEG 出力、ワイドキャンバス、透明背景などが欲しい場合は
 `render` のフラグで対応できます。詳細は

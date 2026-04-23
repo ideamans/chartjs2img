@@ -62,7 +62,9 @@ echo '{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"S
 ```
 
 Open `hello.png` in your image viewer — you should see a three-bar
-chart. That's it; the CLI is working.
+chart. It should come out like this:
+
+<Example name="bar-chart" caption="The output of the command above." />
 
 Want JPEG, a wider canvas, or a transparent background? The `render`
 command takes flags for all of that — see [CLI rendering](./cli/) for

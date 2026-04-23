@@ -16,6 +16,12 @@ chartjs2img render [options]
 
 If you haven't installed yet, see the [Quick start](../).
 
+Every example in this page renders a real Chart.js config. The
+embedded widgets let you flip between the rendered PNG, the JSON
+config, and a ready-to-paste CLI command:
+
+<Example name="line-chart" caption="Flip tabs to see JSON / CLI." />
+
 ## Usage patterns
 
 ### From stdin

@@ -822,5 +822,495 @@ export const EXAMPLES: ExampleChart[] = [
       },
     },
   },
+  // --- Option showcases: axis customization, multiple axes, log scale, etc.
+  {
+    title: 'Dual Axis (Sales vs Conversion Rate)',
+    description: 'Bar + line with two Y axes — sales in USD on the left, conversion % on the right. Uses yAxisID per dataset and position: "right" on the second scale.',
+    config: {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Sales ($K)',
+            data: [120, 180, 150, 220, 190, 260],
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            yAxisID: 'ySales',
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Conversion rate (%)',
+            data: [3.2, 4.1, 3.8, 5.0, 4.6, 5.4],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.3,
+            yAxisID: 'yRate',
+            order: 1,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Q2 Sales vs Conversion Rate' },
+          legend: { position: 'top' },
+        },
+        scales: {
+          ySales: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'Sales ($K)' },
+            beginAtZero: true,
+            grid: { color: 'rgba(54, 162, 235, 0.1)' },
+          },
+          yRate: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'Conversion (%)' },
+            beginAtZero: true,
+            suggestedMax: 8,
+            grid: { drawOnChartArea: false },
+            ticks: { callback: undefined }, // placeholder; handled by default numeric
+          },
+          x: {
+            grid: { display: false },
+          },
+        },
+      },
+    },
+  },
+  {
+    title: 'Log Scale (Download growth)',
+    description: 'Logarithmic Y axis exposes exponential growth the linear scale would flatten. Uses scales.y.type: "logarithmic".',
+    config: {
+      type: 'line',
+      data: {
+        labels: ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+        datasets: [
+          {
+            label: 'Downloads',
+            data: [1200, 4500, 18000, 72000, 260000, 910000, 2_400_000, 6_200_000],
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            fill: true,
+            tension: 0.2,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Monthly downloads (log Y)' },
+          legend: { display: false },
+        },
+        scales: {
+          y: {
+            type: 'logarithmic',
+            title: { display: true, text: 'Downloads (log scale)' },
+            grid: { color: 'rgba(0,0,0,0.06)' },
+          },
+          x: {
+            title: { display: true, text: 'Year' },
+          },
+        },
+      },
+    },
+  },
+  {
+    title: 'Negative Values (Profit & Loss)',
+    description: 'Bar chart spanning positive and negative Y, with a zero baseline, min/max clipping, and diverging colors. Uses per-bar backgroundColor derived from the data sign.',
+    config: {
+      type: 'bar',
+      data: {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6'],
+        datasets: [
+          {
+            label: 'Net profit ($M)',
+            data: [12, -4, 18, -9, 22, 6],
+            backgroundColor: [
+              'rgba(75, 192, 192, 0.75)',
+              'rgba(255, 99, 132, 0.75)',
+              'rgba(75, 192, 192, 0.75)',
+              'rgba(255, 99, 132, 0.75)',
+              'rgba(75, 192, 192, 0.75)',
+              'rgba(75, 192, 192, 0.75)',
+            ],
+            borderColor: [
+              'rgb(75, 192, 192)',
+              'rgb(255, 99, 132)',
+              'rgb(75, 192, 192)',
+              'rgb(255, 99, 132)',
+              'rgb(75, 192, 192)',
+              'rgb(75, 192, 192)',
+            ],
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Quarterly P&L' },
+          legend: { display: false },
+        },
+        scales: {
+          y: {
+            suggestedMin: -15,
+            suggestedMax: 25,
+            title: { display: true, text: 'USD (millions)' },
+            grid: {
+              color: 'rgba(0,0,0,0.06)',
+            },
+            border: {
+              color: 'rgba(0,0,0,0.4)',
+            },
+          },
+          x: {
+            grid: { display: false },
+            border: { color: 'rgba(0,0,0,0.4)' },
+          },
+        },
+      },
+    },
+  },
+  {
+    title: 'Rotated Tick Labels',
+    description: 'Long category labels rotated 40° so nothing overlaps. Demonstrates ticks.maxRotation / minRotation and autoSkip: false.',
+    config: {
+      type: 'bar',
+      data: {
+        labels: [
+          'North America',
+          'South America',
+          'Europe (West)',
+          'Europe (East)',
+          'Asia Pacific',
+          'Middle East & Africa',
+          'Central Asia',
+          'Oceania',
+        ],
+        datasets: [
+          {
+            label: 'Active users (M)',
+            data: [42, 18, 35, 22, 58, 14, 9, 7],
+            backgroundColor: 'rgba(153, 102, 255, 0.7)',
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Active users by region' },
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 40,
+              minRotation: 40,
+              autoSkip: false,
+            },
+            grid: { display: false },
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Users (millions)' },
+          },
+        },
+      },
+    },
+  },
+  {
+    title: 'Custom Grid & Tick Styling',
+    description: 'Dashed minor grid, colored Y-axis ticks at specific breakpoints, hidden X grid, branded colors throughout. Demonstrates scales.*.grid, .ticks, and .border customization.',
+    config: {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [
+          {
+            label: 'CPU usage (%)',
+            data: [42, 58, 71, 48, 82, 35, 29],
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.12)',
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#0ea5e9',
+            pointRadius: 5,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Daily CPU usage — custom axes' },
+          legend: { display: false },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { color: '#94a3b8' },
+            ticks: { color: '#64748b', font: { weight: 'bold' } },
+          },
+          y: {
+            min: 0,
+            max: 100,
+            grid: {
+              color: 'rgba(100, 116, 139, 0.12)',
+              tickBorderDash: [4, 4],
+            },
+            border: { color: '#94a3b8' },
+            ticks: {
+              color: '#64748b',
+              stepSize: 25,
+            },
+            title: { display: true, text: 'CPU %', color: '#334155' },
+          },
+        },
+      },
+    },
+  },
+  {
+    title: 'Showcase: Revenue with Forecast',
+    description: 'Time-series line with a highlighted forecast window, peak-point annotation, threshold line, and on-point data labels — gradient, annotation, datalabels, and the date-fns adapter working together.',
+    config: {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'Monthly revenue ($K)',
+            data: [
+              { x: '2024-01-01', y: 120 },
+              { x: '2024-02-01', y: 140 },
+              { x: '2024-03-01', y: 165 },
+              { x: '2024-04-01', y: 180 },
+              { x: '2024-05-01', y: 220 },
+              { x: '2024-06-01', y: 260 },
+              { x: '2024-07-01', y: 310 },
+              { x: '2024-08-01', y: 295 },
+              { x: '2024-09-01', y: 340 },
+              { x: '2024-10-01', y: 385 },
+              { x: '2024-11-01', y: 410 },
+              { x: '2024-12-01', y: 460 },
+            ],
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14, 165, 233, 0.15)',
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#0ea5e9',
+            pointRadius: 4,
+            gradient: {
+              borderColor: {
+                axis: 'y',
+                colors: { 100: '#0ea5e9', 300: '#6366f1', 500: '#ec4899' },
+              },
+            },
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'FY24 revenue with forecast window' },
+          legend: { position: 'top' },
+          datalabels: {
+            display: true,
+            align: 'top',
+            anchor: 'end',
+            color: '#334155',
+            font: { size: 10, weight: 'bold' },
+            offset: 4,
+          },
+          annotation: {
+            annotations: {
+              forecastBand: {
+                type: 'box',
+                xMin: '2024-10-01',
+                xMax: '2024-12-01',
+                backgroundColor: 'rgba(236, 72, 153, 0.08)',
+                borderColor: 'rgba(236, 72, 153, 0.35)',
+                borderWidth: 1,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Forecast window',
+                  position: { x: 'center', y: 'start' },
+                  color: '#be185d',
+                  font: { weight: 'bold' },
+                  backgroundColor: 'rgba(255,255,255,0.85)',
+                },
+              },
+              goal: {
+                type: 'line',
+                yMin: 400,
+                yMax: 400,
+                borderColor: '#10b981',
+                borderWidth: 2,
+                borderDash: [4, 4],
+                label: {
+                  display: true,
+                  content: 'Goal: 400',
+                  position: 'start',
+                  color: '#065f46',
+                  backgroundColor: 'rgba(255,255,255,0.85)',
+                },
+              },
+              peak: {
+                type: 'point',
+                xValue: '2024-12-01',
+                yValue: 460,
+                radius: 8,
+                backgroundColor: 'rgba(236, 72, 153, 0.85)',
+                borderColor: '#ffffff',
+                borderWidth: 2,
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'month',
+              displayFormats: { month: 'MMM' },
+              tooltipFormat: 'yyyy-MM-dd',
+            },
+            grid: { display: false },
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Revenue ($K)' },
+            grid: { color: 'rgba(0,0,0,0.06)' },
+          },
+        },
+      },
+    },
+    width: 900,
+    height: 500,
+  },
+  {
+    title: 'Showcase: Ops Dashboard',
+    description: 'Stacked-bar backlog + overlay line of SLA breach rate, secondary Y axis, threshold annotation, datalabels on the line — a microservices "snapshot" combining stacked bars, annotation, datalabels, and dual axes.',
+    config: {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Critical',
+            data: [4, 6, 9, 12, 7, 2, 1],
+            backgroundColor: 'rgba(239, 68, 68, 0.75)',
+            stack: 'tickets',
+            yAxisID: 'yCount',
+            order: 3,
+          },
+          {
+            type: 'bar',
+            label: 'Major',
+            data: [8, 14, 12, 18, 16, 6, 4],
+            backgroundColor: 'rgba(249, 115, 22, 0.75)',
+            stack: 'tickets',
+            yAxisID: 'yCount',
+            order: 3,
+          },
+          {
+            type: 'bar',
+            label: 'Minor',
+            data: [16, 20, 22, 25, 24, 14, 10],
+            backgroundColor: 'rgba(250, 204, 21, 0.75)',
+            stack: 'tickets',
+            yAxisID: 'yCount',
+            order: 3,
+          },
+          {
+            type: 'line',
+            label: 'SLA breach rate (%)',
+            data: [4.2, 5.8, 7.1, 9.8, 8.0, 3.2, 2.1],
+            borderColor: '#1e3a5f',
+            backgroundColor: 'rgba(30, 58, 95, 0.08)',
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'yRate',
+            order: 1,
+            pointBackgroundColor: '#1e3a5f',
+            pointRadius: 5,
+            datalabels: {
+              display: true,
+              align: 'top',
+              anchor: 'end',
+              color: '#1e3a5f',
+              font: { size: 10, weight: 'bold' },
+              formatter: undefined,
+              offset: 6,
+            },
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          title: { display: true, text: 'Weekly operations — tickets & SLA' },
+          legend: { position: 'top' },
+          datalabels: { display: false },
+          annotation: {
+            annotations: {
+              slaLimit: {
+                type: 'line',
+                yMin: 5,
+                yMax: 5,
+                yScaleID: 'yRate',
+                borderColor: '#dc2626',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                label: {
+                  display: true,
+                  content: 'SLA limit: 5%',
+                  position: 'end',
+                  color: '#991b1b',
+                  backgroundColor: 'rgba(255,255,255,0.85)',
+                },
+              },
+              peakLoad: {
+                type: 'box',
+                xMin: 2.5,
+                xMax: 4.5,
+                backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                borderColor: 'rgba(249, 115, 22, 0.3)',
+                borderWidth: 1,
+                label: {
+                  display: true,
+                  content: 'Peak load',
+                  position: { x: 'center', y: 'start' },
+                  color: '#9a3412',
+                  backgroundColor: 'rgba(255,255,255,0.85)',
+                  font: { weight: 'bold' },
+                },
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+          },
+          yCount: {
+            type: 'linear',
+            stacked: true,
+            position: 'left',
+            beginAtZero: true,
+            title: { display: true, text: 'Tickets' },
+            grid: { color: 'rgba(0,0,0,0.06)' },
+          },
+          yRate: {
+            type: 'linear',
+            position: 'right',
+            beginAtZero: true,
+            suggestedMax: 12,
+            title: { display: true, text: 'Breach rate (%)' },
+            grid: { drawOnChartArea: false },
+          },
+        },
+      },
+    },
+    width: 900,
+    height: 500,
+  },
 ]
 

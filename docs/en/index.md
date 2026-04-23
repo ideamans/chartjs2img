@@ -18,13 +18,32 @@ landing:
   features:
     items:
       - title: Chart.js + 12 plugins bundled
-        body: Core plus datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the dayjs adapter. No extra installation.
+        body: Core plus datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the date-fns adapter. No extra installation.
       - title: HTTP API + CLI
         body: POST JSON, get an image back. Or pipe JSON into the CLI and redirect to a file. Same engine, cache, and plugin bundle.
       - title: Hash-based caching
         body: Identical requests return cached images instantly. SHA-256 hashes travel in headers so clients can build CDN-friendly URLs.
       - title: LLM-native
         body: "`chartjs2img llm` dumps the full Chart.js + plugin reference as Markdown. Pipe it into an agent to get valid configs first try."
+
+  example:
+    title: JSON in, image out
+    intro: Send any Chart.js configuration as JSON; chartjs2img returns the rendered PNG. Left is the exact output of the config on the right.
+    name: bar-chart
+    previewLabel: Rendered PNG (800 × 600)
+    sourceLabel: Chart.js configuration (JSON)
+
+  showcase:
+    eyebrow: Showcase
+    title: Complex charts render, too
+    intro: Multi-plugin composites — time axes, annotations, data labels, stacked and dual-axis layouts — all from a single JSON request.
+    items:
+      - name: showcase-revenue-with-forecast
+        title: Revenue with forecast band
+        body: Time-series line + gradient stroke, forecast window (annotation), goal threshold, peak-point marker, and on-point data labels.
+      - name: showcase-ops-dashboard
+        title: Ops dashboard snapshot
+        body: Stacked-bar ticket backlog with an overlay SLA-breach-rate line on a secondary Y axis, plus threshold line and peak-load window annotations.
 
   aiReady:
     eyebrow: AI-native

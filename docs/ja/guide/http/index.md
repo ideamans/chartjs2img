@@ -28,6 +28,11 @@ chartjs2img v0.2.2 listening on http://0.0.0.0:3000
 `Ctrl-C`（または `SIGTERM`）でクリーンに停止します。インフライトの
 リクエストを待ってから Chromium を閉じます。
 
+POST の出力を先に見てみましょう。**HTTP** タブに切り替えると、
+実際にプレビューを生成する `curl` コマンドが確認できます:
+
+<Example name="pie-chart" http caption="POST /render の出力例。" />
+
 ## サーバーフラグ
 
 | フラグ       | 既定値     | 環境変数 | 説明                                         |

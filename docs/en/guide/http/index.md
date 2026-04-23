@@ -28,6 +28,11 @@ chartjs2img v0.2.2 listening on http://0.0.0.0:3000
 Press `Ctrl-C` (or send `SIGTERM`) to shut down cleanly — the server
 drains in-flight requests before closing Chromium.
 
+A quick taste of what the POST produces — flip to the **HTTP** tab to
+see the exact `curl` that generates the preview:
+
+<Example name="pie-chart" http caption="POST /render output." />
+
 ## Server flags
 
 | Flag          | Default    | Env var   | Description                   |

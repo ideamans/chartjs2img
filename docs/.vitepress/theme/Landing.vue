@@ -13,7 +13,7 @@
  * All user-facing strings come from the page's `landing:` frontmatter
  * so the template stays locale-agnostic.
  */
-import { computed } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useData } from 'vitepress'
 
 interface CtaLink {
@@ -40,6 +40,20 @@ interface AcknowledgmentsContent {
   title: string
   intro?: string
 }
+interface ExampleSectionContent {
+  title?: string
+  intro?: string
+  /** Slug matching docs/public/examples/<slug>.{png,json}. */
+  name: string
+  sourceLabel?: string
+  previewLabel?: string
+}
+interface ShowcaseSectionContent {
+  eyebrow?: string
+  title?: string
+  intro?: string
+  items: Array<{ name: string; title?: string; body?: string }>
+}
 interface LandingFrontmatter {
   hero: {
     name: string
@@ -49,6 +63,8 @@ interface LandingFrontmatter {
     secondary?: CtaLink
   }
   features?: { items: FeatureItem[] }
+  example?: ExampleSectionContent
+  showcase?: ShowcaseSectionContent
   aiReady?: AiReadyContent
   finalCta?: {
     title: string
@@ -144,6 +160,26 @@ const siteLang = computed<string>(() => {
   const l = (frontmatter.value as any).lang ?? 'en'
   return String(l).toLowerCase().startsWith('ja') ? 'ja' : 'en'
 })
+
+// ----- Live example: fetch the JSON that produced the preview PNG, so the
+//       right-hand side of the split stays in sync with src/examples.ts. -----
+const exampleJson = ref<string>('')
+watchEffect(async () => {
+  const slug = content.value.example?.name
+  if (!slug || typeof fetch === 'undefined') return
+  try {
+    const r = await fetch(`/examples/${slug}.json`)
+    if (!r.ok) return
+    const raw = await r.text()
+    try {
+      exampleJson.value = JSON.stringify(JSON.parse(raw), null, 2)
+    } catch {
+      exampleJson.value = raw
+    }
+  } catch {
+    /* ignore — the section simply shows a loading state */
+  }
+})
 </script>
 
 <template>
@@ -202,6 +238,58 @@ const siteLang = computed<string>(() => {
           <p class="text-sm opacity-70 leading-relaxed mt-1.5">
             {{ f.body }}
           </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= Live example ======================== -->
+    <section v-if="content.example" class="c2i-ex py-20 md:py-24 px-6">
+      <div class="max-w-6xl mx-auto">
+        <header v-if="content.example.title || content.example.intro" class="text-center mb-10">
+          <h2 v-if="content.example.title" class="text-3xl md:text-4xl font-bold tracking-tight">
+            {{ content.example.title }}
+          </h2>
+          <p v-if="content.example.intro" class="opacity-70 mt-3 max-w-2xl mx-auto">
+            {{ content.example.intro }}
+          </p>
+        </header>
+        <div class="c2i-ex__split">
+          <figure class="c2i-ex__figure">
+            <figcaption class="c2i-ex__caption">{{ content.example.previewLabel || 'Rendered PNG' }}</figcaption>
+            <div class="c2i-ex__image">
+              <img :src="`/examples/${content.example.name}.png`" :alt="content.example.name" />
+            </div>
+          </figure>
+          <figure class="c2i-ex__figure">
+            <figcaption class="c2i-ex__caption">{{ content.example.sourceLabel || 'Source JSON' }}</figcaption>
+            <pre class="c2i-ex__code"><code>{{ exampleJson || '…' }}</code></pre>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= Showcase ========================== -->
+    <section v-if="content.showcase" class="c2i-show py-16 md:py-20 px-6 bg-base-200">
+      <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-10">
+          <div v-if="content.showcase.eyebrow" class="c2i-ai__eyebrow">{{ content.showcase.eyebrow }}</div>
+          <h2 v-if="content.showcase.title" class="text-3xl md:text-4xl font-bold tracking-tight">
+            {{ content.showcase.title }}
+          </h2>
+          <p v-if="content.showcase.intro" class="opacity-70 mt-3 max-w-2xl mx-auto">
+            {{ content.showcase.intro }}
+          </p>
+        </header>
+        <div class="c2i-show__grid">
+          <figure v-for="(item, i) in content.showcase.items" :key="i" class="c2i-show__card">
+            <div class="c2i-show__image">
+              <img :src="`/examples/${item.name}.png`" :alt="item.name" />
+            </div>
+            <figcaption v-if="item.title || item.body" class="c2i-show__caption">
+              <h3 v-if="item.title" class="c2i-show__title">{{ item.title }}</h3>
+              <p v-if="item.body" class="c2i-show__body">{{ item.body }}</p>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -422,6 +510,122 @@ const siteLang = computed<string>(() => {
   font-weight: 600;
   color: var(--vp-c-brand-1);
   margin-top: 4px;
+}
+
+/* Live example — chart left, JSON right */
+.c2i-ex__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+@media (max-width: 860px) {
+  .c2i-ex__split {
+    grid-template-columns: 1fr;
+  }
+}
+.c2i-ex__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.c2i-ex__caption {
+  font-size: 12px;
+  font-family: var(--vp-font-family-mono);
+  color: var(--vp-c-text-3);
+  padding: 8px 12px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+}
+.c2i-ex__image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-conic-gradient(#f6f6f6 0% 25%, #ffffff 25% 50%) 0 0 / 20px 20px;
+  padding: 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 0 0 10px 10px;
+  flex: 1;
+  min-height: 320px;
+}
+.c2i-ex__image img {
+  max-width: 100%;
+  max-height: 460px;
+  height: auto;
+  display: block;
+}
+.c2i-ex__code {
+  margin: 0;
+  padding: 16px 20px;
+  background: var(--vp-code-block-bg, var(--vp-c-bg-alt));
+  border: 1px solid var(--vp-c-divider);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--vp-c-text-1);
+  overflow: auto;
+  max-height: 460px;
+  flex: 1;
+}
+.c2i-ex__code code {
+  white-space: pre;
+  font-family: inherit;
+}
+
+/* Showcase — two complex examples side-by-side */
+.c2i-show__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+@media (max-width: 860px) {
+  .c2i-show__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.c2i-show__card {
+  margin: 0;
+  background: var(--vp-c-bg, #fff);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.c2i-show__card:hover {
+  transform: translateY(-3px);
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 8px 24px -12px color-mix(in oklab, var(--vp-c-brand-1) 40%, transparent);
+}
+.c2i-show__image {
+  padding: 18px;
+  background: #ffffff;
+}
+.c2i-show__image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.c2i-show__caption {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.c2i-show__title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.c2i-show__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--vp-c-text-2);
 }
 
 /* Acknowledgments */

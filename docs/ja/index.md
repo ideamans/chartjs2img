@@ -18,13 +18,32 @@ landing:
   features:
     items:
       - title: Chart.js + 12 プラグイン同梱
-        body: コア + datalabels / annotation / zoom / gradient / treemap / matrix / sankey / wordcloud / geo / graph / venn / dayjs アダプタ。追加インストール不要。
+        body: コア + datalabels / annotation / zoom / gradient / treemap / matrix / sankey / wordcloud / geo / graph / venn / date-fns アダプタ。追加インストール不要。
       - title: HTTP API + CLI
         body: JSON を POST すれば画像が返ります。または JSON を CLI にパイプしてファイル出力。同じエンジン・同じキャッシュ・同じプラグイン。
       - title: ハッシュベースキャッシュ
         body: 同一リクエストは即座にキャッシュヒット。SHA-256 ハッシュをヘッダで返すので CDN フレンドリーな URL を組み立てられます。
       - title: LLM ネイティブ
         body: "`chartjs2img llm` が Chart.js + 全プラグインの完全リファレンスを Markdown で出力。エージェントに投げれば初手で正しい config を書かせられます。"
+
+  example:
+    title: JSON を投げれば、画像が返る
+    intro: Chart.js 設定を JSON で送ると、chartjs2img はレンダリング済み PNG を返します。右の設定に対する実際の出力が左側です。
+    name: bar-chart
+    previewLabel: レンダリング PNG (800 × 600)
+    sourceLabel: Chart.js 設定 (JSON)
+
+  showcase:
+    eyebrow: Showcase
+    title: 複雑なチャートもまとめて描画
+    intro: 複数プラグインの組み合わせ — 時間軸・注釈・データラベル・積み上げ・デュアル軸 — すべて 1 回の JSON リクエストで描けます。
+    items:
+      - name: showcase-revenue-with-forecast
+        title: 売上と予測バンド
+        body: 時系列の折れ線にグラデーションを被せ、予測ウィンドウ（annotation）・目標閾値・ピーク点マーカー・各点の値ラベルを重ねた構成。
+      - name: showcase-ops-dashboard
+        title: 運用ダッシュボード
+        body: 積み上げ棒のチケット残量に、右軸の SLA 違反率の折れ線を重ねた運用スナップショット。閾値ラインとピーク負荷帯の注釈つき。
 
   aiReady:
     eyebrow: AI-native

@@ -55,7 +55,7 @@
     "docs:examples": "bun scripts/build-docs-examples.ts",
     "docs:diagrams": "bun scripts/build-docs-diagrams.ts",
     "docs:dev": "bun run build-llms-txt && bun run docs:diagrams && vitepress dev docs",
-    "docs:build": "bun run build-llms-txt && bun run docs:diagrams && vitepress build docs",
+    "docs:build": "bun run build-llms-txt && bun run docs:diagrams && bun run docs:examples && vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {

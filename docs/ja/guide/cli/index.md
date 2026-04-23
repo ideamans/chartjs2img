@@ -17,6 +17,12 @@ chartjs2img render [options]
 まだインストールしていない場合は [クイックスタート](../) を参照
 してください。
 
+このページの例はすべて実際の Chart.js 設定をレンダリングした
+ものです。タブを切り替えると、PNG・JSON 設定・コピーして使える
+CLI コマンドを行き来できます:
+
+<Example name="line-chart" caption="タブを切り替えて JSON / CLI を確認。" />
+
 ## 利用パターン
 
 ### 標準入力から
