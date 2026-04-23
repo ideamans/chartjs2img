@@ -1,6 +1,7 @@
-export const doc = `## chartjs-adapter-dayjs-4 1.0.4 — Day.js Date Adapter for Time Axes
+export const doc = `## chartjs-adapter-date-fns 3.0.0 — date-fns Date Adapter for Time Axes
 
-This adapter is **pre-loaded** and enables the \`"time"\` and \`"timeseries"\` scale types.
+This adapter is **pre-loaded** (as a bundle that also contains date-fns
+itself) and enables the \`"time"\` and \`"timeseries"\` scale types.
 
 ### Time Scale Configuration
 
@@ -13,11 +14,11 @@ This adapter is **pre-loaded** and enables the \`"time"\` and \`"timeseries"\` s
         "time": {
           "unit": "day",
           "displayFormats": {
-            "day": "MMM D",
-            "month": "MMM YYYY"
+            "day": "MMM d",
+            "month": "MMM yyyy"
           },
-          "tooltipFormat": "YYYY-MM-DD",
-          "parser": "YYYY-MM-DD"
+          "tooltipFormat": "yyyy-MM-dd",
+          "parser": "yyyy-MM-dd"
         },
         "title": {
           "display": true,
@@ -34,34 +35,35 @@ This adapter is **pre-loaded** and enables the \`"time"\` and \`"timeseries"\` s
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | \`unit\` | string | auto | Display unit: \`"millisecond"\`, \`"second"\`, \`"minute"\`, \`"hour"\`, \`"day"\`, \`"week"\`, \`"month"\`, \`"quarter"\`, \`"year"\` |
-| \`displayFormats\` | object | — | Day.js format string per unit |
-| \`parser\` | string | — | Input date parse format (Day.js format string) |
+| \`displayFormats\` | object | — | date-fns format string per unit |
+| \`parser\` | string | — | Input date parse format (date-fns format string) |
 | \`tooltipFormat\` | string | — | Tooltip date format |
 | \`round\` | string | — | Round dates to unit start |
 | \`minUnit\` | string | \`"millisecond"\` | Minimum display granularity |
 | \`isoWeekday\` | boolean\\|number | \`false\` | ISO week start (0=Sun, 1=Mon, etc.) |
 
-### Default Display Formats
+### Format token differences vs Day.js
 
-| Unit | Format |
-|------|--------|
-| \`millisecond\` | \`h:mm:ss.SSS a\` |
-| \`second\` | \`h:mm:ss a\` |
-| \`minute\` | \`h:mm a\` |
-| \`hour\` | \`hA\` |
-| \`day\` | \`MMM D\` |
-| \`week\` | \`ll\` |
-| \`month\` | \`MMM YYYY\` |
-| \`quarter\` | \`[Q]Q - YYYY\` |
-| \`year\` | \`YYYY\` |
-| \`datetime\` | \`MMM D, YYYY, h:mm:ss a\` |
+date-fns tokens are **case-sensitive** and differ from Day.js:
+
+| What you want         | date-fns | Day.js (NOT this adapter) |
+|-----------------------|----------|---------------------------|
+| 4-digit year          | \`yyyy\` | \`YYYY\` |
+| Month (Jan)           | \`MMM\`  | \`MMM\`  |
+| Day of month (1..31)  | \`d\`    | \`D\`    |
+| Hour (0..23)          | \`H\`    | \`H\`    |
+| Minute                | \`mm\`   | \`mm\`   |
+
+If Chart.js throws an error of the form **Use d instead of D**, you
+are using Day.js-style tokens in a date-fns format string — rewrite
+them to the date-fns column above.
 
 ### Data Formats
 
 Time scale accepts dates in various formats:
 - ISO 8601 string: \`"2024-01-15"\`, \`"2024-01-15T10:30:00Z"\`
 - Millisecond timestamps: \`1705305600000\`
-- Day.js-parseable strings (when \`parser\` is set)
+- date-fns-parseable strings (when \`parser\` is set)
 
 ### Example: Time Series Line Chart
 
@@ -89,8 +91,8 @@ Time scale accepts dates in various formats:
         "type": "time",
         "time": {
           "unit": "day",
-          "displayFormats": { "day": "MMM D" },
-          "tooltipFormat": "YYYY-MM-DD"
+          "displayFormats": { "day": "MMM d" },
+          "tooltipFormat": "yyyy-MM-dd"
         }
       },
       "y": {

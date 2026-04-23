@@ -43,6 +43,8 @@ Hierarchical blocks, sized by the `key` property of each tree node.
 
 ## Matrix / heatmap (chartjs-chart-matrix)
 
+![matrix heatmap](/examples/19-matrix-heatmap.png)
+
 Discrete cell grid with per-cell color. JSON can't express a
 value-to-color function, so pre-compute one color per cell.
 
@@ -79,6 +81,8 @@ value-to-color function, so pre-compute one color per cell.
 ```
 
 ## Sankey (chartjs-chart-sankey)
+
+![sankey flow diagram](/examples/20-sankey-flow.png)
 
 Flow between categorical nodes. `flow` is the width of each band.
 
@@ -119,6 +123,8 @@ Flow between categorical nodes. `flow` is the width of each band.
 
 ## Word cloud (chartjs-chart-wordcloud)
 
+![word cloud](/examples/21-word-cloud.png)
+
 Words come from `data.labels`, font sizes come from `datasets[0].data`.
 
 ```json
@@ -149,6 +155,8 @@ Words come from `data.labels`, font sizes come from `datasets[0].data`.
 ```
 
 ## Venn / Euler (chartjs-chart-venn)
+
+![Euler diagram, three sets](/examples/22-euler-diagram-3-set.png)
 
 Set overlaps. Use `"type": "venn"` for a standard layout, `"type": "euler"`
 when circle sizes and overlaps should be proportional to values.
@@ -189,6 +197,8 @@ when circle sizes and overlaps should be proportional to values.
 ```
 
 ## Force-directed graph (chartjs-chart-graph)
+
+![force-directed graph, microservice topology](/examples/23-force-directed-graph.png)
 
 Network layout via physics simulation — no coordinates needed.
 
@@ -240,6 +250,8 @@ For a **manual-layout** graph instead (explicit `{x,y}` per node), use
 the full option surface.
 
 ## Tidy tree (chartjs-chart-graph)
+
+![tidy tree, 14-node org chart](/examples/24-tidy-tree.png)
 
 Hierarchical layout driven by a `parent` index per node.
 

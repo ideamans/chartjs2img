@@ -14,12 +14,16 @@ export const LIBS = {
   matrix: { pkg: 'chartjs-chart-matrix', version: '2.0.1', file: 'dist/chartjs-chart-matrix.min.js' },
   sankey: { pkg: 'chartjs-chart-sankey', version: '0.12.1', file: 'dist/chartjs-chart-sankey.min.js' },
   treemap: { pkg: 'chartjs-chart-treemap', version: '2.3.1', file: 'dist/chartjs-chart-treemap.min.js' },
-  wordcloud: { pkg: 'chartjs-chart-wordcloud', version: '4.4.3', file: 'dist/chartjs-chart-wordcloud.min.js' },
-  geo: { pkg: 'chartjs-chart-geo', version: '4.3.3', file: 'dist/chartjs-chart-geo.min.js' },
-  graph: { pkg: 'chartjs-chart-graph', version: '4.3.3', file: 'dist/chartjs-chart-graph.min.js' },
-  venn: { pkg: 'chartjs-chart-venn', version: '4.3.3', file: 'dist/chartjs-chart-venn.min.js' },
-  // Date adapter
-  adapterDayjs: { pkg: 'chartjs-adapter-dayjs-4', version: '1.0.4', file: 'dist/chartjs-adapter-dayjs-4.bundle.min.js' },
+  // These four publish UMD under build/, not dist/. jsDelivr returns 404
+  // for the dist path and the plugins silently don't register.
+  wordcloud: { pkg: 'chartjs-chart-wordcloud', version: '4.4.3', file: 'build/index.umd.min.js' },
+  geo: { pkg: 'chartjs-chart-geo', version: '4.3.3', file: 'build/index.umd.min.js' },
+  graph: { pkg: 'chartjs-chart-graph', version: '4.3.3', file: 'build/index.umd.min.js' },
+  venn: { pkg: 'chartjs-chart-venn', version: '4.3.3', file: 'build/index.umd.min.js' },
+  // Date adapter — chartjs-adapter-date-fns.bundle.min.js ships date-fns
+  // inside the UMD so no second <script> is needed. (The previously-used
+  // chartjs-adapter-dayjs-4 does not ship a browser UMD build.)
+  adapterDateFns: { pkg: 'chartjs-adapter-date-fns', version: '3.0.0', file: 'dist/chartjs-adapter-date-fns.bundle.min.js' },
 } as const
 
 function cdnUrl(lib: (typeof LIBS)[keyof typeof LIBS]): string {
@@ -84,7 +88,26 @@ ${Object.values(LIBS)
   config.options.responsive = true;
   config.options.maintainAspectRatio = false;
 
-  // Register plugins that don't auto-register
+  // Initialize message capture BEFORE anything that might log, so plugin
+  // registration probes / errors surface to the caller.
+  window.__chartMessages = [];
+  var origWarn = console.warn;
+  var origError = console.error;
+  console.warn = function() {
+    var msg = Array.prototype.slice.call(arguments).join(' ');
+    window.__chartMessages.push({ level: 'warn', message: msg });
+    origWarn.apply(console, arguments);
+  };
+  console.error = function() {
+    var msg = Array.prototype.slice.call(arguments).join(' ');
+    window.__chartMessages.push({ level: 'error', message: msg });
+    origError.apply(console, arguments);
+  };
+
+  // Register plugins that don't auto-register. Most community plugins
+  // publish their UMD build as a single exported object holding the
+  // controllers + elements the plugin adds, and auto-register themselves
+  // when the UMD runs. The ones below need manual registration.
   if (window.ChartDataLabels) {
     Chart.register(ChartDataLabels);
     // Default to hidden — show only when explicitly configured
@@ -104,21 +127,6 @@ ${Object.values(LIBS)
     resize: { animation: { duration: 0 } },
     show: { animation: { duration: 0 } },
     hide: { animation: { duration: 0 } },
-  };
-
-  // Collect console messages for caller feedback
-  window.__chartMessages = [];
-  var origWarn = console.warn;
-  var origError = console.error;
-  console.warn = function() {
-    var msg = Array.prototype.slice.call(arguments).join(' ');
-    window.__chartMessages.push({ level: 'warn', message: msg });
-    origWarn.apply(console, arguments);
-  };
-  console.error = function() {
-    var msg = Array.prototype.slice.call(arguments).join(' ');
-    window.__chartMessages.push({ level: 'error', message: msg });
-    origError.apply(console, arguments);
   };
 
   var canvas = document.getElementById('chart');

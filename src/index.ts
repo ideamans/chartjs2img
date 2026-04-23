@@ -141,7 +141,7 @@ BUILT-IN PLUGINS (all pre-loaded, no configuration needed)
   chartjs-chart-geo 4.3.3           Choropleth & bubble map charts
   chartjs-chart-graph 4.3.3         Network / force-directed graphs
   chartjs-chart-venn 4.3.3          Venn & Euler diagrams
-  chartjs-adapter-dayjs-4 1.0.4     Day.js date adapter for time axes
+  chartjs-adapter-date-fns 3.0.0    date-fns date adapter for time axes
 
   Note: animation is always forced OFF for deterministic rendering.
 

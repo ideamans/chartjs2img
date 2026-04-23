@@ -105,6 +105,8 @@ Uses `chartjs-plugin-annotation`. Here a horizontal threshold line.
 
 ### Box + point annotations combined
 
+![line with box and point annotations](/examples/27-annotation-box-point.png)
+
 ```json
 {
   "type": "line",
@@ -154,6 +156,8 @@ See the [plugin docs](https://www.chartjs.org/chartjs-plugin-annotation/)
 or `chartjs2img llm` for all options.
 
 ## Gradient fills (chartjs-plugin-gradient)
+
+![line with Y-axis gradient fill and stroke](/examples/25-gradient-fill.png)
 
 Map scale values to colors and the plugin interpolates along an axis —
 no manual canvas code required.
@@ -240,11 +244,13 @@ For static rendering you typically set `scales.x.min/max` and
 `scales.y.min/max` directly; the zoom plugin simply enforces those
 bounds globally if downstream code ever needs them.
 
-## Time-series axis (chartjs-adapter-dayjs-4)
+## Time-series axis (chartjs-adapter-date-fns)
 
-The dayjs adapter is pre-loaded — set `scales.x.type: "time"` to
+![time-series line chart with daily data](/examples/26-time-series-date-fns-adapter.png)
+
+The date-fns adapter is pre-loaded — set `scales.x.type: "time"` to
 enable it. Input dates can be ISO strings, millisecond timestamps, or
-anything Day.js can parse.
+anything date-fns can parse.
 
 ```json
 {
@@ -275,8 +281,8 @@ anything Day.js can parse.
         "type": "time",
         "time": {
           "unit": "day",
-          "displayFormats": { "day": "MMM D" },
-          "tooltipFormat": "YYYY-MM-DD"
+          "displayFormats": { "day": "MMM d" },
+          "tooltipFormat": "yyyy-MM-dd"
         },
         "title": { "display": true, "text": "Date" }
       },
@@ -286,5 +292,8 @@ anything Day.js can parse.
 }
 ```
 
-See the [dayjs adapter reference](https://github.com/sgratzl/chartjs-adapter-dayjs-4)
+> **Format tokens:** date-fns uses `yyyy` / `d` (not Day.js's `YYYY` /
+> `D`). If Chart.js throws `Use \`d\` instead of \`D\``, swap the tokens.
+
+See the [date-fns adapter](https://github.com/chartjs/chartjs-adapter-date-fns)
 or `chartjs2img llm` for every `time.*` option.

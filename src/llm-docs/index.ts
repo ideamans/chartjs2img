@@ -14,7 +14,7 @@ import { doc as chartWordcloud } from './chart-wordcloud'
 import { doc as chartGeo } from './chart-geo'
 import { doc as chartGraph } from './chart-graph'
 import { doc as chartVenn } from './chart-venn'
-import { doc as adapterDayjs } from './adapter-dayjs'
+import { doc as adapterDateFns } from './adapter-date-fns'
 
 const docs = [
   usage,
@@ -30,7 +30,7 @@ const docs = [
   chartGeo,
   chartGraph,
   chartVenn,
-  adapterDayjs,
+  adapterDateFns,
 ]
 
 export function getLlmDocs(): string {
