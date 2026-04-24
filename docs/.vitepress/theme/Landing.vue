@@ -311,7 +311,7 @@ watchEffect(async () => {
     </section>
 
     <!-- ========================== Features ========================== -->
-    <section v-if="content.features?.items?.length" class="py-20 md:py-24 px-6">
+    <section v-if="content.features?.items?.length" class="py-20 md:py-24 px-6 bg-base-200">
       <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
         <div
           v-for="(f, i) in content.features.items"
@@ -384,7 +384,7 @@ watchEffect(async () => {
     </section>
 
     <!-- ========================== AI-ready ========================== -->
-    <section v-if="content.aiReady" class="c2i-ai py-16 md:py-20 px-6 bg-base-200">
+    <section v-if="content.aiReady" class="c2i-ai py-16 md:py-20 px-6">
       <div class="max-w-6xl mx-auto">
         <header class="text-center mb-10">
           <div v-if="content.aiReady.eyebrow" class="c2i-ai__eyebrow">
@@ -411,7 +411,7 @@ watchEffect(async () => {
     </section>
 
     <!-- ========================== Final CTA ========================== -->
-    <section v-if="content.finalCta" class="py-20 md:py-24 px-6 text-center">
+    <section v-if="content.finalCta" class="py-20 md:py-24 px-6 text-center bg-base-200">
       <h2 class="text-3xl md:text-4xl font-bold tracking-tight">
         {{ content.finalCta.title }}
       </h2>
@@ -439,7 +439,7 @@ watchEffect(async () => {
     </section>
 
     <!-- ========================== Acknowledgments ========================== -->
-    <section v-if="content.acknowledgments" class="py-16 md:py-20 px-6 bg-base-200">
+    <section v-if="content.acknowledgments" class="py-16 md:py-20 px-6">
       <div class="max-w-5xl mx-auto">
         <header class="text-center mb-10">
           <h2 class="text-3xl md:text-4xl font-bold tracking-tight">
