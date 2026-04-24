@@ -20,7 +20,7 @@ later.
 
 | Tutorial                                  | Best for                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------ |
-| [Claude Code plugin](./claude-plugin)     | You use Claude Code. Slash commands (`/chartjs2img-install`, `/chartjs2img-llm`, `/chartjs2img-author`, `/chartjs2img-render`) drive the whole workflow. |
+| [Claude Code plugin](./claude-plugin)     | You use Claude Code. Slash commands (`/chartjs2img-install`, `/chartjs2img-author`, `/chartjs2img-render`) drive the whole workflow. |
 | [`gh skill`](./gh-skill)                  | You want the same skill bundle installed into Copilot, Cursor, Gemini CLI, or Codex alongside (or instead of) Claude Code. |
 | [context7 (MCP)](./context7)              | You want an agent to retrieve chartjs2img's docs via MCP without installing anything plugin-side. Read-only. |
 
@@ -60,10 +60,13 @@ If you want the full tour before picking a tutorial:
 
 - **[`chartjs2img llm`](./cli#chartjs2img-llm)** — one-shot Markdown
   reference teaching an agent the Chart.js config JSON shape, every
-  bundled plugin's options, and the canonical examples.
+  bundled plugin's options, and the canonical examples. The
+  `/chartjs2img-author` skill already inlines the JSON shape and a
+  plugin catalog; reach for `chartjs2img llm` when an agent needs the
+  full option tables for a specific plugin.
 - **[`/llms.txt`](https://chartjs2img.ideamans.com/llms.txt) + [`/llms-full.txt`](https://chartjs2img.ideamans.com/llms-full.txt)** — public discovery files on the docs site.
 - **[`context7.json`](https://github.com/ideamans/chartjs2img/blob/main/context7.json)** — registers chartjs2img for [context7](./context7) MCP retrieval.
-- **[`plugins/chartjs2img`](https://github.com/ideamans/chartjs2img/tree/main/plugins/chartjs2img)** — four skills (`chartjs2img-install`, `chartjs2img-render`, `chartjs2img-author`, `chartjs2img-llm`) distributed via Claude Code and `gh skill`.
+- **[`plugins/chartjs2img`](https://github.com/ideamans/chartjs2img/tree/main/plugins/chartjs2img)** — three skills (`chartjs2img-install`, `chartjs2img-render`, `chartjs2img-author`) distributed via Claude Code and `gh skill`.
 
 The [CLI reference page](./cli) documents `chartjs2img llm` in full —
 useful whether an agent is driving it through a skill or you're

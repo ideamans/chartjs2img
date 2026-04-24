@@ -145,8 +145,10 @@ Re-use across sessions.
   agent wants both the reference and the guide pages in one payload.
 - **context7** retrieves the same content via MCP when a full-bundle
   is too big for your context window.
-- **SKILL.md** for `chartjs2img-llm` wraps this CLI call for Agent
-  Skills-compatible hosts; the skill body explains when to call it.
+- **`chartjs2img-author` SKILL.md** inlines the JSON shape, the error
+  feedback contract, and a plugin catalog so the skill is
+  self-contained. Agents fall back to `chartjs2img llm` only when
+  they need the full option tables for a specific plugin.
 
 Whichever channel an agent uses, the actual content is derived from
 the same `src/llm-docs/*.ts` files, so consistency is guaranteed.

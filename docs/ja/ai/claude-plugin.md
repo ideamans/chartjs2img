@@ -5,9 +5,11 @@ description: Claude Code にプラグインマーケットプレース経由で 
 
 # Claude Code プラグイン
 
-`chartjs2img` プラグインは 4 つのスキルを同梱しており、Claude Code が
-CLI のインストール、Chart.js リファレンスのコンテキスト読み込み、
-説明からの config 作成、PNG / JPEG / WebP レンダリングを行えます。
+`chartjs2img` プラグインは 3 つのスキルを同梱しており、Claude Code が
+CLI のインストール、説明からの config 作成、PNG / JPEG / WebP
+レンダリングを行えます。Chart.js の JSON 形状とプラグインカタログは
+`/chartjs2img-author` スキル本体に内包されているため、「リファレンスを
+先に読み込む」という別手順は不要です。
 
 ## 前提条件
 
@@ -42,11 +44,11 @@ Added marketplace ideamans-plugins from github.com/ideamans/claude-public-plugin
 /plugin install chartjs2img@ideamans-plugins
 ```
 
-4 つのスラッシュコマンドが登録されます:
+3 つのスラッシュコマンドが登録されます:
 
 - `/chartjs2img-install` — CLI をインストール / 更新
-- `/chartjs2img-llm` — Chart.js + プラグインリファレンスをコンテキストに読み込む
-- `/chartjs2img-author` — 説明から config を作成
+- `/chartjs2img-author` — 説明から config を作成 (JSON 制約とプラグイン
+  カタログをスキル本体に内包)
 - `/chartjs2img-render` — config を PNG / JPEG / WebP にレンダリング
 
 ## 3. CLI バイナリのインストール
@@ -74,17 +76,7 @@ chartjs2img --version
 
 `chartjs2img v0.2.2` (または最新タグ) が出ればOK。
 
-## 4. リファレンスのコンテキスト読み込み (任意、推奨)
-
-```
-/chartjs2img-llm
-```
-
-`chartjs2img llm` を実行し、約 1400 行のリファレンスを会話に読み込み。
-セッション開始時に 1 度やっておくと、以降の作成ターンでオプションを
-読み直したり推測したりする必要がなくなります。
-
-## 5. チャートの作成
+## 4. チャートの作成
 
 ```
 /chartjs2img-author 1〜6 月の売上棒グラフ、データは 12 19 3 5 2 15
@@ -97,7 +89,11 @@ chartjs2img --version
 最後に PNG パスと JSON config を返すので、保存・編集・自分のパイプラインへの
 投入などに使えます。
 
-## 6. 既存 config のレンダリング
+特定プラグインの詳細オプション表が必要になった場合は、エージェントが
+`chartjs2img llm` (CLI サブコマンド) を会話にパイプします。詳細は
+[CLI リファレンス](./cli#chartjs2img-llm)。
+
+## 5. 既存 config のレンダリング
 
 `.json` ファイルがすでに手元にある場合:
 

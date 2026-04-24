@@ -57,7 +57,7 @@ landing:
     intro: 4 つの一級エージェント統合チャネル — 既に使っているホストを選べます。どの経路も同じ Chart.js JSON を扱うので、エージェント間で設定が可搬。
     items:
       - title: Claude Code プラグイン
-        body: /chartjs2img-install, /chartjs2img-llm, /chartjs2img-author, /chartjs2img-render のスラッシュコマンドを追加するマーケットプレースプラグイン。
+        body: /chartjs2img-install, /chartjs2img-author, /chartjs2img-render のスラッシュコマンドを追加するマーケットプレースプラグイン。
         link: /ja/ai/claude-plugin
         linkText: チュートリアル →
       - title: gh skill

@@ -15,8 +15,7 @@ plugins/chartjs2img/
 │   └── plugin.json                         # Claude marketplace manifest
 ├── skills/
 │   ├── chartjs2img-render/SKILL.md         # render a Chart.js config to an image
-│   ├── chartjs2img-author/SKILL.md         # compose a new config from a description
-│   ├── chartjs2img-llm/SKILL.md            # load the full Chart.js + plugin reference
+│   ├── chartjs2img-author/SKILL.md         # compose a new config from a description (JSON shape + plugin catalog inlined)
 │   └── chartjs2img-install/SKILL.md        # install or update the chartjs2img CLI
 ├── PUBLISH.md                               # pre-push checklist
 └── README.md                                # this file
@@ -51,7 +50,7 @@ bun run validate-plugin-skills
            "url": "https://github.com/ideamans/chartjs2img.git",
            "path": "plugins/chartjs2img"
          },
-         "description": "Adds /chartjs2img-render, /chartjs2img-author, /chartjs2img-llm, and /chartjs2img-install skills.",
+         "description": "Adds /chartjs2img-render, /chartjs2img-author, and /chartjs2img-install skills.",
          "homepage": "https://github.com/ideamans/chartjs2img",
          "keywords": ["chart", "chartjs", "image", "visualization"]
        }
@@ -81,7 +80,6 @@ From a local checkout:
 ```bash
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-render --agent claude-code
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-author
-gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-llm
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-install
 ```
 
@@ -92,8 +90,8 @@ flows through to everyone.
 
 ## Runtime dependency
 
-Three of the four skills rely on the `chartjs2img` CLI being on `PATH`.
-The fourth, `chartjs2img-install`, is the one that installs it.
+Two of the three skills rely on the `chartjs2img` CLI being on `PATH`.
+The third, `chartjs2img-install`, is the one that installs it.
 
 - **Install options**: `chartjs2img-install` skill, or `bun install -g chartjs2img` (once published), or the GitHub Releases binary, or build from source via `bun run build`.
 - **Sanity check**: `chartjs2img --version` and `chartjs2img llm | head`.

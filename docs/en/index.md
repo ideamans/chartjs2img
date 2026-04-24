@@ -57,7 +57,7 @@ landing:
     intro: Four first-class integration channels — pick whichever host you already use. Every path speaks the same Chart.js JSON shape, so your configs stay portable between agents.
     items:
       - title: Claude Code plugin
-        body: Marketplace plugin with /chartjs2img-install, /chartjs2img-llm, /chartjs2img-author, /chartjs2img-render slash commands.
+        body: Marketplace plugin with /chartjs2img-install, /chartjs2img-author, /chartjs2img-render slash commands.
         link: /en/ai/claude-plugin
         linkText: Tutorial →
       - title: gh skill

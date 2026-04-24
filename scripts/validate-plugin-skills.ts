@@ -97,7 +97,6 @@ const NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const KEYWORD_ASSERTIONS: Record<string, string[][]> = {
   'chartjs2img-render': [['render', 'Render'], ['Chart.js', 'chart'], ['image', 'PNG', 'JPEG', 'WebP']],
   'chartjs2img-author': [['compose', 'author', 'Compose', 'generate', 'Generate'], ['chart', 'Chart.js'], ['visualize', 'visualise', 'draw', 'plot']],
-  'chartjs2img-llm': [['reference', 'Reference'], ['Chart.js', 'chart']],
   'chartjs2img-install': [['install', 'Install', 'update'], ['chartjs2img', 'CLI']],
 }
 

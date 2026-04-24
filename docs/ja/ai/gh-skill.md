@@ -29,7 +29,7 @@ gh --version         # ≥ 2.90.0 が必要
 gh skill --help      # skill サブコマンドが install / update / preview / search / publish を出す
 ```
 
-## 4 つのスキルを個別にインストール
+## 3 つのスキルを個別にインストール
 
 各スキルは独立してインストール可能。欲しいものだけ選べます。
 典型的なフルセット:
@@ -37,7 +37,6 @@ gh skill --help      # skill サブコマンドが install / update / preview / 
 ```bash
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-render   --agent claude-code
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-author   --agent claude-code
-gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-llm      --agent claude-code
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-install  --agent claude-code
 ```
 
@@ -53,14 +52,17 @@ gh skill list
 
 ## スキルバンドル概要
 
-Claude Code プラグインと同じ 4 スキル (内容が drift しないように):
+Claude Code プラグインと同じ 3 スキル (内容が drift しないように):
 
 | スキル                      | 使い所                                                             |
 | --------------------------- | ------------------------------------------------------------------ |
 | `chartjs2img-install`       | `chartjs2img` CLI バイナリをインストール / 更新する               |
-| `chartjs2img-llm`           | セッション開始時。Chart.js + プラグインリファレンスをコンテキスト読み込み |
-| `chartjs2img-author`        | 説明があって JSON config が無い                                   |
+| `chartjs2img-author`        | 説明があって JSON config が無い。Chart.js の JSON 形状と 14 プラグインカタログを内包 |
 | `chartjs2img-render`        | JSON config があって PNG / JPEG / WebP が欲しい                    |
+
+特定プラグインのオプション詳細が必要なときは `chartjs2img llm`
+(CLI サブコマンド) を利用します。全文 (~1400 行) または `## <プラグイン名>`
+の節だけをエージェントに流し込めます。
 
 いずれも標準仕様準拠の frontmatter (`name`, `description`,
 `license`, `compatibility`, `allowed-tools`) のみ使用 —
@@ -109,9 +111,8 @@ gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-ren
 
 ## インストールの確認
 
-エージェントホストで 4 スキルのいずれかを呼び出す — 例えば
-`/chartjs2img-llm`。「skill not found」エラーなく使用法バナー / リファレンス
-が返るべき。
+エージェントホストで 3 スキルのいずれかを呼び出す — 例えば
+`/chartjs2img-render`。「skill not found」エラーなくスキル本体が返るべき。
 
 スキルが見つからない場合、`gh skill list` を確認し、ホスト固有のスキル
 ディレクトリ (Claude Code: `~/.claude/skills/`、他はホストのドキュメント参照)
