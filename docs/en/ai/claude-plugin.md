@@ -5,9 +5,11 @@ description: Install chartjs2img skills into Claude Code via the plugin marketpl
 
 # Claude Code plugin
 
-The `chartjs2img` plugin bundles four skills that let Claude Code
-install the CLI, load the Chart.js reference into context, author
-configs from a description, and render to PNG / JPEG / WebP.
+The `chartjs2img` plugin bundles three skills that let Claude Code
+install the CLI, author configs from a description, and render to
+PNG / JPEG / WebP. The Chart.js JSON shape and a plugin catalog are
+inlined into the author skill itself — no separate "load the
+reference" step required.
 
 ## Prerequisites
 
@@ -41,11 +43,11 @@ Added marketplace ideamans-plugins from github.com/ideamans/claude-public-plugin
 /plugin install chartjs2img@ideamans-plugins
 ```
 
-This registers four slash commands:
+This registers three slash commands:
 
 - `/chartjs2img-install` — install / update the CLI
-- `/chartjs2img-llm` — load the Chart.js + plugin reference into context
-- `/chartjs2img-author` — compose a config from a description
+- `/chartjs2img-author` — compose a config from a description (JSON
+  constraints and plugin catalog inlined)
 - `/chartjs2img-render` — render a config to PNG / JPEG / WebP
 
 ## 3. Install the CLI binary
@@ -73,17 +75,7 @@ chartjs2img --version
 
 Should print `chartjs2img v0.2.2` (or whatever tag is latest).
 
-## 4. Load the reference into context (optional but recommended)
-
-```
-/chartjs2img-llm
-```
-
-This runs `chartjs2img llm` and reads the ~1400-line reference into
-the conversation. Doing it once at session start means subsequent
-authoring turns don't have to re-read or guess options.
-
-## 5. Author a chart
+## 4. Author a chart
 
 ```
 /chartjs2img-author monthly sales bar chart for Jan-Jun, data 12 19 3 5 2 15
@@ -96,7 +88,11 @@ error messages until the render is clean.
 It hands back the PNG path plus the JSON config so you can save, edit,
 or feed into your own pipeline.
 
-## 6. Render an existing config
+If the agent needs deeper plugin-option detail than the skill inlines,
+it can pipe `chartjs2img llm` (or a single section of it) into the
+conversation — see the [CLI reference](./cli#chartjs2img-llm).
+
+## 5. Render an existing config
 
 If you already have a `.json` file:
 

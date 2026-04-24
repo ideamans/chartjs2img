@@ -91,7 +91,6 @@ chartjs2img/
 │       ├── skills/
 │       │   ├── chartjs2img-render/SKILL.md
 │       │   ├── chartjs2img-author/SKILL.md
-│       │   ├── chartjs2img-llm/SKILL.md
 │       │   └── chartjs2img-install/SKILL.md
 │       ├── README.md
 │       └── PUBLISH.md
@@ -213,9 +212,9 @@ chartjs2img/
 - `.claude-plugin/plugin.json` — `name`, `description`, `version`（`package.json.version` と一致）
 - `skills/` 構成:
   - `chartjs2img-render/SKILL.md` — JSON 受け取り → 画像生成。chartjs2img CLI / HTTP の両方を扱う
-  - `chartjs2img-author/SKILL.md` — 要件説明 → Chart.js config JSON 起草 → render 検証
-  - `chartjs2img-llm/SKILL.md` — `chartjs2img llm` を呼んで context として読み込む開き方
+  - `chartjs2img-author/SKILL.md` — 要件説明 → Chart.js config JSON 起草 → render 検証。Chart.js JSON 形状 + 同梱プラグインカタログをスキル本体に内包
   - `chartjs2img-install/SKILL.md` — GitHub releases から単一バイナリを導入 + Chromium 自動DL の注意
+  - （詳細オプション表が必要なときは `chartjs2img llm` CLI にフォールバック。`-llm` スキル自体は廃止）
 - `README.md`, `PUBLISH.md` — gridgram 雛形から流用、marketplace 参照は `ideamans/claude-public-plugins`
 - すべて **Agent Skills 標準フィールドのみ**（Claude 拡張は `metadata.claude-code.*` に逃がす）
 - **完了条件**: `claude plugin validate plugins/chartjs2img` が ✔

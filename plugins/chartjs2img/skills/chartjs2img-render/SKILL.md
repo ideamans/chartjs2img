@@ -46,7 +46,7 @@ Render a Chart.js chart to an image, surface any problems, and hand back the out
 
 ## Best practices
 
-- **Never invent a chart type.** Use only the 8 built-in types plus the plugin-provided types listed above. If unsure, call `/chartjs2img-llm` first to read the canonical list.
+- **Never invent a chart type.** Use only the 8 built-in types plus the plugin-provided types listed above. If unsure, consult the catalog in `/chartjs2img-author`, or pipe `chartjs2img llm` for the full reference.
 - **Avoid callbacks in JSON.** Chart.js option fields that take a function (e.g. `ticks.callback`, datalabels `formatter`) can't be expressed in JSON. Use the declarative alternatives or omit the option.
 - **Datalabels is off by default** in chartjs2img. To show data labels set `options.plugins.datalabels.display: true` explicitly.
 - **Animation is forced off internally.** Don't propose `options.animation.*` — the headless screenshot would capture a mid-frame anyway.

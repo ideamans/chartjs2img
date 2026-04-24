@@ -29,7 +29,7 @@ gh --version         # must be ≥ 2.90.0
 gh skill --help      # the skill subcommand should list install / update / preview / search / publish
 ```
 
-## Install the four skills
+## Install the three skills
 
 Each skill is installed independently so you can choose which ones
 you want. Typical full set:
@@ -37,7 +37,6 @@ you want. Typical full set:
 ```bash
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-render   --agent claude-code
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-author   --agent claude-code
-gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-llm      --agent claude-code
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-install  --agent claude-code
 ```
 
@@ -53,14 +52,17 @@ gh skill list
 
 ## Skill bundle overview
 
-Same four skills as the Claude Code plugin, so content doesn't drift:
+Same three skills as the Claude Code plugin, so content doesn't drift:
 
 | Skill                     | Use when…                                                          |
 | ------------------------- | ------------------------------------------------------------------ |
 | `chartjs2img-install`     | You need to install / update the `chartjs2img` CLI binary.         |
-| `chartjs2img-llm`         | Starting a session; load the full Chart.js + plugin reference.    |
-| `chartjs2img-author`      | You have a description but no JSON config yet.                    |
+| `chartjs2img-author`      | You have a description but no JSON config yet. The Chart.js JSON shape and a 14-entry plugin catalog are inlined. |
 | `chartjs2img-render`      | You have a JSON config and want a PNG / JPEG / WebP back.          |
+
+Need deeper option tables for a specific plugin? `chartjs2img llm`
+(the CLI subcommand) prints the full ~1400-line reference — pipe all
+of it or one `## <plugin>` section into the agent as needed.
 
 Each has standards-compliant frontmatter (`name`, `description`,
 `license`, `compatibility`, `allowed-tools`) only — see the
@@ -113,9 +115,9 @@ won't move you off a pinned ref unless you explicitly unpin.
 
 ## Verifying the install
 
-In your agent host, invoke any of the four skills — e.g.
-`/chartjs2img-llm`. It should return the usage banner / reference
-without "skill not found" errors.
+In your agent host, invoke any of the three skills — e.g.
+`/chartjs2img-render`. It should return the skill body without a
+"skill not found" error.
 
 If a skill isn't found, check `gh skill list` then look at the host-
 specific skill directory (Claude Code: `~/.claude/skills/`; others

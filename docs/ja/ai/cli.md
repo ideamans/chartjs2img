@@ -141,7 +141,7 @@ chartjs2img llm > /tmp/chartjs2img-reference.md
 
 - docs サイト上の **`llms-full.txt`** はこのリファレンスのスーパーセット — 全 `docs/en/` Markdown ページを同じリファレンスに追加したもの。リファレンスとガイドを 1 つのペイロードで欲しいときに使用。
 - **context7** は同じコンテンツを MCP 経由で取得 — 全文バンドルがコンテキストウィンドウに入らないとき。
-- **`chartjs2img-llm` の SKILL.md** は Agent Skills 対応ホスト向けに CLI 呼び出しをラップ。スキル本体がいつ呼ぶべきかを説明。
+- **`chartjs2img-author` の SKILL.md** は JSON 形状、エラーフィードバック契約、プラグインカタログを内包しており、スキル単体で自己完結します。個別プラグインの詳細オプション表が必要なときのみ `chartjs2img llm` にフォールバックします。
 
 どのチャネルをエージェントが使っても、実コンテンツは同じ
 `src/llm-docs/*.ts` ファイル群から派生するので一貫性が保証されます。
