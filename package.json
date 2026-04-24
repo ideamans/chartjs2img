@@ -1,6 +1,6 @@
 {
   "name": "chartjs2img",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Render Chart.js charts to images via a TypeScript API, CLI, or HTTP server — headless Chromium under the hood. Chart.js 4.4 + 12 plugins bundled.",
   "type": "module",
   "main": "./dist/lib.js",

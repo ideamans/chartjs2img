@@ -18,6 +18,20 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      - name: Install gridgram `gg` (for docs:diagrams)
+        env:
+          GG_VERSION: '0.4.1'
+        run: |
+          set -euo pipefail
+          ASSET="gridgram_${GG_VERSION}_linux_amd64.tar.gz"
+          URL="https://github.com/ideamans/gridgram/releases/download/v${GG_VERSION}/${ASSET}"
+          TMP=$(mktemp -d)
+          curl -fsSL -o "$TMP/$ASSET" "$URL"
+          tar -xzf "$TMP/$ASSET" -C "$TMP"
+          sudo mv "$TMP/gridgram_${GG_VERSION}_linux_amd64/gg" /usr/local/bin/gg
+          chmod +x /usr/local/bin/gg
+          gg --version
+
       - name: Type check
         run: bun run typecheck
 
