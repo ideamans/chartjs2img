@@ -1,7 +1,7 @@
 {
   "name": "chartjs2img",
   "description": "Adds /chartjs2img-render, /chartjs2img-author, and /chartjs2img-install skills for generating Chart.js charts as server-rendered PNG/JPEG/WebP images.",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "author": {
     "name": "Ideamans Inc.",
     "email": "support@ideamans.com"
