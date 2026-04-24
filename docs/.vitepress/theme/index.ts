@@ -1,8 +1,43 @@
 import Theme from 'vitepress-daisyui-theme'
 import type { Theme as ThemeType, EnhanceAppContext } from 'vitepress'
+import { watch } from 'vue'
+import { useRoute } from 'vitepress'
 import Landing from './Landing.vue'
 import Example from './Example.vue'
 import './custom.css'
+
+/**
+ * Re-inject the ideamans tracking script on every SPA route change.
+ * VitePress uses client-side navigation, so a single `<script>` in the
+ * HTML head only fires once on first load. The tag provider's script
+ * runs a pageview hit on execution; re-adding the element on each
+ * route re-runs it. `async` preserves the original tag's semantics.
+ */
+const TRACKING_SRC = 'https://tags.ideamans.com/scripts/chartjs2img.js'
+function fireTrackingPageview(): void {
+  if (typeof document === 'undefined') return
+  // Remove any previous instance so the browser actually re-fetches /
+  // re-executes the script on each navigation (same-src <script> tags
+  // do not re-run just because they're re-appended).
+  document.querySelectorAll(`script[data-c2i-tracking="1"]`).forEach((el) => el.remove())
+  const s = document.createElement('script')
+  s.src = TRACKING_SRC
+  s.async = true
+  s.dataset.c2iTracking = '1'
+  document.head.appendChild(s)
+}
+
+function installRouteTracker(): void {
+  if (typeof window === 'undefined') return
+  const route = useRoute()
+  // Initial pageview: the `<script>` in <head> already fires for SSR'd
+  // first paint, so we only need to cover subsequent client-side
+  // navigations — hence watching `route.path` without `immediate`.
+  watch(
+    () => route.path,
+    () => fireTrackingPageview(),
+  )
+}
 
 /**
  * chartjs2img uses the stock vitepress-daisyui-theme. Two globals are
@@ -17,6 +52,7 @@ export default {
   extends: Theme,
   setup() {
     Theme.setup?.()
+    installRouteTracker()
   },
   enhanceApp(ctx: EnhanceAppContext) {
     Theme.enhanceApp?.(ctx)

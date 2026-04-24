@@ -49,6 +49,18 @@ const config: ReturnType<typeof withTheme> = withTheme({
     ['link', { rel: 'alternate icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
     ['meta', { name: 'theme-color', content: '#F2F0EA' }],
+    // ideamans tracking tag — fires on first paint. Subsequent SPA
+    // route changes are handled by installRouteTracker() in
+    // theme/index.ts, which re-injects the same script on every
+    // vue-router navigation.
+    [
+      'script',
+      {
+        src: 'https://tags.ideamans.com/scripts/chartjs2img.js',
+        async: '',
+        'data-c2i-tracking': '1',
+      },
+    ],
   ],
 
   themeConfig: {
