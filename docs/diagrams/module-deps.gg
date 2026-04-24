@@ -2,7 +2,16 @@
 # index.ts がエントリ。server.ts / cli.ts のラッパー経由で renderer.ts
 # に集約し、template / cache / semaphore を利用。llm-docs は独立した
 # テキスト集合で、chartjs2img llm サブコマンドから使う。
-doc { cols: 4 }
+doc {
+  cols: 4,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
 
 icon :server @A1 tabler/world         "server.ts"          labelScale=0.72
 icon :index  @B1 tabler/terminal-2    "index.ts"           labelScale=0.72

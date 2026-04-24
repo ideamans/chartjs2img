@@ -2,7 +2,16 @@
 # 縦に伸びるフローを 4×3 のグリッドで折り返して表現。行ごとに左右
 # 方向が反転するので、キャッシュ再チェック以降は右→左に流れる点に
 # 注意。
-doc { cols: 4 }
+doc {
+  cols: 4,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
 
 # Row 1: auth → hash → lookup → semaphore (left → right)
 icon :auth    @A1 tabler/shield-check    "Auth check"        labelScale=0.72

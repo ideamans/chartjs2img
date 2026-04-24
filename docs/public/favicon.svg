@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="chartjs2img">
+  <title>chartjs2img</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      [stroke="#2a2f36"] { stroke: #e6e4dd; }
+    }
+  </style>
+  <g fill="none" stroke="#2a2f36" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M16 32 V16 H32"/>
+    <path d="M84 32 V16 H68"/>
+    <path d="M16 68 V84 H32"/>
+    <path d="M84 68 V84 H68"/>
+  </g>
+  <rect x="30" y="56" width="12" height="20" fill="#36a2eb"/>
+  <rect x="44" y="40" width="12" height="36" fill="#9966ff"/>
+  <rect x="58" y="28" width="12" height="48" fill="#ff6384"/>
+</svg>

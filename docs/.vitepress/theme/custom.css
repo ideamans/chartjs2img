@@ -1,13 +1,29 @@
-/* Lock DaisyUI's brand tokens to a chartjs2img-flavoured palette
-   (blue-leaning, to match Chart.js's own "chartjs-blue" default
-   dataset colour). Matches the style of gridgram's custom.css but
-   with chartjs2img's own colour choices. */
+/* Lock DaisyUI's brand tokens to the chartjs2img brand palette
+   (defined in tmp/brand.html — ink / paper / paper-warm plus the
+   three Chart.js default dataset colours used in the mark).
+
+   Palette — light mode:
+     base-100       #FAFAF7   Paper        surface (cards, panels)
+     base-200       #F2F0EA   Paper Warm   page / section backdrop
+     base-300       #E6E4DD   hairline / stronger section
+     base-content   #2A2F36   Ink          body text
+     primary        #36A2EB   Chart.js blue
+     secondary      #9966FF   Chart.js purple
+     accent         #FF6384   Chart.js red
+
+   We're locked to light via `appearance: false`, but the dark tokens
+   stay as a sane fallback for any UA that forces dark. */
 :root,
 html[data-theme='light'],
 [data-theme='light'] {
+  --color-base-100: #fafaf7;
+  --color-base-200: #f2f0ea;
+  --color-base-300: #e6e4dd;
+  --color-base-content: #2a2f36;
+
   --color-primary: #36a2eb;
   --color-primary-content: #ffffff;
-  --color-secondary: #4a6fa5;
+  --color-secondary: #9966ff;
   --color-secondary-content: #ffffff;
   --color-accent: #ff6384;
   --color-accent-content: #ffffff;
@@ -16,12 +32,28 @@ html[data-theme='light'],
 html.dark,
 html[data-theme='dark'],
 [data-theme='dark'] {
+  --color-base-100: #1c1f24;
+  --color-base-200: #14171b;
+  --color-base-300: #272b31;
+  --color-base-content: #e6e4dd;
+
   --color-primary: #8ec6ff;
   --color-primary-content: #0f172a;
-  --color-secondary: #a8c0e0;
+  --color-secondary: #c4a8ff;
   --color-secondary-content: #0f172a;
   --color-accent: #ff8fa6;
   --color-accent-content: #0f172a;
+}
+
+/* Bridge VitePress's own tokens to the brand. The daisyui theme reads
+   `--color-*` for DaisyUI components, but VitePress primitives (nav,
+   prose, sidebar) still read `--vp-c-*`. Keep the two in sync so the
+   accent used by links/eyebrows/hover-rings matches the mark. */
+:root {
+  --vp-c-brand-1: #36a2eb;
+  --vp-c-brand-2: #2693dc;
+  --vp-c-brand-3: #1984ce;
+  --vp-c-brand-soft: rgba(54, 162, 235, 0.16);
 }
 
 /* Hide the daisyui theme's built-in dark/light toggle. We've set

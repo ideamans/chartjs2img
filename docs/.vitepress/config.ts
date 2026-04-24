@@ -39,7 +39,20 @@ const config: ReturnType<typeof withTheme> = withTheme({
   // docs/.vitepress/theme/custom.css.
   appearance: false,
 
+  // Favicon set — SVG is enough for modern browsers, but we include
+  // PNG fallbacks (apple-touch-icon, ico, sized PNGs for manifest /
+  // Android home-screen). Assets are hand-authored under
+  // docs/public/; keep the brand mark in sync with tmp/brand.html.
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'alternate icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
+    ['link', { rel: 'alternate icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['meta', { name: 'theme-color', content: '#F2F0EA' }],
+  ],
+
   themeConfig: {
+    logo: '/logo.svg',
     search: {
       provider: 'local',
       options: {

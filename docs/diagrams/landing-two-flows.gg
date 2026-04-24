@@ -1,26 +1,40 @@
 # chartjs2img — one JSON, two destinations.
-# 同じ Chart.js 設定 JSON が、左で「ブラウザで Chart.js が描画する対話
-# チャート」に、下で「chartjs2img が生成する PNG → Slack / Email 添付」に
-# 分岐する、という対比を 1 枚で示す概念図。
-doc { cols: 5 }
+# 同じ Chart.js 設定 JSON が、上段で「ブラウザで Chart.js が対話描画」、
+# 下段で「chartjs2img が PNG を生成し Slack / Email に配布」される構図。
+# コンパクトな 4 × 3 グリッドに収め、オフスクリーン処理部と配布先を
+# それぞれ region で囲んで意味づけ。
+doc {
+  cols: 4,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
 
-# 起点: Chart.js 設定 JSON。縦方向の中央に据えて左右に伸ばす。
-icon :json  @A2 tabler/braces           "Chart.js JSON"  labelScale=0.72
+# 起点: Chart.js 設定 JSON（縦中央）
+icon :json  @A2 tabler/braces           "Chart.js JSON" labelScale=0.72
 
-# 上段: Chart.js が直接ブラウザで描画する、対話的な Web チャート。
-icon :cjs   @B1 tabler/chart-dots       "Chart.js"       labelScale=0.72
-icon :web   @C1 tabler/device-desktop   "Browser"        labelScale=0.72
+# 上段: Chart.js がブラウザで直接描画
+icon :cjs   @B1 tabler/chart-dots       "Chart.js"      labelScale=0.72
+icon :web   @C1 tabler/device-desktop   "Browser"       labelScale=0.72
 
-# 下段: chartjs2img が同じ JSON から PNG を生成し、Slack / Email に添付。
-icon :c2i   @B3 tabler/camera           "chartjs2img"    labelScale=0.72
-icon :png   @C3 tabler/photo            "PNG"            labelScale=0.72
-icon :slack @D3 tabler/brand-slack      "Slack"          labelScale=0.72
-icon :mail  @E3 tabler/mail             "Email"          labelScale=0.72
+# 下段: chartjs2img → PNG → 配布先
+icon :c2i   @B3 tabler/camera           "chartjs2img"   labelScale=0.72
+icon :png   @C3 tabler/photo            "PNG"           labelScale=0.72
 
-# 2 系統のフロー。ラベルは最小限に留めて図を読みやすく。
+icon :slack @D2 tabler/brand-slack      "Slack"         labelScale=0.72
+icon :mail  @D3 tabler/mail             "Email"         labelScale=0.72
+
+# サーバ側で走る無人レンダリングと、最終的な配布先をそれぞれ region で
+# 囲み、「JSON → Browser」対比が視覚的に切り出されるように。
+region @B3:C3 "Offscreen" color=secondary/12
+region @D2:D3 "Media"     color=accent/12
+
 json --> cjs
 cjs  --> web   "live"
-
 json --> c2i
 c2i  --> png   "render"
 png  --> slack "attach"
