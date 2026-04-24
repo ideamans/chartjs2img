@@ -626,10 +626,18 @@ watchEffect(async () => {
   border: 1px solid var(--vp-c-divider);
   border-top: 0;
   border-radius: 0 0 10px 10px;
-  background: var(--vp-code-block-bg, var(--vp-c-bg-alt));
+  /* Match vitepress-daisyui-theme's `.prose div[class*="language-"]`
+     rule exactly — it uses Shiki's own *-bg fallback (#f6f8fa light,
+     #24292e dark), not VitePress's --vp-code-block-bg. Keep the two
+     in sync or the landing's code panel diverges from the rest of the
+     docs' fenced blocks. */
+  background: var(--shiki-light-bg, #f6f8fa);
   overflow: hidden;
   flex: 1;
   display: flex;
+}
+html.dark .c2i-ex__shiki {
+  background: var(--shiki-dark-bg, #24292e);
 }
 .c2i-ex__shiki :deep(pre.shiki),
 .c2i-ex__shiki :deep(pre.vp-code) {
