@@ -292,7 +292,7 @@ watchEffect(async () => {
 
     <!-- ========================== Concept ========================== -->
     <section v-if="content.concept" class="c2i-concept py-16 md:py-20 px-6">
-      <div class="max-w-5xl mx-auto text-center">
+      <div class="max-w-6xl mx-auto text-center">
         <h2 v-if="content.concept.title" class="text-3xl md:text-4xl font-bold tracking-tight">
           {{ content.concept.title }}
         </h2>
@@ -627,7 +627,9 @@ watchEffect(async () => {
   background: var(--vp-c-bg, #ffffff);
   border: 1px solid var(--vp-c-divider);
   border-radius: 14px;
-  max-width: 900px;
+  /* No hard cap — let the figure fill the (max-w-6xl ≈ 1152px) outer
+     container so the wide landing diagram breathes on desktop. The
+     inner <img> width:100% keeps the SVG edge-to-edge. */
 }
 .c2i-concept__img {
   display: block;
