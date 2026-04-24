@@ -1,0 +1,27 @@
+# chartjs2img — one JSON, two destinations.
+# 同じ Chart.js 設定 JSON が、左で「ブラウザで Chart.js が描画する対話
+# チャート」に、下で「chartjs2img が生成する PNG → Slack / Email 添付」に
+# 分岐する、という対比を 1 枚で示す概念図。
+doc { cols: 5 }
+
+# 起点: Chart.js 設定 JSON。縦方向の中央に据えて左右に伸ばす。
+icon :json  @A2 tabler/braces           "Chart.js JSON"  labelScale=0.72
+
+# 上段: Chart.js が直接ブラウザで描画する、対話的な Web チャート。
+icon :cjs   @B1 tabler/chart-dots       "Chart.js"       labelScale=0.72
+icon :web   @C1 tabler/device-desktop   "Browser"        labelScale=0.72
+
+# 下段: chartjs2img が同じ JSON から PNG を生成し、Slack / Email に添付。
+icon :c2i   @B3 tabler/camera           "chartjs2img"    labelScale=0.72
+icon :png   @C3 tabler/photo            "PNG"            labelScale=0.72
+icon :slack @D3 tabler/brand-slack      "Slack"          labelScale=0.72
+icon :mail  @E3 tabler/mail             "Email"          labelScale=0.72
+
+# 2 系統のフロー。ラベルは最小限に留めて図を読みやすく。
+json --> cjs
+cjs  --> web   "live"
+
+json --> c2i
+c2i  --> png   "render"
+png  --> slack "attach"
+png  --> mail  "attach"

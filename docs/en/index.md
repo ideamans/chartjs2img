@@ -15,6 +15,12 @@ landing:
       text: View on GitHub
       link: https://github.com/ideamans/chartjs2img
 
+  concept:
+    title: One JSON, two destinations
+    intro: Chart.js renders the same configuration in a browser for an interactive chart. chartjs2img takes that same JSON and returns a PNG you can attach to Slack, an email, or a PDF report — no browser required on the receiving side.
+    image: /diagrams/landing-two-flows.svg
+    alt: Diagram — Chart.js JSON branches into two flows. Top path goes into Chart.js and renders live inside a browser. Bottom path goes into chartjs2img which produces a PNG, then the PNG is attached to Slack and email.
+
   features:
     items:
       - title: Chart.js + 12 plugins bundled

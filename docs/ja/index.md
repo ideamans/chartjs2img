@@ -15,6 +15,12 @@ landing:
       text: GitHub
       link: https://github.com/ideamans/chartjs2img
 
+  concept:
+    title: 同じ JSON から、2 つの出力先へ
+    intro: Chart.js は同じ設定 JSON をブラウザで読み込んで対話的なチャートを描画します。chartjs2img はその同じ JSON を受け取り PNG を返すので、受信側にブラウザがなくても Slack・メール・PDF レポートに添付できます。
+    image: /diagrams/landing-two-flows.svg
+    alt: 図 — Chart.js JSON から 2 つのフローが分岐。上段は Chart.js がブラウザで直接レンダリングして対話チャートに。下段は chartjs2img が PNG を生成し、Slack やメールに添付される。
+
   features:
     items:
       - title: Chart.js + 12 プラグイン同梱

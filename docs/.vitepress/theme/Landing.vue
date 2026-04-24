@@ -41,6 +41,13 @@ interface AcknowledgmentsContent {
   title: string
   intro?: string
 }
+interface ConceptSectionContent {
+  title?: string
+  intro?: string
+  /** Path to the SVG under docs/public/ (e.g. '/diagrams/landing-two-flows.svg'). */
+  image: string
+  alt?: string
+}
 interface ExampleSectionContent {
   title?: string
   intro?: string
@@ -64,6 +71,7 @@ interface LandingFrontmatter {
     secondary?: CtaLink
   }
   features?: { items: FeatureItem[] }
+  concept?: ConceptSectionContent
   example?: ExampleSectionContent
   showcase?: ShowcaseSectionContent
   aiReady?: AiReadyContent
@@ -256,6 +264,26 @@ watchEffect(async () => {
         >
           <img :src="`/examples/${name}.png`" :alt="name" loading="lazy" />
         </a>
+      </div>
+    </section>
+
+    <!-- ========================== Concept ========================== -->
+    <section v-if="content.concept" class="c2i-concept py-16 md:py-20 px-6">
+      <div class="max-w-5xl mx-auto text-center">
+        <h2 v-if="content.concept.title" class="text-3xl md:text-4xl font-bold tracking-tight">
+          {{ content.concept.title }}
+        </h2>
+        <p
+          v-if="content.concept.intro"
+          class="opacity-70 mt-3 max-w-2xl mx-auto"
+        >{{ content.concept.intro }}</p>
+        <figure class="c2i-concept__figure">
+          <img
+            :src="content.concept.image"
+            :alt="content.concept.alt || 'Concept diagram'"
+            class="c2i-concept__img"
+          />
+        </figure>
       </div>
     </section>
 
@@ -548,6 +576,23 @@ watchEffect(async () => {
   font-weight: 600;
   color: var(--vp-c-brand-1);
   margin-top: 4px;
+}
+
+/* Concept diagram — centered SVG below the carousel, explains the
+   two destinations (interactive web via Chart.js, or PNG via
+   chartjs2img for Slack / email). */
+.c2i-concept__figure {
+  margin: 28px auto 0;
+  padding: 20px 24px;
+  background: var(--vp-c-bg, #ffffff);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  max-width: 900px;
+}
+.c2i-concept__img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* Live example — chart left, JSON right */
