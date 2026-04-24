@@ -1,102 +1,175 @@
-name: Release
+name: release
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  verify-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: version
+        name: Verify tag matches package.json and plugin.json versions
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          TAG_VERSION="${TAG#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          PLUGIN_VERSION="$(node -p "require('./plugins/chartjs2img/.claude-plugin/plugin.json').version")"
+          echo "tag=$TAG  tag_version=$TAG_VERSION  package.json=$PKG_VERSION  plugin.json=$PLUGIN_VERSION"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          if [ "$PLUGIN_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::plugin.json version ($PLUGIN_VERSION) does not match package.json version ($PKG_VERSION). Run 'bun run validate-plugin-skills' locally."
+            exit 1
+          fi
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: verify-version
     strategy:
+      fail-fast: true
       matrix:
         include:
           - target: bun-linux-x64
-            os_arch: linux_amd64
-            ext: ""
+            os: linux
+            arch: amd64
+            ext: tar.gz
           - target: bun-linux-arm64
-            os_arch: linux_arm64
-            ext: ""
+            os: linux
+            arch: arm64
+            ext: tar.gz
           - target: bun-darwin-x64
-            os_arch: darwin_amd64
-            ext: ""
+            os: darwin
+            arch: amd64
+            ext: tar.gz
           - target: bun-darwin-arm64
-            os_arch: darwin_arm64
-            ext: ""
+            os: darwin
+            arch: arm64
+            ext: tar.gz
           - target: bun-windows-x64
-            os_arch: windows_amd64
-            ext: ".exe"
+            os: windows
+            arch: amd64
+            ext: zip
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Pin Bun for reproducible compiled binaries. Bump only after
+          # verifying a fresh release cut on every target platform.
+          bun-version: 1.3.0
 
-      - run: bun install
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: Build binary
+      - name: Compile binary
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+          OS: ${{ matrix.os }}
         run: |
+          set -euo pipefail
+          if [ "$OS" = "windows" ]; then
+            BIN=chartjs2img.exe
+          else
+            BIN=chartjs2img
+          fi
           bun build src/index.ts --compile \
-            --target=${{ matrix.target }} \
-            --outfile=chartjs2img${{ matrix.ext }}
+            --target="$TARGET" \
+            --outfile "$BIN"
 
-      - name: Package (tar.gz for unix)
-        if: matrix.ext == ''
+      - name: Create archive
+        id: archive
+        shell: bash
+        env:
+          VERSION: ${{ needs.verify-version.outputs.version }}
+          OS: ${{ matrix.os }}
+          ARCH: ${{ matrix.arch }}
+          EXT: ${{ matrix.ext }}
         run: |
-          ARCHIVE="chartjs2img_${GITHUB_REF_NAME#v}_${{ matrix.os_arch }}.tar.gz"
-          tar czf "$ARCHIVE" chartjs2img
-          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+          set -euo pipefail
+          NAME="chartjs2img_${VERSION}_${OS}_${ARCH}"
+          mkdir -p "dist/$NAME"
+          if [ "$OS" = "windows" ]; then
+            mv chartjs2img.exe "dist/$NAME/"
+          else
+            mv chartjs2img "dist/$NAME/"
+          fi
+          [ -f README.md ] && cp README.md "dist/$NAME/" || true
+          [ -f LICENSE ] && cp LICENSE "dist/$NAME/" || true
+          cd dist
+          if [ "$EXT" = "zip" ]; then
+            zip -rq "${NAME}.${EXT}" "$NAME"
+          else
+            tar -czf "${NAME}.${EXT}" "$NAME"
+          fi
+          echo "archive=dist/${NAME}.${EXT}" >> "$GITHUB_OUTPUT"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Package (zip for windows)
-        if: matrix.ext == '.exe'
-        run: |
-          ARCHIVE="chartjs2img_${GITHUB_REF_NAME#v}_${{ matrix.os_arch }}.zip"
-          zip "$ARCHIVE" chartjs2img.exe
-          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
-
-      - name: Generate checksums
-        run: sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
-
-      - uses: actions/upload-artifact@v4
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v6
         with:
-          name: dist-${{ matrix.os_arch }}
-          path: |
-            ${{ env.ARCHIVE }}
-            ${{ env.ARCHIVE }}.sha256
+          name: ${{ steps.archive.outputs.name }}
+          path: ${{ steps.archive.outputs.archive }}
+          if-no-files-found: error
+          retention-days: 1
 
   release:
-    needs: build
+    needs: [verify-version, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/download-artifact@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: dist
-          merge-multiple: true
+          path: artifacts
 
-      - name: Generate combined checksums
+      - name: Collect archives and generate checksums
         run: |
+          set -euo pipefail
+          mkdir -p dist
+          find artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec mv {} dist/ \;
           cd dist
-          cat *.sha256 > checksums.txt
-          cat checksums.txt
+          sha256sum *.tar.gz *.zip > checksums.txt
+          # Keep the per-archive .sha256 files so the install skill and
+          # older docs that fetch `<asset>.sha256` continue to work.
+          for f in *.tar.gz *.zip; do
+            sha256sum "$f" > "$f.sha256"
+          done
+          ls -la
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           generate_release_notes: true
           files: |
-            dist/chartjs2img_*
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.sha256
             dist/checksums.txt
 
   docker:
+    needs: verify-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Docker meta
         id: meta
