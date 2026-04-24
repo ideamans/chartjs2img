@@ -53,9 +53,11 @@
     "validate-plugin-skills": "bun scripts/validate-plugin-skills.ts",
     "ai:regen": "bun scripts/build-llms-txt.ts",
     "docs:examples": "bun scripts/build-docs-examples.ts",
-    "docs:dev": "bun run build-llms-txt && vitepress dev docs",
-    "docs:build": "bun run build-llms-txt && vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:diagrams": "bun scripts/build-docs-diagrams.ts",
+    "docs:dev": "bun run build-llms-txt && bun run docs:diagrams && vitepress dev docs",
+    "docs:build": "bun run build-llms-txt && bun run docs:diagrams && bun run docs:examples && vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "docs:deploy": "bun run docs:build && rsync -av docs/.vitepress/dist/ web-g6:web/vhosts/chartjs2img.ideamans.com/html/"
   },
   "dependencies": {
     "puppeteer-core": "^24.40.0"

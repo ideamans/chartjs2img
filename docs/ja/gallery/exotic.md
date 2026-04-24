@@ -5,343 +5,100 @@ description: Chart.js プラグインが必要なチャートタイプ - treemap
 
 # 拡張プラグイン
 
-これらのチャートタイプは Chart.js コアに含まれません。それぞれ専用
-プラグインで追加され、全て chartjs2img に同梱されています。
-下記のスニペットは `chartjs2img render` や POST `/render` にそのまま
-貼り付けて使えます。
+これらのチャートタイプは Chart.js コアに含まれません。それぞれ
+専用プラグインで追加され、全て chartjs2img に同梱されています。
+各例のタブで PNG・JSON・CLI / HTTP コマンドを切り替えられます。
 
 ## ツリーマップ (chartjs-chart-treemap)
 
-![treemap chart](/examples/15-treemap-chart.png)
+`tree` の値に応じてサイズされる階層ブロック。
 
-階層ブロックを `key` プロパティのサイズで分割。
+<Example name="treemap-chart" http />
 
-```json
-{
-  "type": "treemap",
-  "data": {
-    "datasets": [{
-      "tree": [
-        { "value": 500, "label": "Engineering" },
-        { "value": 300, "label": "Sales" },
-        { "value": 200, "label": "Marketing" },
-        { "value": 150, "label": "Support" },
-        { "value": 100, "label": "Finance" }
-      ],
-      "key": "value",
-      "labels": { "display": true, "color": "white", "font": { "size": 14, "weight": "bold" } },
-      "backgroundColor": [
-        "rgba(255,99,132,0.8)",
-        "rgba(54,162,235,0.8)",
-        "rgba(255,206,86,0.8)",
-        "rgba(75,192,192,0.8)",
-        "rgba(153,102,255,0.8)"
-      ]
-    }]
-  }
-}
-```
+## マトリクス / ヒートマップ (chartjs-chart-matrix)
 
-## マトリックス / ヒートマップ (chartjs-chart-matrix)
+離散セルのグリッドに色を塗ります。JSON では値 → 色の関数を表現できない
+ので、セル毎の色を事前計算しておきます。
 
-![matrix heatmap](/examples/19-matrix-heatmap.png)
-
-セル毎の色を持つグリッド。JSON では「値 → 色」関数を表現できないので、
-各セルに事前計算済みの色を渡す必要があります。
-
-```json
-{
-  "type": "matrix",
-  "data": {
-    "datasets": [{
-      "label": "Activity",
-      "data": [
-        { "x": 1, "y": 1, "v":  5 }, { "x": 2, "y": 1, "v": 15 }, { "x": 3, "y": 1, "v": 25 },
-        { "x": 1, "y": 2, "v": 10 }, { "x": 2, "y": 2, "v": 30 }, { "x": 3, "y": 2, "v": 20 },
-        { "x": 1, "y": 3, "v": 18 }, { "x": 2, "y": 3, "v":  8 }, { "x": 3, "y": 3, "v": 12 }
-      ],
-      "backgroundColor": [
-        "rgba(54,162,235,0.3)", "rgba(54,162,235,0.55)", "rgba(54,162,235,0.85)",
-        "rgba(54,162,235,0.4)", "rgba(54,162,235,0.95)", "rgba(54,162,235,0.7)",
-        "rgba(54,162,235,0.6)", "rgba(54,162,235,0.35)", "rgba(54,162,235,0.45)"
-      ],
-      "borderColor": "white",
-      "borderWidth": 2,
-      "width": 60,
-      "height": 60
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "scales": {
-      "x": { "type": "linear", "position": "bottom", "offset": true, "ticks": { "stepSize": 1 } },
-      "y": { "type": "linear", "position": "left", "offset": true, "ticks": { "stepSize": 1 }, "reverse": true }
-    }
-  }
-}
-```
+<Example name="matrix-heatmap" http />
 
 ## サンキー (chartjs-chart-sankey)
 
-![sankey flow diagram](/examples/20-sankey-flow.png)
+カテゴリ間の流量。`flow` が各バンドの幅。
 
-カテゴリノード間のフロー。`flow` が各帯の幅になります。
-
-```json
-{
-  "type": "sankey",
-  "data": {
-    "datasets": [{
-      "data": [
-        { "from": "Oil",          "to": "Fossil Fuels", "flow": 15 },
-        { "from": "Coal",         "to": "Fossil Fuels", "flow": 25 },
-        { "from": "Gas",          "to": "Fossil Fuels", "flow": 20 },
-        { "from": "Solar",        "to": "Renewables",   "flow": 10 },
-        { "from": "Wind",         "to": "Renewables",   "flow":  8 },
-        { "from": "Hydro",        "to": "Renewables",   "flow": 12 },
-        { "from": "Fossil Fuels", "to": "Electricity",  "flow": 35 },
-        { "from": "Fossil Fuels", "to": "Transport",    "flow": 25 },
-        { "from": "Renewables",   "to": "Electricity",  "flow": 30 }
-      ],
-      "colorFrom": "#36a2eb",
-      "colorTo":   "#ff6384",
-      "colorMode": "gradient",
-      "labels": {
-        "Oil": "Crude Oil",
-        "Coal": "Coal Mining",
-        "Gas": "Natural Gas",
-        "Solar": "Solar PV",
-        "Wind": "Wind Power",
-        "Hydro": "Hydroelectric",
-        "Electricity": "Grid",
-        "Transport": "Vehicles"
-      }
-    }]
-  },
-  "options": { "plugins": { "legend": { "display": false } } }
-}
-```
+<Example name="sankey-flow" http />
 
 ## ワードクラウド (chartjs-chart-wordcloud)
 
-![word cloud](/examples/21-word-cloud.png)
+単語は `data.labels`、フォントサイズは `datasets[0].data` から。
 
-単語は `data.labels`、フォントサイズは `datasets[0].data` から取られます。
+<Example name="word-cloud" http />
 
-```json
-{
-  "type": "wordCloud",
-  "data": {
-    "labels": [
-      "Chart.js", "D3", "Plotly", "Recharts", "Highcharts",
-      "Vega", "ECharts", "ApexCharts", "Observable", "Tableau",
-      "PowerBI", "Looker", "Superset", "Metabase"
-    ],
-    "datasets": [{
-      "data": [90, 80, 60, 50, 45, 35, 70, 40, 55, 65, 50, 40, 45, 35],
-      "color": [
-        "#36a2eb", "#ff6384", "#ffce56", "#4bc0c0", "#9966ff",
-        "#ff9f40", "#c9cbcf", "#7bc8a4", "#5cb85c", "#f0ad4e",
-        "#5bc0de", "#d9534f", "#337ab7", "#8e44ad"
-      ]
-    }]
-  },
-  "options": {
-    "elements": {
-      "word": { "minRotation": 0, "maxRotation": 0, "padding": 4 }
-    },
-    "plugins": { "legend": { "display": false } }
-  }
-}
-```
+## Venn / Euler (chartjs-chart-venn)
 
-## ベン図 / オイラー図 (chartjs-chart-venn)
+集合の重なり。通常配置は `"type": "venn"`、円サイズと重なりを値に
+比例させたい場合は `"type": "euler"`。
 
-![Euler diagram, three sets](/examples/22-euler-diagram-3-set.png)
-
-集合の重なり。標準レイアウトなら `"type": "venn"`、円のサイズと重なりを
-値に比例させたいなら `"type": "euler"`。
-
-```json
-{
-  "type": "euler",
-  "data": {
-    "labels": [
-      "A", "B", "C",
-      "A ∩ B", "A ∩ C", "B ∩ C",
-      "A ∩ B ∩ C"
-    ],
-    "datasets": [{
-      "label": "Three-set Euler",
-      "data": [
-        { "sets": ["A"],           "value": 12 },
-        { "sets": ["B"],           "value": 10 },
-        { "sets": ["C"],           "value":  8 },
-        { "sets": ["A", "B"],      "value":  4 },
-        { "sets": ["A", "C"],      "value":  3 },
-        { "sets": ["B", "C"],      "value":  2 },
-        { "sets": ["A", "B", "C"], "value":  1 }
-      ],
-      "backgroundColor": [
-        "rgba(54,162,235,0.5)",
-        "rgba(255,99,132,0.5)",
-        "rgba(255,206,86,0.5)"
-      ],
-      "borderColor": [
-        "rgba(54,162,235,1)",
-        "rgba(255,99,132,1)",
-        "rgba(255,206,86,1)"
-      ]
-    }]
-  }
-}
-```
+<Example name="euler-diagram-3-set" http />
 
 ## 力学モデルグラフ (chartjs-chart-graph)
 
-![force-directed graph, microservice topology](/examples/23-force-directed-graph.png)
+物理シミュレーションによるネットワークレイアウト。座標不要。
 
-物理シミュレーションによるネットワークレイアウト — 座標指定不要。
+<Example name="force-directed-graph" http />
 
-```json
-{
-  "type": "forceDirectedGraph",
-  "data": {
-    "labels": [
-      "Gateway", "Auth", "Users", "Orders", "Payments",
-      "Inventory", "DB", "Cache", "Queue"
-    ],
-    "datasets": [{
-      "data": [{}, {}, {}, {}, {}, {}, {}, {}, {}],
-      "edges": [
-        { "source": 0, "target": 1 },
-        { "source": 0, "target": 2 },
-        { "source": 0, "target": 3 },
-        { "source": 3, "target": 4 },
-        { "source": 3, "target": 5 },
-        { "source": 2, "target": 6 },
-        { "source": 5, "target": 6 },
-        { "source": 4, "target": 7 },
-        { "source": 3, "target": 8 },
-        { "source": 1, "target": 7 }
-      ],
-      "pointRadius": 12,
-      "pointBackgroundColor": "#36a2eb",
-      "pointBorderColor": "#1e5a8e",
-      "pointBorderWidth": 2
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "simulation": {
-      "initialIterations": 100,
-      "forces": {
-        "link":      { "distance": 80 },
-        "manyBody":  { "strength": -300 },
-        "collide":   { "radius": 18, "strength": 0.8 }
-      }
-    }
-  }
-}
-```
+**手動配置** のグラフが欲しい場合は `"type": "graph"` を使い、
+`data` に `{x, y}` を指定します。全オプションは
+[プラグインドキュメント](https://github.com/sgratzl/chartjs-chart-graph)
+を参照。
 
-**手動レイアウト** でグラフを描きたい場合 (ノード毎に `{x,y}` を指定) は
-`"type": "graph"` を使い、`data` に座標を渡します。全オプションは
-[プラグインドキュメント](https://github.com/sgratzl/chartjs-chart-graph) を参照。
+## ツリー (chartjs-chart-graph)
 
-## 整列ツリー (chartjs-chart-graph)
+`parent` インデックスで階層を表現。
 
-![tidy tree, 14-node org chart](/examples/24-tidy-tree.png)
+<Example name="tidy-tree" http />
 
-ノード毎の `parent` インデックスで階層を定義するレイアウト。
+固定深度のクラスタレイアウトが欲しければ `"type": "dendrogram"`、
+円形ツリーは `options.tree.orientation: "radial"`。
 
-```json
-{
-  "type": "tree",
-  "data": {
-    "labels": [
-      "CEO",
-      "CTO", "COO", "CFO",
-      "VP Eng", "VP Product",
-      "Ops Dir", "Sales Dir",
-      "FP&A",
-      "Platform", "Frontend", "Mobile",
-      "Design", "Research"
-    ],
-    "datasets": [{
-      "data": [
-        {},
-        { "parent": 0 }, { "parent": 0 }, { "parent": 0 },
-        { "parent": 1 }, { "parent": 1 },
-        { "parent": 2 }, { "parent": 2 },
-        { "parent": 3 },
-        { "parent": 4 }, { "parent": 4 }, { "parent": 4 },
-        { "parent": 5 }, { "parent": 5 }
-      ],
-      "pointRadius": 6,
-      "pointBackgroundColor": "#36a2eb",
-      "pointBorderColor": "#1e5a8e",
-      "pointBorderWidth": 2
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "tree": { "orientation": "horizontal" }
-  }
-}
-```
+## バブルマップ (chartjs-chart-geo)
 
-固定深度のクラスタレイアウトなら `"type": "dendrogram"`、円形ツリーなら
-`options.tree.orientation: "radial"` を指定。
+`chartjs-chart-geo` は 2 種類のチャートタイプを提供します — 下記の
+`bubbleMap` と、同じ `outline` の上で領域ごとに色を塗る
+`choropleth` です。どちらも GeoJSON の `outline` で地図境界を与え、
+bubbleMap は `{longitude, latitude, value}` 点列を `size` スケール
+経由で半径に変換します。
 
-## コロプレス / バブルマップ (chartjs-chart-geo)
+このギャラリー例は 3 × 2 の抽象グリッドをポリゴン 6 個で構成し、
+設定が読みやすく収まる最小の形にしています。実地図を描くときは
+Natural Earth や TopoJSON の FeatureCollection を `outline` に
+そのまま入れれば OK。
 
-地図系は GeoJSON をインラインで渡す必要があります (URL 読み込み機構はなし)。
-Natural Earth や TopoJSON などのソースから `FeatureCollection` を取得し、
-リクエストボディに埋め込んでください。
+<Example name="bubble-map-abstract-grid" http />
 
-コロプレスの雛形:
+主要な型:
 
-```jsonc
-{
-  "type": "choropleth",
-  "data": {
-    "labels": ["France", "Germany", "Italy", "Spain"],
-    "datasets": [{
-      "outline": [ /* 境界計算用の GeoJSON Feature[] */ ],
-      "showOutline": true,
-      "borderColor": "#888",
-      "data": [
-        { "feature": { "type": "Feature", "geometry": { /* ... */ },
-                        "properties": { "name": "France" } },
-          "value": 67 },
-        { "feature": { /* ... */ }, "value": 83 },
-        { "feature": { /* ... */ }, "value": 59 },
-        { "feature": { /* ... */ }, "value": 47 }
-      ]
-    }]
-  },
-  "options": {
-    "plugins": { "legend": { "display": false } },
-    "scales": {
-      "projection": { "axis": "x", "projection": "equalEarth" },
-      "color":      { "axis": "x", "quantize": 5, "display": false }
-    }
-  }
-}
-```
+- `datasets[i].outline` — 地図の境界を表す GeoJSON `Feature` 配列
+- `datasets[i].data[i]` — `{ longitude, latitude, value }`。`value`
+  が `options.scales.size.size: [min, max]` 経由でバブル半径に変換
+- `options.scales.projection` —
+  [d3-geo projection](https://github.com/d3/d3-geo#projections) 名
+  (`"equirectangular"`、`"equalEarth"`、`"mercator"` など)
 
-`bubbleMap` の場合は同じ `outline` とスケール設定を保ちつつ、data を
-`{ longitude, latitude, value }` の点列にします。
+`choropleth` を使う場合は同じ `outline` / 投影設定のまま、データ
+を `{ feature, value }` の配列として渡します。各フィーチャの内側
+が `options.scales.color` 経由で色付けされます。
 
-GeoJSON のペイロードが巨大なので、chartjs2img の既定ギャラリーには
-コロプレスの描画済み画像は含めていません。独自のデータで
-`/chartjs2img-render` を呼べば生成できます。
+> **ペイロード Tips:** 実地 TopoJSON は数百 KB になりがちです。
+> HTTP クライアントから使うときは `GET /render?chart=…` ではなく
+> POST を推奨。URL 長制限のほうが JSON ボディ制限より先に当たる
+> ためです。
 
-## なぜ全ての拡張タイプを載せないのか
+## なぜ全ての拡張型を掲載しないのか
 
-視覚回帰を見つけやすくするため、ギャラリーは意図的に小さめにしています。
-代表として treemap を載せ、他の拡張タイプは `chartjs2img llm` の標準例
-(エージェントは自動で参照) と上の JSON スニペットで網羅しています。
-自分のデータで試すには、スニペットを `chartjs2img render -i <file> -o out.png`
-に貼り付けてください。
+ギャラリーは視覚回帰を目視できるよう意図的に小さく保っています。
+レンダリング済み例が各プラグインの主要レイアウトスタイルをカバー
+しており、その他のバリエーションは `chartjs2img llm` の正規例
+（エージェントが自動で読み取る）と上記の JSON スニペットで押さえ
+ています。自分のデータでプレビューしたい場合はスニペットを
+`chartjs2img render -i <file> -o out.png` に貼り付けてください。

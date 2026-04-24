@@ -1,0 +1,38 @@
+# chartjs2img — one JSON, two destinations.
+# 上段は通常の Chart.js フロー (JSON → Chart.js → Browser) をそのまま
+# 1 本の直線で示し、下段で同じ JSON から chartjs2img が PNG を生成して
+# Slack / Email に添付、という 2 系統を対比。5 × 2 のコンパクト配置。
+doc {
+  cols: 5,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
+
+# 上段: Chart.js で直接ブラウザに描画する通常パス (JSON と同じ行)。
+icon :json  @A1 tabler/braces           "Chart.js JSON" labelScale=0.72
+icon :cjs   @B1 tabler/chart-dots       "Chart.js"      labelScale=0.72
+icon :web   @C1 tabler/device-desktop   "Browser"       labelScale=0.72
+
+# 下段: chartjs2img → PNG → 配布先。JSON から分岐して入る。
+icon :c2i   @B2 tabler/camera           "chartjs2img"   labelScale=0.72
+icon :png   @C2 tabler/photo            "PNG"           labelScale=0.72
+
+icon :slack @D2 tabler/brand-slack      "Slack"         labelScale=0.72
+icon :mail  @E2 tabler/mail             "Email"         labelScale=0.72
+
+# サーバ側の無人レンダ部と、最終配布先をそれぞれ region で括って意味づけ。
+region @B2:C2 "Offscreen" color=secondary/12
+region @D2:E2 "Media"     color=accent/12
+
+json --> cjs
+cjs  --> web   "live"
+
+json --> c2i
+c2i  --> png   "render"
+png  --> slack "attach"
+png  --> mail  "attach"

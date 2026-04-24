@@ -1,114 +1,90 @@
 ---
 title: クイックスタート
-description: chartjs2img の CLI と HTTP API を使って、1 分以内に初めての Chart.js チャートを PNG に描画します。
+description: chartjs2img バイナリをインストールして 1 分以内に最初の Chart.js チャートを PNG にレンダリングします。
 ---
 
 # クイックスタート
 
-Chart.js のチャートを 1 分で PNG にします。chartjs2img は Chart.js の
-設定 JSON を受け取り、ヘッドレス Chromium を介して画像を出力します。
+`chartjs2img` バイナリをインストールし、1 分以内に最初のチャートを
+レンダリングします。リモートスクリプトをシェルに流し込みたくない
+場合は [インストール](./install) の手動手順を参照してください。
 
-2 通りの使い方があります。
+## インストール
 
-- **HTTP API** — JSON を POST して画像を受け取る。長時間サービス向き。
-- **CLI** — JSON をパイプして画像を出力する。ワンショット向き。
+お使いの OS 向けコマンドを選択してください。どちらのスクリプトも
+`chartjs2img` を自動的に `PATH` に配置します。
 
-どちらも同じレンダラ、同じキャッシュ、同じプラグインを共有します。
+### macOS / Linux
 
-## 前提条件
-
-[Bun](https://bun.sh) をインストールしておきます。
-
-```bash
-# macOS / Linux
-curl -fsSL https://bun.sh/install | bash
-
-# シェルを再起動するか rc ファイルを読み直す
-source ~/.zshrc   # または ~/.bashrc
+```sh
+curl -fsSL https://bin.ideamans.com/install/chartjs2img.sh | bash
 ```
 
-確認:
+### Windows (PowerShell)
 
-```bash
-bun --version
+```powershell
+irm https://bin.ideamans.com/install/chartjs2img.ps1 | iex
 ```
 
-初回レンダー時に Chromium がユーザーキャッシュに**自動ダウンロード**されます
-(約 250 MB)。linux-arm64 では自動ダウンロードに対応していないため、
-Chromium を手動で導入し `CHROMIUM_PATH` を設定してください。詳細は
-[インストール](./install) を参照。
+### 動作確認
 
-## 1. 依存関係のインストール
-
-```bash
-git clone https://github.com/ideamans/chartjs2img
-cd chartjs2img
-bun install
+```sh
+chartjs2img --help
 ```
 
-## 2. HTTP サーバーの起動
+使い方の表示が出れば OK です。`chartjs2img: command not found` と
+なる場合は新しいシェルを開く（`PATH` 更新が反映されます）か、
+[インストール](./install) を参照してください。
 
-```bash
-bun run dev
+初回レンダリング時、Chromium がユーザーキャッシュへ
+**自動ダウンロード** されます（約 250 MB）。linux-arm64 では
+自動ダウンロードが使えないため、ディストリビューションから
+Chromium をインストールして `CHROMIUM_PATH` を設定してください。
+詳細は [インストール](./install) を参照。
+
+## 最初のチャートをレンダリング
+
+Chart.js 設定の 1 行 JSON をそのまま `chartjs2img` に流し込みます。
+`render` コマンドは標準入力から JSON を読み、`-o` で PNG を出力します。
+
+### macOS / Linux
+
+```sh
+echo '{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"Sales","data":[12,19,3],"backgroundColor":"rgba(54,162,235,0.7)"}]}}' \
+  | chartjs2img render -o hello.png
 ```
 
-次のような出力になります:
+### Windows (PowerShell)
 
-```
-chartjs2img server listening on http://0.0.0.0:3000
-  POST /render      - render chart from JSON body
-  GET  /render      - render chart from query params
-  GET  /cache/:hash - retrieve cached image
-  GET  /examples    - examples gallery
-  GET  /health      - health check + stats
+```powershell
+'{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"Sales","data":[12,19,3],"backgroundColor":"rgba(54,162,235,0.7)"}]}}' `
+  | chartjs2img render -o hello.png
 ```
 
-## 3. 初めてのチャート
+`hello.png` を画像ビューワで開くと、3 本のバーが並んだチャートが
+表示されます。結果はこのようになります:
 
-別のターミナルで:
+<Example name="bar-chart" caption="上記コマンドの出力例。" />
 
-```bash
-curl -X POST http://localhost:3000/render \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "chart": {
-      "type": "bar",
-      "data": {
-        "labels": ["1月", "2月", "3月", "4月"],
-        "datasets": [{
-          "label": "売上",
-          "data": [12, 19, 3, 5],
-          "backgroundColor": "rgba(54, 162, 235, 0.7)"
-        }]
-      }
-    }
-  }' \
-  -o chart.png
-```
+JPEG 出力、ワイドキャンバス、透明背景などが欲しい場合は
+`render` のフラグで対応できます。詳細は
+[CLI レンダリング](./cli/) を参照してください。
 
-`chart.png` を開いてください — これがサーバーでレンダリングした
-最初の Chart.js チャートです。
+## 次はどこへ
 
-## 4. CLI でも同じことを
+ユーザーガイドの続きは 2 系統に分かれます。
 
-同じエンジンがワンショット CLI として動きます:
+- **[CLI レンダリング](./cli/)** — メインのワークフロー。1 つの
+  チャート入力に対して 1 枚の画像を返します。まずはこちらから。
+- **[HTTP サーバー](./http/)** — 複数クライアントが同じ
+  レンダラーを共有する長期稼働サービス向け。キャッシュ・認証・
+  Docker も含みます。
 
-```bash
-echo '{"type":"bar","data":{"labels":["A","B","C"],"datasets":[{"data":[1,2,3]}]}}' \
-  | bun run src/index.ts render -o chart.png
-```
+あるいは、まず何が使えるのかを把握するには:
 
-## 5. 組み込みサンプルを眺める
-
-[http://localhost:3000/examples](http://localhost:3000/examples) を開くと、
-18 種類のチャートがリアルタイムでレンダリングされます。各チャートから
-ソース JSON にアクセスできるので、コピーして改造するのに便利です。
-
-## 次は何を
-
-- **[インストール](./install)** — リリースバイナリ、Chromium 検出、Docker。
-- **[HTTP API](./http-api)** — 全エンドポイント・全レスポンスヘッダー。
-- **[CLI](./cli)** — 全サブコマンド・全フラグ。
-- **[同梱プラグイン](./plugins)** — そのまま使える 12 個の Chart.js プラグイン。
-- **[エラーフィードバック](./error-feedback)** — Chart.js のエラーを API 経由で拾う方法。
-- **[AI ガイド](/ja/ai/)** — Claude / Copilot / Cursor / 任意の MCP エージェントから chartjs2img を使う。
+- **[同梱プラグイン](./plugins)** — Chart.js 本体に加え、12 の
+  エコシステムプラグインが追加で使える `type` 値
+  (treemap / sankey / wordcloud / choropleth …) を提供。追加
+  セットアップ不要で、全レンダリングに同梱されます。
+- **[インストール](./install)** — GitHub Releases、ソースビルド、
+  その他のインストール方法。

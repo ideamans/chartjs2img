@@ -29,6 +29,7 @@ docs/.vitepress/dist/
 
 # AI artifacts generated at build time (see PLAN.md §2)
 docs/public/examples/
+docs/public/diagrams/
 docs/public/llms.txt
 docs/public/llms-full.txt
 src/llm-docs/.generated-reference.md
@@ -37,3 +38,6 @@ src/llm-docs/.generated-reference.md
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 .claude/cache/
+
+# Local scratch (editor dumps, quick diagram trials, etc.)
+tmp/

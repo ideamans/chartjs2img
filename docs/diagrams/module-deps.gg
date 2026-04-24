@@ -1,0 +1,38 @@
+# chartjs2img — source module dependency graph.
+# index.ts がエントリ。server.ts / cli.ts のラッパー経由で renderer.ts
+# に集約し、template / cache / semaphore を利用。llm-docs は独立した
+# テキスト集合で、chartjs2img llm サブコマンドから使う。
+doc {
+  cols: 4,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
+
+icon :server @A1 tabler/world         "server.ts"          labelScale=0.72
+icon :index  @B1 tabler/terminal-2    "index.ts"           labelScale=0.72
+icon :cli    @C1 tabler/command       "cli.ts"             labelScale=0.72
+icon :llmidx @D1 tabler/book          "llm-docs/index.ts"  labelScale=0.7
+
+icon :ren    @A2 tabler/components    "renderer.ts"        labelScale=0.72
+icon :ex     @C2 tabler/list-details  "examples.ts"        labelScale=0.72
+icon :llms   @D2 tabler/books         "llm-docs/*.ts"      labelScale=0.7
+
+icon :tpl    @A3 tabler/file-code     "template.ts"        labelScale=0.72
+icon :ca     @B3 tabler/database      "cache.ts"           labelScale=0.72
+icon :sem    @C3 tabler/lock          "semaphore.ts"       labelScale=0.7
+
+index  --> server
+index  --> cli
+index  --> llmidx
+server --> ren
+cli    --> ren
+cli    --> ex
+ren    --> tpl
+ren    --> ca
+ren    --> sem
+llmidx --> llms

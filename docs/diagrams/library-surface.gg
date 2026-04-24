@@ -1,0 +1,31 @@
+# chartjs2img — library surface boundary.
+# lib.ts が外部公開面で、その下の renderer / template / cache /
+# semaphore は実装詳細。CLI と HTTP サーバーはどちらも lib.ts 経由で
+# 同じレンダリングパイプラインを使う。
+doc {
+  cols: 4,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
+
+icon :cli @A1 tabler/terminal-2 "CLI binary"  labelScale=0.72
+icon :srv @D1 tabler/world      "HTTP server" labelScale=0.72
+
+icon :lib @B2 tabler/package    "lib.ts (public)" labelScale=0.7
+
+icon :ren @A3 tabler/components "renderer.ts" labelScale=0.72
+icon :tpl @B3 tabler/file-code  "template.ts" labelScale=0.72
+icon :ca  @C3 tabler/database   "cache.ts"    labelScale=0.72
+icon :sem @D3 tabler/lock       "semaphore.ts" labelScale=0.7
+
+cli --> lib
+srv --> lib
+lib --> ren
+ren --> tpl
+ren --> ca
+ren --> sem

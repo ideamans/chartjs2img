@@ -39,7 +39,20 @@ const config: ReturnType<typeof withTheme> = withTheme({
   // docs/.vitepress/theme/custom.css.
   appearance: false,
 
+  // Favicon set — SVG is enough for modern browsers, but we include
+  // PNG fallbacks (apple-touch-icon, ico, sized PNGs for manifest /
+  // Android home-screen). Assets are hand-authored under
+  // docs/public/; keep the brand mark in sync with tmp/brand.html.
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'alternate icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
+    ['link', { rel: 'alternate icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['meta', { name: 'theme-color', content: '#F2F0EA' }],
+  ],
+
   themeConfig: {
+    logo: '/logo.svg',
     search: {
       provider: 'local',
       options: {
@@ -100,19 +113,26 @@ const config: ReturnType<typeof withTheme> = withTheme({
               items: [
                 { text: 'Quick start', link: '/en/guide/' },
                 { text: 'Install', link: '/en/guide/install' },
+                { text: 'Bundled plugins', link: '/en/guide/plugins' },
               ],
             },
             {
-              text: 'Using chartjs2img',
+              text: 'CLI rendering',
               items: [
-                { text: 'HTTP API', link: '/en/guide/http-api' },
-                { text: 'CLI', link: '/en/guide/cli' },
-                { text: 'Cache', link: '/en/guide/cache' },
-                { text: 'Authentication', link: '/en/guide/auth' },
-                { text: 'Error feedback', link: '/en/guide/error-feedback' },
-                { text: 'Environment variables', link: '/en/guide/env-vars' },
-                { text: 'Docker', link: '/en/guide/docker' },
-                { text: 'Bundled plugins', link: '/en/guide/plugins' },
+                { text: 'CLI rendering', link: '/en/guide/cli/' },
+                { text: 'Environment variables', link: '/en/guide/cli/env-vars' },
+                { text: 'Error feedback', link: '/en/guide/cli/error-feedback' },
+              ],
+            },
+            {
+              text: 'HTTP server',
+              items: [
+                { text: 'HTTP server', link: '/en/guide/http/' },
+                { text: 'Cache', link: '/en/guide/http/cache' },
+                { text: 'Authentication', link: '/en/guide/http/auth' },
+                { text: 'Docker', link: '/en/guide/http/docker' },
+                { text: 'Environment variables', link: '/en/guide/http/env-vars' },
+                { text: 'Error feedback', link: '/en/guide/http/error-feedback' },
               ],
             },
           ],
@@ -159,6 +179,7 @@ const config: ReturnType<typeof withTheme> = withTheme({
                 { text: 'Overview', link: '/en/gallery/' },
                 { text: 'Basic chart types', link: '/en/gallery/basic' },
                 { text: 'Composite charts', link: '/en/gallery/composite' },
+                { text: 'Axes & chart options', link: '/en/gallery/axes-options' },
                 { text: 'Labels & annotation', link: '/en/gallery/decorations' },
                 { text: 'Exotic plugins', link: '/en/gallery/exotic' },
                 { text: 'Sizing', link: '/en/gallery/sizing' },
@@ -191,19 +212,26 @@ const config: ReturnType<typeof withTheme> = withTheme({
               items: [
                 { text: 'クイックスタート', link: '/ja/guide/' },
                 { text: 'インストール', link: '/ja/guide/install' },
+                { text: '同梱プラグイン', link: '/ja/guide/plugins' },
               ],
             },
             {
-              text: 'chartjs2img を使う',
+              text: 'CLI レンダリング',
               items: [
-                { text: 'HTTP API', link: '/ja/guide/http-api' },
-                { text: 'CLI', link: '/ja/guide/cli' },
-                { text: 'キャッシュ', link: '/ja/guide/cache' },
-                { text: '認証', link: '/ja/guide/auth' },
-                { text: 'エラーフィードバック', link: '/ja/guide/error-feedback' },
-                { text: '環境変数', link: '/ja/guide/env-vars' },
-                { text: 'Docker', link: '/ja/guide/docker' },
-                { text: '同梱プラグイン', link: '/ja/guide/plugins' },
+                { text: 'CLI レンダリング', link: '/ja/guide/cli/' },
+                { text: '環境変数', link: '/ja/guide/cli/env-vars' },
+                { text: 'エラーフィードバック', link: '/ja/guide/cli/error-feedback' },
+              ],
+            },
+            {
+              text: 'HTTP サーバー',
+              items: [
+                { text: 'HTTP サーバー', link: '/ja/guide/http/' },
+                { text: 'キャッシュ', link: '/ja/guide/http/cache' },
+                { text: '認証', link: '/ja/guide/http/auth' },
+                { text: 'Docker', link: '/ja/guide/http/docker' },
+                { text: '環境変数', link: '/ja/guide/http/env-vars' },
+                { text: 'エラーフィードバック', link: '/ja/guide/http/error-feedback' },
               ],
             },
           ],
@@ -250,6 +278,7 @@ const config: ReturnType<typeof withTheme> = withTheme({
                 { text: '概要', link: '/ja/gallery/' },
                 { text: '基本チャートタイプ', link: '/ja/gallery/basic' },
                 { text: '複合チャート', link: '/ja/gallery/composite' },
+                { text: '軸とチャートオプション', link: '/ja/gallery/axes-options' },
                 { text: 'ラベルと注釈', link: '/ja/gallery/decorations' },
                 { text: '拡張プラグイン', link: '/ja/gallery/exotic' },
                 { text: 'サイズ', link: '/ja/gallery/sizing' },

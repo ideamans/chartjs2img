@@ -1,0 +1,26 @@
+# chartjs2img — high-level architecture.
+# CLI と HTTP サーバーが共通の renderer.ts に入り、puppeteer 経由で
+# ヘッドレス Chromium を駆動する。
+doc {
+  cols: 3,
+  theme: {
+    primary:   '#36a2eb',
+    secondary: '#9966ff',
+    accent:    '#ff6384',
+    text:      '#2a2f36',
+    bg:        'transparent',
+  },
+}
+
+icon :cli    @A1 tabler/terminal-2   "CLI"           labelScale=0.75
+icon :render @B1 tabler/components   "renderer.ts"   labelScale=0.75
+icon :srv    @C1 tabler/world        "HTTP Server"   labelScale=0.75
+
+icon :pupp   @B2 tabler/browser      "puppeteer"     labelScale=0.75
+
+icon :chrome @B3 tabler/brand-chrome "Chromium + Chart.js" labelScale=0.7
+
+cli    --> render
+srv    --> render
+render --> pupp
+pupp   --> chrome

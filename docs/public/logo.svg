@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="chartjs2img">
+  <title>chartjs2img</title>
+  <g fill="none" stroke="#2a2f36" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M14 28 V14 H28"/>
+    <path d="M86 28 V14 H72"/>
+    <path d="M14 72 V86 H28"/>
+    <path d="M86 72 V86 H72"/>
+  </g>
+  <rect x="32" y="58" width="10" height="18" fill="#36a2eb"/>
+  <rect x="46" y="44" width="10" height="32" fill="#9966ff"/>
+  <rect x="60" y="32" width="10" height="44" fill="#ff6384"/>
+</svg>

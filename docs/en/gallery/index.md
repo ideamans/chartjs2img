@@ -1,16 +1,17 @@
 ---
 title: Gallery
-description: 18 Chart.js charts rendered by chartjs2img, grouped by category. Click through for the source JSON.
+description: Chart.js charts rendered by chartjs2img, grouped by category. Every example is a live PNG plus the source JSON behind a tab.
 ---
 
 # Gallery
 
-18 example charts, rendered by chartjs2img itself. Every image below
-is regenerated from `src/examples.ts` via `bun run docs:examples`, so
-the images you see here are exactly what the live service produces.
+Example charts, rendered by chartjs2img itself. Every image below is
+regenerated from `src/examples.ts` via `bun run docs:examples`, so the
+images you see here are exactly what the live service produces.
 
-Each page shows the rendered PNG plus the Chart.js configuration JSON.
-Copy, tweak, POST to `/render`.
+Each example shows the rendered PNG, the Chart.js configuration JSON,
+and a ready-to-paste CLI / HTTP command — flip tabs to switch. Copy,
+tweak, send to `/render`.
 
 ## Categories
 
@@ -18,6 +19,7 @@ Copy, tweak, POST to `/render`.
 | ------------------------------------------ | ---------------------------------------------------------------------- |
 | [Basic chart types](./basic)               | bar, line, pie, doughnut, radar, polarArea, scatter, bubble, horizontal bar |
 | [Composite charts](./composite)            | filled area, stacked bar, mixed bar + line                             |
+| [Axes & chart options](./axes-options)     | dual axis, log scale, negative values, rotated ticks, custom grid styling |
 | [Labels & annotation](./decorations)       | data labels, annotation (line / box / point), gradient fills, zoom framing, time-series axis |
 | [Exotic plugins](./exotic)                 | treemap, matrix / heatmap, sankey, wordcloud, venn / euler, force-directed graph, tidy tree, choropleth skeleton |
 | [Sizing](./sizing)                         | small 400×300 and wide 1200×400 canvases                               |

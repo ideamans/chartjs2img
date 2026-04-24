@@ -1,114 +1,88 @@
 ---
 title: Quick start
-description: Render your first Chart.js chart to PNG in under a minute using chartjs2img's CLI and HTTP API.
+description: Install the chartjs2img binary and render your first Chart.js chart to PNG in under a minute.
 ---
 
 # Quick start
 
-Render a Chart.js chart to a PNG in under a minute. chartjs2img takes a
-Chart.js configuration JSON and spits out an image, using headless
-Chromium under the hood.
+Install the `chartjs2img` binary and render your first chart in under
+a minute. If you'd rather not pipe a remote script into a shell, see
+[Install](./install) for manual alternatives.
 
-You can talk to it two ways:
+## Install
 
-- **HTTP API** — POST JSON, get an image back. Best for long-running services.
-- **CLI** — pipe JSON in, get an image out. Best for one-shot renders.
+Pick the command for your operating system. Both scripts place
+`chartjs2img` on your `PATH` automatically.
 
-Both share the same renderer, cache, and plugin bundle.
+### macOS / Linux
 
-## Prerequisites
-
-You need [Bun](https://bun.sh) installed.
-
-```bash
-# macOS / Linux
-curl -fsSL https://bun.sh/install | bash
-
-# then restart your shell or source your rc file
-source ~/.zshrc   # or ~/.bashrc
+```sh
+curl -fsSL https://bin.ideamans.com/install/chartjs2img.sh | bash
 ```
 
-Verify:
+### Windows (PowerShell)
 
-```bash
-bun --version
+```powershell
+irm https://bin.ideamans.com/install/chartjs2img.ps1 | iex
 ```
 
-On the first render, Chromium is **auto-downloaded** to your user cache
-(~250 MB). On linux-arm64, auto-download isn't available — install
-Chromium manually with your distro's package manager and set
-`CHROMIUM_PATH`. See [Install](./install) for the full story.
+### Verify
 
-## 1. Install dependencies
-
-```bash
-git clone https://github.com/ideamans/chartjs2img
-cd chartjs2img
-bun install
+```sh
+chartjs2img --help
 ```
 
-## 2. Start the HTTP server
+You should see the usage banner. If `chartjs2img: command not found`,
+open a new shell (so the updated `PATH` is picked up) or consult
+[Install](./install).
 
-```bash
-bun run dev
+On the first render, Chromium is **auto-downloaded** to your user
+cache (~250 MB). On linux-arm64 the auto-download is not available —
+install Chromium from your distro and set `CHROMIUM_PATH`. Details in
+[Install](./install).
+
+## Render your first chart
+
+Pipe a one-line Chart.js config straight into `chartjs2img` — the
+`render` command reads from stdin by default and writes the PNG to
+`-o`.
+
+### macOS / Linux
+
+```sh
+echo '{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"Sales","data":[12,19,3],"backgroundColor":"rgba(54,162,235,0.7)"}]}}' \
+  | chartjs2img render -o hello.png
 ```
 
-You should see:
+### Windows (PowerShell)
 
-```
-chartjs2img server listening on http://0.0.0.0:3000
-  POST /render      - render chart from JSON body
-  GET  /render      - render chart from query params
-  GET  /cache/:hash - retrieve cached image
-  GET  /examples    - examples gallery
-  GET  /health      - health check + stats
+```powershell
+'{"type":"bar","data":{"labels":["Jan","Feb","Mar"],"datasets":[{"label":"Sales","data":[12,19,3],"backgroundColor":"rgba(54,162,235,0.7)"}]}}' `
+  | chartjs2img render -o hello.png
 ```
 
-## 3. Render your first chart
+Open `hello.png` in your image viewer — you should see a three-bar
+chart. It should come out like this:
 
-In another terminal:
+<Example name="bar-chart" caption="The output of the command above." />
 
-```bash
-curl -X POST http://localhost:3000/render \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "chart": {
-      "type": "bar",
-      "data": {
-        "labels": ["Jan", "Feb", "Mar", "Apr"],
-        "datasets": [{
-          "label": "Sales",
-          "data": [12, 19, 3, 5],
-          "backgroundColor": "rgba(54, 162, 235, 0.7)"
-        }]
-      }
-    }
-  }' \
-  -o chart.png
-```
-
-Open `chart.png` — that's your first server-rendered Chart.js chart.
-
-## 4. Try the CLI
-
-The same engine works as a one-shot CLI:
-
-```bash
-echo '{"type":"bar","data":{"labels":["A","B","C"],"datasets":[{"data":[1,2,3]}]}}' \
-  | bun run src/index.ts render -o chart.png
-```
-
-## 5. Browse the built-in examples
-
-Visit [http://localhost:3000/examples](http://localhost:3000/examples) to
-see 18 chart types rendered live. Clicking one reveals the source JSON
-you can copy and tweak.
+Want JPEG, a wider canvas, or a transparent background? The `render`
+command takes flags for all of that — see [CLI rendering](./cli/) for
+the full surface.
 
 ## Where to next
 
-- **[Install](./install)** — release binaries, Chromium detection, Docker.
-- **[HTTP API](./http-api)** — every endpoint, every response header.
-- **[CLI](./cli)** — every subcommand and flag.
-- **[Bundled plugins](./plugins)** — the 12 Chart.js plugins available out of the box.
-- **[Error feedback](./error-feedback)** — how Chart.js errors surface through the API.
-- **[AI Guide](/en/ai/)** — using chartjs2img from Claude, Copilot, Cursor, or any MCP agent.
+The rest of the User Guide is split into two tracks:
+
+- **[CLI rendering](./cli/)** — the primary workflow. One chart in,
+  one image out. Read this first.
+- **[HTTP server](./http/)** — for long-running services where many
+  clients hit the same renderer. Includes cache, auth, and Docker.
+
+Or first learn what's available:
+
+- **[Bundled plugins](./plugins)** — Chart.js plus 12 ecosystem plugins
+  and which `type` values they unlock (treemap, sankey, wordcloud,
+  choropleth, …). Bundled into every render without extra setup.
+- **[Install](./install)** — GitHub Releases, build from source, and
+  other ways to get the binary.
