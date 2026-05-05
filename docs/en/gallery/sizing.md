@@ -6,9 +6,10 @@ description: Examples of non-default canvas sizes - small 400x300 thumbnails and
 # Sizing
 
 The default is 800 × 600 pixels. The `width` and `height` HTTP/CLI
-options override it. Device pixel ratio (`devicePixelRatio`) is
-separate — it scales the image up for retina screens but doesn't
-affect the chart's content area.
+options override it. Device pixel ratio (`devicePixelRatio`, default
+`1`) is a separate multiplier on top — it scales output dimensions
+and rendering precision by N but does not change the chart's logical
+content area.
 
 ## Small size (400 × 300)
 
@@ -31,11 +32,12 @@ Banner / sparkline-style.
 - **Aspect ratio is usually implicit.** `maintainAspectRatio` is set
   to `false` inside the template, so your `width` × `height` is what
   you get.
-- **Device pixel ratio multiplies output pixels, not chart detail.**
-  `devicePixelRatio: 2` at 800 × 600 produces a 1600 × 1200 PNG — the
-  chart renders at 800 × 600 CSS pixels, then the canvas is exported
-  at 2× resolution. Good for retina screens; bad if you want a small
-  file.
+- **Device pixel ratio multiplies output dimensions directly.**
+  `devicePixelRatio: 2` at 800 × 600 produces a 1600 × 1200 PNG. The
+  chart's layout is computed in 800 × 600 CSS pixels, but both the
+  Puppeteer viewport and Chart.js's internal canvas buffer rasterize
+  at 2× — so strokes and text both stay crisp. Lower it if you want
+  a smaller file.
 - **The screenshot is of `#chart-container`**, not the page. No HTML
   chrome, no margin, no surrounding white space beyond what you put
   in the chart itself.

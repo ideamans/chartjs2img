@@ -162,7 +162,7 @@ Render a chart from a JSON body.
   "chart": { },
   "width": 800,
   "height": 600,
-  "devicePixelRatio": 2,
+  "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
   "quality": 90
@@ -174,7 +174,7 @@ Render a chart from a JSON body.
 | `chart` | object | *required* | Chart.js configuration (type, data, options, plugins) |
 | `width` | number | 800 | Image width in pixels |
 | `height` | number | 600 | Image height in pixels |
-| `devicePixelRatio` | number | 2 | Retina scaling factor |
+| `devicePixelRatio` | number | 1 | Output scale factor — N multiplies both image dimensions and rendering precision |
 | `backgroundColor` | string | `"white"` | CSS background color (`"transparent"` supported) |
 | `format` | string | `"png"` | Output format: `png` or `jpeg` |
 | `quality` | number | 90 | JPEG quality (0-100) |
@@ -318,7 +318,7 @@ bun run src/index.ts render -i chart.json -o chart.png -w 1200 -h 400 -f jpeg -q
 | `-o, --output <file>` | Output image file (default: stdout) |
 | `-w, --width <px>` | Width (default: 800) |
 | `-h, --height <px>` | Height (default: 600) |
-| `--device-pixel-ratio <n>` | DPR (default: 2) |
+| `--device-pixel-ratio <n>` | Output scale factor — N× output dimensions and rendering precision (default: 1) |
 | `--background-color <color>` | Background (default: white) |
 | `-f, --format <fmt>` | png, jpeg (default: png) |
 | `-q, --quality <0-100>` | JPEG quality (default: 90) |

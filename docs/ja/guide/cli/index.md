@@ -108,7 +108,7 @@ scale tick コールバックは届きません。静的な値を使ってくだ
 | `-o, --output <file>`         | stdout   | 出力画像ファイル、または `-` で stdout        |
 | `-w, --width <px>`            | `800`    | キャンバス幅                                  |
 | `-h, --height <px>`           | `600`    | キャンバス高さ                                |
-| `--device-pixel-ratio <n>`    | `2`      | Retina スケール係数                           |
+| `--device-pixel-ratio <n>`    | `1`      | 出力スケール係数 — N で出力寸法と描画精度の両方を倍化 |
 | `--background-color <color>`  | `white`  | CSS カラー、または `transparent`              |
 | `-f, --format <fmt>`          | `png`    | `png` または `jpeg`                           |
 | `-q, --quality <0-100>`       | `90`     | JPEG の品質                                   |

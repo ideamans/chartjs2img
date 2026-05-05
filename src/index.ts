@@ -29,7 +29,7 @@ RENDER OPTIONS
   --output, -o <file>            Output image file, or "-" for stdout (default: stdout)
   --width, -w <px>               Canvas width in pixels (default: 800)
   --height, -h <px>              Canvas height in pixels (default: 600)
-  --device-pixel-ratio <n>       Retina scale factor (default: 2)
+  --device-pixel-ratio <n>       Output scale factor — multiplies both image dimensions and rendering precision (default: 1)
   --background-color <color>     CSS color or "transparent" (default: white)
   --format, -f <fmt>             png | jpeg (default: png)
   --quality, -q <0-100>          JPEG quality (default: 90)
@@ -95,7 +95,7 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
       "chart": { <Chart.js config as above> },
       "width": 800,              // optional, default 800
       "height": 600,             // optional, default 600
-      "devicePixelRatio": 2,     // optional, default 2
+      "devicePixelRatio": 1,     // optional, default 1 — N scales output to width*N x height*N
       "backgroundColor": "white",// optional, default "white"
       "format": "png",           // optional, "png" | "jpeg"
       "quality": 90              // optional, 0-100 for jpeg

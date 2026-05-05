@@ -79,7 +79,7 @@ chart config directly:
   "chart": { /* RenderOptions.chart */ },
   "width": 800,
   "height": 600,
-  "devicePixelRatio": 2,
+  "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
   "quality": 90
@@ -98,7 +98,7 @@ Same semantic content, encoded as query params:
 GET /render?chart=<URL-encoded JSON>
           &width=800
           &height=600
-          &devicePixelRatio=2
+          &devicePixelRatio=1
           &backgroundColor=white
           &format=png
           &quality=90

@@ -78,7 +78,7 @@ interface ServerConfig {
   "chart": { /* RenderOptions.chart */ },
   "width": 800,
   "height": 600,
-  "devicePixelRatio": 2,
+  "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
   "quality": 90
@@ -96,7 +96,7 @@ Chart.js 自身が検証して `X-Chart-Messages` でエラーを返します。
 GET /render?chart=<URL エンコードされた JSON>
           &width=800
           &height=600
-          &devicePixelRatio=2
+          &devicePixelRatio=1
           &backgroundColor=white
           &format=png
           &quality=90

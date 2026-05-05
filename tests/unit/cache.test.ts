@@ -48,7 +48,7 @@ describe('computeHash', () => {
     expect(computeHash({ ...base, height: 900 })).not.toBe(hBase)
     expect(computeHash({ ...base, format: 'jpeg' })).not.toBe(hBase)
     expect(computeHash({ ...base, quality: 50 })).not.toBe(hBase)
-    expect(computeHash({ ...base, devicePixelRatio: 1 })).not.toBe(hBase)
+    expect(computeHash({ ...base, devicePixelRatio: 2 })).not.toBe(hBase)
     expect(computeHash({ ...base, backgroundColor: 'transparent' })).not.toBe(hBase)
   })
 

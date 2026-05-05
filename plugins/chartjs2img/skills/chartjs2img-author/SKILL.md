@@ -47,7 +47,7 @@ echo '{"type":"bar","data":{"labels":["A","B","C"],"datasets":[{"data":[10,20,30
   | chartjs2img render -o chart.png
 
 chartjs2img render -i config.json -o chart.png -w 800 -h 600 \
-  --background-color white --device-pixel-ratio 2 -f png
+  --background-color white --device-pixel-ratio 1 -f png
 ```
 
 Canonical skeleton:
@@ -84,7 +84,7 @@ settings as siblings:
   "chart": { "type": "bar", "data": { }, "options": { } },
   "width": 800,
   "height": 600,
-  "devicePixelRatio": 2,
+  "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
   "quality": 90
@@ -96,7 +96,7 @@ settings as siblings:
 | `chart`            | object | **required**  | Chart.js configuration                  |
 | `width`            | number | 800           | Image width in pixels                   |
 | `height`           | number | 600           | Image height in pixels                  |
-| `devicePixelRatio` | number | 2             | Retina scaling factor                   |
+| `devicePixelRatio` | number | 1             | Output scale factor — N× output dimensions and rendering precision |
 | `backgroundColor`  | string | `"white"`     | CSS color or `"transparent"`            |
 | `format`           | string | `"png"`       | `"png"`, `"jpeg"`, or `"webp"`          |
 | `quality`          | number | 90            | JPEG / WebP quality (0–100)             |

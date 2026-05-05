@@ -51,7 +51,7 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
   "chart": { "type": "bar", "data": { ... }, "options": { ... } },
   "width": 800,
   "height": 600,
-  "devicePixelRatio": 2,
+  "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
   "quality": 90
@@ -63,7 +63,7 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
 | \`chart\` | object | **required** | Chart.js configuration |
 | \`width\` | number | 800 | Image width in pixels |
 | \`height\` | number | 600 | Image height in pixels |
-| \`devicePixelRatio\` | number | 2 | Retina scaling factor |
+| \`devicePixelRatio\` | number | 1 | Output scale factor — N multiplies both image dimensions and rendering precision |
 | \`backgroundColor\` | string | \`"white"\` | CSS color or \`"transparent"\` |
 | \`format\` | string | \`"png"\` | \`"png"\` or \`"jpeg"\` |
 | \`quality\` | number | 90 | JPEG quality (0-100) |

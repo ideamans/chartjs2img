@@ -70,7 +70,7 @@ curl -X POST http://localhost:3000/render \
 | `chart`            | object   | **必須**       | Chart.js 設定（`type`、`data`、`options` …）         |
 | `width`            | number   | `800`          | 画像幅（ピクセル）                                   |
 | `height`           | number   | `600`          | 画像高さ（ピクセル）                                 |
-| `devicePixelRatio` | number   | `2`            | Retina スケール係数                                  |
+| `devicePixelRatio` | number   | `1`            | 出力スケール係数 — N で出力寸法と描画精度の両方を倍化 |
 | `backgroundColor`  | string   | `"white"`      | CSS カラー（`"transparent"` 可）                      |
 | `format`           | string   | `"png"`        | `png` または `jpeg`                                   |
 | `quality`          | number   | `90`           | JPEG 品質 (0-100)                                     |

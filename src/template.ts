@@ -37,7 +37,7 @@ export interface RenderOptions {
   width?: number
   /** Canvas height in pixels (default: 600) */
   height?: number
-  /** Device pixel ratio (default: 2) */
+  /** Device pixel ratio — also scales output PNG dimensions (default: 1) */
   devicePixelRatio?: number
   /** Background color (default: 'white') */
   backgroundColor?: string
@@ -52,7 +52,7 @@ export function buildHtml(options: RenderOptions): string {
     chart,
     width = 800,
     height = 600,
-    devicePixelRatio = 2,
+    devicePixelRatio = 1,
     backgroundColor = 'white',
   } = options
 

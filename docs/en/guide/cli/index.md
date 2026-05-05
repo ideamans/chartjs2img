@@ -108,7 +108,7 @@ LLM-targeted reference.
 | `-o, --output <file>`         | stdout   | Output image file, or `-` for stdout |
 | `-w, --width <px>`            | `800`    | Canvas width                         |
 | `-h, --height <px>`           | `600`    | Canvas height                        |
-| `--device-pixel-ratio <n>`    | `2`      | Retina scale factor                  |
+| `--device-pixel-ratio <n>`    | `1`      | Output scale factor — N× output dimensions and rendering precision |
 | `--background-color <color>`  | `white`  | CSS color, or `transparent`          |
 | `-f, --format <fmt>`          | `png`    | `png` or `jpeg`                      |
 | `-q, --quality <0-100>`       | `90`     | Quality for JPEG                     |

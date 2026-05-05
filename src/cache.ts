@@ -40,7 +40,7 @@ export function computeHash(options: RenderOptions): string {
     chart: options.chart,
     width: options.width ?? 800,
     height: options.height ?? 600,
-    devicePixelRatio: options.devicePixelRatio ?? 2,
+    devicePixelRatio: options.devicePixelRatio ?? 1,
     backgroundColor: options.backgroundColor ?? 'white',
     format: options.format ?? 'png',
     quality: options.quality ?? 90,

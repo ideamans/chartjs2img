@@ -252,8 +252,9 @@ export class Renderer {
         const html = buildHtml(options)
         const width = options.width ?? 800
         const height = options.height ?? 600
+        const deviceScaleFactor = options.devicePixelRatio ?? 1
 
-        await page.setViewport({ width, height })
+        await page.setViewport({ width, height, deviceScaleFactor })
         // Use data URL with page.goto instead of setContent — puppeteer's
         // setContent does not reliably honor networkidle for external
         // <script src> loading, so charts would sometimes screenshot

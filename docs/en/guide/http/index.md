@@ -70,7 +70,7 @@ curl -X POST http://localhost:3000/render \
 | `chart`            | object  | **required**   | Chart.js config (`type`, `data`, `options`, …)        |
 | `width`            | number  | `800`          | Image width in pixels                                |
 | `height`           | number  | `600`          | Image height in pixels                               |
-| `devicePixelRatio` | number  | `2`            | Retina scaling factor                                |
+| `devicePixelRatio` | number  | `1`            | Output scale factor — N multiplies both image dimensions and rendering precision |
 | `backgroundColor`  | string  | `"white"`      | CSS color (`"transparent"` supported)                |
 | `format`           | string  | `"png"`        | `png` or `jpeg`                                       |
 | `quality`          | number  | `90`           | JPEG quality (0-100)                                  |
