@@ -17,7 +17,7 @@ chartjs2img serve --port 3000
 On startup the server prints:
 
 ```
-chartjs2img v0.2.2 listening on http://0.0.0.0:3000
+chartjs2img v0.4.0 listening on http://0.0.0.0:3000
   POST /render      - render chart from JSON body
   GET  /render      - render chart from query params
   GET  /cache/:hash - retrieve cached image
@@ -140,7 +140,7 @@ counters. Useful for liveness / readiness probes.
 ```json
 {
   "status": "ok",
-  "version": "0.2.2",
+  "version": "0.4.0",
   "renderer": {
     "browserConnected": true,
     "concurrency": { "max": 8, "active": 2, "pending": 0 },

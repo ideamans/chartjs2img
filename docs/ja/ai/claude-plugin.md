@@ -74,7 +74,7 @@ Added marketplace ideamans-plugins from github.com/ideamans/claude-public-plugin
 chartjs2img --version
 ```
 
-`chartjs2img v0.2.2` (または最新タグ) が出ればOK。
+`chartjs2img v0.4.0` (または最新タグ) が出ればOK。
 
 ## 4. チャートの作成
 

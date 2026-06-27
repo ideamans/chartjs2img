@@ -73,7 +73,7 @@ Verify:
 chartjs2img --version
 ```
 
-Should print `chartjs2img v0.2.2` (or whatever tag is latest).
+Should print `chartjs2img v0.4.0` (or whatever tag is latest).
 
 ## 4. Author a chart
 
