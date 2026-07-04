@@ -86,9 +86,11 @@ Expand-Archive chartjs2img.zip -DestinationPath .
 ## Docker (HTTP サーバーのみ)
 
 chartjs2img を長期稼働の HTTP サービスとして動かす場合は、Docker
-イメージをビルドまたは pull してください。Chromium と Noto Sans CJK
-フォントがあらかじめ組み込まれているため、初回起動時の Chromium
-ダウンロードや日本語/中国語/韓国語ラベルの豆腐化が起きません。
+イメージをビルドまたは pull してください。既定の `skia` エンジン用の
+skia-canvas、`browser` エンジン用の Chromium、そして Noto Sans CJK
+フォントが**すべて**あらかじめ組み込まれているため、初回起動時の
+Chromium ダウンロードや日本語/中国語/韓国語ラベルの豆腐化が
+起きません。
 
 詳細は [HTTP サーバー → Docker](./http/docker) を参照。
 
@@ -110,9 +112,25 @@ bun run build        # ./chartjs2img をリポジトリ直下に生成
 bun run src/index.ts render -i chart.json -o chart.png
 ```
 
+## レンダリングエンジン
+
+chartjs2img には 2 つのレンダリングエンジンがあり、レンダリング毎に
+選択します（[CLI](./cli/) の `--engine`、[HTTP](./http/) の `engine`
+フィールド、[ライブラリ](../developer/library-api) の `engine` オプション）。
+
+- **`skia`（既定）** — `skia-canvas`（ネイティブ Skia）でブラウザを
+  起動せずにインプロセス描画。高速・軽量で、**ブラウザのインストールは
+  不要**です。以下の Chromium 検出の節は `skia` だけを使う限り読み
+  飛ばして構いません。
+- **`browser`** — `puppeteer-core` 経由のヘッドレス Chromium。実
+  ブラウザとのピクセル一致が必要な場合に使います。このエンジンだけが
+  下記の Chromium を必要とします。
+
 ## Chromium / Chrome 検出
 
-初回レンダリング時、chartjs2img は以下の順にブラウザを探します:
+以下は **`browser` エンジンのみ**に関係します。`browser` エンジンを
+**初めて使う**とき、chartjs2img は以下の順にブラウザを探します
+（既定の `skia` エンジンではこの探索は行われません）:
 
 1. **`CHROMIUM_PATH`** 環境変数 — 明示的な上書きが最優先。
 2. **Puppeteer のブラウザキャッシュ** — `~/.cache/puppeteer/` など。
@@ -153,7 +171,8 @@ systemd の unit ファイルや `docker run` の環境変数に含めれば永�
 インストール先のバイナリを削除するだけです
 （`/usr/local/bin/chartjs2img`、`$HOME/bin/chartjs2img`、Windows の
 インストールディレクトリ）。インストーラが書き込むのはこの
-バイナリのみです。ランタイムで自動ダウンロードされた Chromium は
+バイナリのみです。`browser` エンジン利用時にランタイムで自動
+ダウンロードされた Chromium は
 `~/Library/Caches/ms-playwright/` (macOS)、
 `~/.cache/ms-playwright/` (Linux)、
 `%LOCALAPPDATA%\ms-playwright\` (Windows) にキャッシュされるので、

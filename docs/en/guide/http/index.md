@@ -26,7 +26,9 @@ chartjs2img v0.4.0 listening on http://0.0.0.0:3000
 ```
 
 Press `Ctrl-C` (or send `SIGTERM`) to shut down cleanly — the server
-drains in-flight requests before closing Chromium.
+drains in-flight requests before closing the browser engine (a no-op
+if only the default `skia` engine was used, since it launches
+nothing).
 
 A quick taste of what the POST produces — flip to the **HTTP** tab to
 see the exact `curl` that generates the preview:
@@ -74,12 +76,19 @@ curl -X POST http://localhost:3000/render \
 | `backgroundColor`  | string  | `"white"`      | CSS color (`"transparent"` supported)                |
 | `format`           | string  | `"png"`        | `png` or `jpeg`                                       |
 | `quality`          | number  | `90`           | JPEG quality (0-100)                                  |
+| `engine`           | string  | `"skia"`       | Rendering engine: `skia` or `browser`                |
+
+The `engine` field also works as the `?engine=` query parameter on
+`GET /render`. An unknown value returns `400`. The default `skia`
+engine renders in-process with no browser; `browser` uses headless
+Chromium. The two engines cache independently (the cache hash
+includes the engine), so switching engines re-renders rather than
+returning a stale image.
 
 ::: warning JSON only — functions are silently dropped
 The `chart` field travels through `JSON.stringify` on its way into the
-headless browser. Any `formatter: (ctx) => ...` callback, tooltip
-callback, or scale tick callback disappears in transit. Use static
-values instead.
+renderer. Any `formatter: (ctx) => ...` callback, tooltip callback, or
+scale tick callback disappears in transit. Use static values instead.
 :::
 
 Missing / invalid input returns `400` with a JSON error body:

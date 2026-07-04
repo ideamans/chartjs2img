@@ -10,8 +10,17 @@ The plugin bundle is the same whether you render via the
 renderer. This page is the reference both tracks point back to.
 
 chartjs2img ships with Chart.js core **plus 12 ecosystem plugins**,
-all pre-loaded in the headless browser. You don't install anything —
-just use the options in your config JSON.
+all pre-loaded by the renderer. You don't install anything — just use
+the options in your config JSON. Both engines bundle the same
+versions: the default `skia` engine imports them from npm, and the
+`browser` engine loads them from CDN inside the page.
+
+::: warning `chartjs-plugin-zoom` needs the browser engine
+Zoom / pan is interaction-only and requires a live DOM, so it is **not**
+included in the default `skia` engine. Use `--engine browser` (CLI) or
+`"engine": "browser"` (HTTP) if you rely on it. See
+[Rendering engines](./cli/#rendering-engine).
+:::
 
 For each plugin's full option schema, run `chartjs2img llm` and grep
 the relevant section, or see the upstream docs linked below.
@@ -61,8 +70,8 @@ Supported `chart.type` values out of the box: `bar`, `line`, `pie`,
 - **Animation** — `options.animation` is forced OFF internally. The
   renderer needs a stable final frame to screenshot; animations would
   be cropped mid-transition.
-- **Custom plugins you bring yourself** — the browser runs only the
-  plugins listed above (loaded at page init). To add another plugin,
+- **Custom plugins you bring yourself** — the renderer runs only the
+  plugins listed above (baked into the bundle). To add another plugin,
   see Developer Guide → [Adding a Chart.js plugin](/en/developer/adding-plugin).
 
 ## Forcing / overriding at render time

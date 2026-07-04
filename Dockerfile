@@ -1,9 +1,12 @@
 FROM node:20-slim
 
-# Install dependencies for headless Chrome + Noto Sans JP
+# System libs for BOTH engines:
+#   - skia-canvas (default engine): libfontconfig1 + Noto CJK fonts
+#   - headless Chrome (browser engine): the libX*/libnss/etc. set below
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     fonts-noto-cjk \
+    libfontconfig1 \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \

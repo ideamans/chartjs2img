@@ -35,8 +35,11 @@
 export { renderChart, closeBrowser, rendererStats, Renderer } from './renderer'
 export type { RenderResult, ConsoleMessage, RendererConfig, RendererStats } from './renderer'
 
-// Input shape.
-export type { RenderOptions } from './template'
+// Input shape + engine selection. The default engine is skia-canvas
+// (`DEFAULT_ENGINE`); pass `engine: 'browser'` per render for headless
+// Chromium when maximum fidelity is required.
+export type { RenderOptions, Engine } from './template'
+export { DEFAULT_ENGINE } from './template'
 
 // Deterministic hash computation — useful for building a CDN-facing
 // cache layer or for deduping submissions before rendering.

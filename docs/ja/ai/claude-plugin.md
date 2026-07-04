@@ -16,8 +16,10 @@ CLI のインストール、説明からの config 作成、PNG / JPEG / WebP
 - [Claude Code](https://code.claude.com/) が動作する環境。
 - `git` が PATH にある (マーケットプレースは git クローン)。
 
-これだけ。プラグインの `/chartjs2img-install` スキルが CLI バイナリと
-Chromium の自動ダウンロードまで面倒を見ます。
+これだけ。プラグインの `/chartjs2img-install` スキルが CLI バイナリの
+導入まで面倒を見ます。既定の `skia` エンジンはブラウザ不要なので追加の
+ダウンロードは発生せず、`browser` エンジンを使うときだけ Chromium が
+初回に自動ダウンロードされます。
 
 ## 1. マーケットプレースの追加
 
@@ -128,10 +130,12 @@ chartjs2img --version
 `/chartjs2img-install` を再実行するか、シェルが `~/.local/bin` を
 拾ったか確認 (新しいシェルを起動 or `exec $SHELL`)。
 
-**レンダリングが Chromium エラーで失敗** — 初回レンダー時、
-chartjs2img は Chrome for Testing を自動 DL。失敗するケース
-(ファイアウォール、企業プロキシ、linux-arm64) では手動インストール +
-`CHROMIUM_PATH` 設定にフォールバック。[インストール](/ja/guide/install) を参照。
+**レンダリングが Chromium エラーで失敗** — これは `browser` エンジン
+利用時のみ発生します（既定の `skia` エンジンはブラウザ不要）。`browser`
+エンジンの初回レンダー時、chartjs2img は Chrome for Testing を自動 DL。
+失敗するケース (ファイアウォール、企業プロキシ、linux-arm64) では手動
+インストール + `CHROMIUM_PATH` 設定にフォールバック。または `skia`
+エンジンに切り替えれば回避できます。[インストール](/ja/guide/install) を参照。
 
 **レンダリングされた画像が空白** — スキルの出力で `X-Chart-Messages` を
 確認。`chart.type` のタイポか `datasets` 欠落が典型。技術的には

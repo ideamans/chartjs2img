@@ -1,6 +1,6 @@
 ---
 title: Install
-description: Install chartjs2img via the one-liner script, GitHub Releases, Docker, or from source. Includes Chromium detection notes and Linux ARM64 caveats.
+description: Install chartjs2img via the one-liner script, GitHub Releases, Docker, or from source. The default skia engine needs no browser; Chromium is only for the browser engine. Includes Chromium detection notes and Linux ARM64 caveats.
 ---
 
 # Install
@@ -10,6 +10,14 @@ The fastest way to install `chartjs2img` is the one-liner shown in the
 binary for your platform and drops it on your `PATH`. This page covers
 every other option: the install landing page, GitHub Releases,
 Docker, and building from source.
+
+::: tip No browser needed for the default engine
+chartjs2img renders on the **`skia` engine** by default — a native
+Skia canvas that runs in-process with **no browser**. Installing the
+binary is all you need. Chrome / Chromium is only required if you opt
+into the **`browser` engine** (`--engine browser`); see
+[Chromium / Chrome detection](#chromium--chrome-detection) below.
+:::
 
 ## The install landing page
 
@@ -84,9 +92,11 @@ Expand-Archive chartjs2img.zip -DestinationPath .
 ## Docker (HTTP server only)
 
 If you want to run chartjs2img as a long-running HTTP service, pull or
-build the Docker image — it ships with Chromium and Noto Sans CJK
-fonts baked in so there's no first-run download and Japanese / Chinese
-/ Korean labels render correctly.
+build the Docker image — it ships with **both** rendering engines
+(skia-canvas for the default `skia` engine, and Chromium for the
+`browser` engine) plus Noto Sans CJK fonts baked in, so there's no
+first-run download and Japanese / Chinese / Korean labels render
+correctly on either engine.
 
 See [HTTP server → Docker](./http/docker) for build, run, and
 docker-compose recipes.
@@ -108,9 +118,27 @@ Or run without compiling — handy for hacking on the CLI itself:
 bun run src/index.ts render -i chart.json -o chart.png
 ```
 
+::: tip skia in a compiled binary
+The `bun run build` binary embeds the default `skia` engine, so it
+renders every built-in chart type with no external dependencies. One
+caveat: inside the compiled binary, `euler` / `venn` charts fall back
+to an ellipse renderer (minor overlap-fill artifacts) due to a
+skia-canvas quirk under the compiled runtime. `bun run`, the npm
+library, and the HTTP server render venn / euler at full fidelity; so
+does the `browser` engine.
+:::
+
 ## Chromium / Chrome detection
 
-On first render, chartjs2img searches for a browser in this order:
+::: warning Only the `browser` engine needs Chromium
+Everything in this section applies **only** when you use the
+`browser` engine (`--engine browser`). The default `skia` engine
+renders in-process and never touches Chrome / Chromium — you can skip
+this entirely if you only use `skia`.
+:::
+
+On first use of the `browser` engine, chartjs2img searches for a
+browser in this order:
 
 1. **`CHROMIUM_PATH`** environment variable — explicit override wins.
 2. **Puppeteer browser cache** — `~/.cache/puppeteer/`, etc.

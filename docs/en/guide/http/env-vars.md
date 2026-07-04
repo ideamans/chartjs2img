@@ -22,7 +22,7 @@ nuances.
 | `CACHE_TTL_SECONDS`        | `3600`      | Cache entry lifetime.                                                                     |
 | `MAX_RENDER_TIME_SECONDS`  | `30`        | Upper bound for a single render (applied to `page.goto` and `waitForFunction`).           |
 | `PAGE_TIMEOUT_SECONDS`     | *(derived)* | Override the safety-net force-close timer. Default: `MAX_RENDER_TIME_SECONDS * 2 + 10s`.  |
-| `CHROMIUM_PATH`            | *(none)*    | Explicit path to a Chromium binary. Wins over the detection chain. See [Install](../install). |
+| `CHROMIUM_PATH`            | *(none)*    | (browser engine only) Explicit path to a Chromium binary. Wins over the detection chain. See [Install](../install). |
 
 ## Setting them
 

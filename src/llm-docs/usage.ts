@@ -10,6 +10,20 @@ export const doc = `## chartjs2img — Usage Guide for LLMs
 This service renders Chart.js configurations (JSON) into PNG or JPEG images.
 All Chart.js plugins listed below are **pre-loaded** — no extra setup needed.
 
+### Rendering Engines
+
+Two engines are available, chosen per render via the \`engine\` field (HTTP) or
+\`--engine\` flag (CLI):
+
+- **\`skia\`** *(default)* — skia-canvas, in-process, no browser. Fast and the
+  right choice for almost everything.
+- **\`browser\`** — headless Chromium. Use only when you need exact real-browser
+  pixel parity, or the \`chartjs-plugin-zoom\` plugin (which the \`skia\` engine
+  does not include).
+
+You normally do not need to set \`engine\` at all — the default \`skia\` renders
+every supported chart type.
+
 ### Important Constraints
 
 - **JSON only** — no JavaScript functions, callbacks, or code. All config must be pure JSON.
@@ -54,7 +68,8 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
   "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
-  "quality": 90
+  "quality": 90,
+  "engine": "skia"
 }
 \`\`\`
 
@@ -67,6 +82,7 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
 | \`backgroundColor\` | string | \`"white"\` | CSS color or \`"transparent"\` |
 | \`format\` | string | \`"png"\` | \`"png"\` or \`"jpeg"\` |
 | \`quality\` | number | 90 | JPEG quality (0-100) |
+| \`engine\` | string | \`"skia"\` | Rendering engine: \`"skia"\` or \`"browser"\` |
 
 ### Error Feedback
 

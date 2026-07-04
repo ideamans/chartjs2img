@@ -1,7 +1,7 @@
 {
   "name": "chartjs2img",
   "description": "Adds /chartjs2img-render, /chartjs2img-author, and /chartjs2img-install skills for generating Chart.js charts as server-rendered PNG/JPEG/WebP images.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": {
     "name": "Ideamans Inc.",
     "email": "support@ideamans.com"
@@ -9,5 +9,13 @@
   "homepage": "https://github.com/ideamans/chartjs2img",
   "repository": "https://github.com/ideamans/chartjs2img",
   "license": "MIT",
-  "keywords": ["chart", "chartjs", "image", "png", "svg", "visualization", "llm"]
+  "keywords": [
+    "chart",
+    "chartjs",
+    "image",
+    "png",
+    "svg",
+    "visualization",
+    "llm"
+  ]
 }

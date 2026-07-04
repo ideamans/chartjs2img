@@ -21,7 +21,7 @@ systemd で扱いやすい形式です。CLI 固有の注意点がある変数
 | `CACHE_TTL_SECONDS`         | `3600`      | キャッシュ TTL                                                                                |
 | `MAX_RENDER_TIME_SECONDS`   | `30`        | 1 件のレンダリング上限（`page.goto` と `waitForFunction` の timeout）                          |
 | `PAGE_TIMEOUT_SECONDS`      | *(導出)*    | セーフティネット強制クローズの上書き。既定: `MAX_RENDER_TIME_SECONDS * 2 + 10s`。               |
-| `CHROMIUM_PATH`             | *(なし)*    | Chromium バイナリへの明示パス。検出チェーンより優先。[インストール](../install) 参照。          |
+| `CHROMIUM_PATH`             | *(なし)*    | (`browser` エンジンのみ) Chromium バイナリへの明示パス。検出チェーンより優先。[インストール](../install) 参照。 |
 
 ## 設定方法
 
@@ -74,9 +74,10 @@ ExecStart=/usr/local/bin/chartjs2img serve
 
 ### `CONCURRENCY`
 
-使える CPU コアに合わせます。1 レンダリングにつき 1 ブラウザタブ
-＋ 50-150 MB のメモリを使います。上げすぎると OOM やページ
-タイムアウトが出て、下げすぎるとクライアントがキューで待ちます。
+使える CPU コアに合わせます。1 レンダリングにつき 50-150 MB のメモリ
+（`browser` エンジンでは加えて 1 ブラウザタブ）を使います。上げすぎると
+OOM やページタイムアウトが出て、下げすぎるとクライアントがキューで
+待ちます。
 
 目安:
 

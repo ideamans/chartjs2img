@@ -21,6 +21,7 @@ export const VALUE_FLAGS = new Set([
   'background-color',
   'format', 'f',
   'quality', 'q',
+  'engine',
 ])
 
 export class CliArgError extends Error {

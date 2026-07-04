@@ -86,9 +86,10 @@ LLM エージェントから `chartjs2img render` を駆動する場合:
 
 ## Chart.js 以外のエラー
 
-Chromium 周り（ダウンロード、起動、コンテナ権限）のエラーは
-`[chart …]` プレフィックスが **付かず**、通常は終了コードも非ゼロ
-になります。これは設定ではなく環境の問題です。
+`browser` エンジン利用時の Chromium 周り（ダウンロード、起動、コンテナ
+権限）のエラーは `[chart …]` プレフィックスが **付かず**、通常は終了
+コードも非ゼロになります。これは設定ではなく環境の問題です（既定の
+`skia` エンジンではブラウザを起動しないため発生しません）。
 
 ```
 [renderer] Chrome/Chromium not found. Installing Chrome for Testing...

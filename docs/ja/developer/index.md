@@ -10,7 +10,9 @@ description: コントリビューター向けガイド - リポジトリ構成�
 
 ## このプロジェクトの実体
 
-**ヘッドレス Chromium の中で動く Chart.js** の薄いラッパーです:
+**2 つのエンジンで Chart.js を描画する**薄いラッパーです。既定は
+`skia`（`skia-canvas` によるインプロセス描画・ブラウザ不要）、任意で
+`browser`（ヘッドレス Chromium）を選べます:
 
 <img src="/diagrams/architecture-overview.svg" alt="chartjs2img アーキテクチャ全体像: CLI と HTTP サーバーが共通の renderer.ts を呼び、puppeteer 経由でヘッドレス Chromium の Chart.js + プラグインを駆動する。" />
 
@@ -28,8 +30,9 @@ chartjs2img/
 │   ├── index.ts         # CLI エントリポイント: argv 解析、サブコマンド振り分け
 │   ├── cli.ts           # `render` + `examples` CLI の実装
 │   ├── server.ts        # `serve` HTTP サーバー (Bun.serve)
-│   ├── renderer.ts      # Puppeteer + Chromium ライフサイクル、スクショパイプライン
-│   ├── template.ts      # ブラウザ側で読み込まれる静的 HTML テンプレート
+│   ├── renderer.ts      # レンダリングエントリ + エンジン分岐（skia / browser）
+│   ├── engine-skia.ts   # skia エンジン（skia-canvas でインプロセス描画・既定）
+│   ├── template.ts      # browser エンジンで読み込まれる静的 HTML テンプレート
 │   ├── cache.ts         # メモリ内 LRU + TTL キャッシュ
 │   ├── semaphore.ts     # 同時実行制御の小さな async セマフォ
 │   ├── examples.ts      # 組み込みサンプル (CLI + ギャラリーで共用)
@@ -49,9 +52,10 @@ chartjs2img/
 └── README.md
 ```
 
-コードベースは意図的に小さめ (llm-docs を除くと約 2000 行) — 重い処理は
-全て Chromium 内で行われます。コードリーディングで真っ先に読むべきは
-通常 `renderer.ts`。
+コードベースは意図的に小さめ (llm-docs を除くと約 2000 行) — 重い描画
+処理は `skia` エンジンなら `engine-skia.ts` のインプロセス描画、`browser`
+エンジンなら Chromium 内で行われます。コードリーディングで真っ先に読む
+べきは通常 `renderer.ts`（エンジン分岐の入口）。
 
 ## よくあるコントリビューションの流れ
 
@@ -70,8 +74,10 @@ chartjs2img/
 
 ### 「レンダリングのバグに当たった」
 
-まずブラウザコンソールを確認。`renderer.ts` の `page.on('console', …)` と
-`window.__chartMessages` が Chromium 側と Chart.js 側のエラーの両方を捕捉。
+まず Chart.js のコンソール出力を確認。`browser` エンジンでは `renderer.ts`
+の `page.on('console', …)` と `window.__chartMessages` が Chromium 側と
+Chart.js 側のエラーの両方を捕捉、`skia` エンジンでは `engine-skia.ts` が
+`console.warn` / `console.error` をインプロセスで捕捉します。
 それらは `X-Chart-Messages` (HTTP) または stderr (CLI) で呼び出し元に返ります。
 詳しくは [エラーハンドリング](./error-handling) を参照。
 

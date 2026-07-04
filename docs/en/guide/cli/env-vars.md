@@ -6,15 +6,20 @@ description: Environment variables relevant to chartjs2img CLI rendering — Chr
 # Environment variables (CLI)
 
 Running `chartjs2img render` reads a small set of environment
-variables — mostly to locate Chromium and to tune the render budget.
-Variables specific to the HTTP server (`PORT`, `HOST`, `API_KEY`)
-have no effect here; see [HTTP server → Environment variables](../http/env-vars)
-for those.
+variables — to locate Chromium (browser engine only) and to tune the
+render budget. Variables specific to the HTTP server (`PORT`, `HOST`,
+`API_KEY`) have no effect here; see [HTTP server → Environment
+variables](../http/env-vars) for those.
+
+The default `skia` engine ignores the Chromium-related variables
+entirely — it needs no browser. `CHROMIUM_PATH` and
+`PLAYWRIGHT_BROWSERS_PATH` only matter when you render with
+`--engine browser`.
 
 | Variable                   | Default     | Description                                                                             |
 | -------------------------- | ----------- | --------------------------------------------------------------------------------------- |
-| `CHROMIUM_PATH`            | *(none)*    | Explicit path to a Chromium / Chrome executable. Wins over the auto-detection chain.     |
-| `PLAYWRIGHT_BROWSERS_PATH` | *(none)*    | Override the Playwright cache directory searched during detection.                       |
+| `CHROMIUM_PATH`            | *(none)*    | (browser engine) Explicit path to a Chromium / Chrome executable. Wins over the auto-detection chain. |
+| `PLAYWRIGHT_BROWSERS_PATH` | *(none)*    | (browser engine) Override the Playwright cache directory searched during detection.      |
 | `MAX_RENDER_TIME_SECONDS`  | `30`        | Upper bound for a single render (applied to `page.goto` and `waitForFunction`).          |
 | `PAGE_TIMEOUT_SECONDS`     | *(derived)* | Override the safety-net force-close timer. Default: `MAX_RENDER_TIME_SECONDS * 2 + 10s`. |
 | `CONCURRENCY`              | `8`         | Not exercised by one-shot `render`, but respected by `chartjs2img examples` batch mode. |
@@ -57,9 +62,10 @@ Set them alongside your job definition. On GitHub Actions:
 
 ### `CHROMIUM_PATH`
 
-Set it when the auto-detection chain can't find a browser you know is
-installed — Linux ARM64 is the common case because the Chrome for
-Testing auto-download does not publish linux-arm64 builds. See
+Only relevant on the `browser` engine. Set it when the auto-detection
+chain can't find a browser you know is installed — Linux ARM64 is the
+common case because the Chrome for Testing auto-download does not
+publish linux-arm64 builds. See
 [Install → Linux ARM64](../install#linux-arm64-manual-chromium-required).
 
 ### `MAX_RENDER_TIME_SECONDS`

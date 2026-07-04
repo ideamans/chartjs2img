@@ -29,8 +29,14 @@ interface RenderOptions {
   format?: 'png' | 'jpeg' | 'webp'
   /** JPEG/WebP quality 0-100 (default: 90) */
   quality?: number
+  /** Rendering engine: skia, browser (default: 'skia') */
+  engine?: Engine
 }
+
+type Engine = 'skia' | 'browser'
 ```
+
+`DEFAULT_ENGINE` (exported from the package root) equals `'skia'`.
 
 ## `RenderResult` (renderer.ts)
 
@@ -82,13 +88,14 @@ chart config directly:
   "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
-  "quality": 90
+  "quality": 90,
+  "engine": "skia"
 }
 ```
 
-`chart` is the only required field. The server validates only its
-presence — Chart.js itself validates the rest and reports errors via
-`X-Chart-Messages`.
+`chart` is the only required field. The server validates its presence
+and rejects an unknown `engine` value with `400` — Chart.js itself
+validates the rest and reports errors via `X-Chart-Messages`.
 
 ## HTTP query — `GET /render`
 
@@ -102,6 +109,7 @@ GET /render?chart=<URL-encoded JSON>
           &backgroundColor=white
           &format=png
           &quality=90
+          &engine=skia
 ```
 
 Only `chart` is required; other params are optional. Query params
@@ -168,7 +176,7 @@ Content-Type: application/json
 
 | Status                  | Body JSON                                      | When                                                     |
 | ----------------------- | ---------------------------------------------- | -------------------------------------------------------- |
-| `400 Bad Request`       | `{ "error": "Missing chart parameter" }`       | GET `/render` without `chart=` query                     |
+| `400 Bad Request`       | `{ "error": "Missing chart parameter" }` / invalid `engine` | GET `/render` without `chart=` query, or an unknown `engine` value |
 | `401 Unauthorized`      | `{ "error": "Unauthorized" }`                  | `API_KEY` set and request missing/wrong key              |
 | `404 Not Found`         | `{ "error": "Not found" }` / cache miss msg    | Unknown path, or cache hash with no entry                |
 | `405 Method Not Allowed`| `{ "error": "Method not allowed" }`            | `/render` with method other than GET/POST                |
@@ -186,12 +194,14 @@ interface CliRenderArgs {
   backgroundColor?: string
   format?: 'png' | 'jpeg' | 'webp'
   quality?: number
+  engine?: Engine          // 'skia' (default) | 'browser'
 }
 
 interface CliExamplesArgs {
   outdir: string           // required
   format?: 'png' | 'jpeg'
   quality?: number
+  engine?: Engine          // 'skia' (default) | 'browser'
 }
 ```
 

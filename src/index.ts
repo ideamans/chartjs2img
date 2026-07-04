@@ -7,10 +7,14 @@ import { getLlmDocs } from './llm-docs'
 import { parseArgs, CliArgError } from './cli-args'
 
 function printUsage(): void {
-  console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images using Playwright (headless Chromium)
+  console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images
 
 Converts a Chart.js configuration JSON into a PNG or JPEG image. Works as an
-HTTP server or a one-shot CLI. Chromium is installed automatically on first run.
+HTTP server or a one-shot CLI. Two rendering engines are available:
+  skia     (default) skia-canvas — no browser, fast, small footprint
+  browser  headless Chromium (Puppeteer) — maximum fidelity / pixel parity
+Select per render with --engine (CLI) or the "engine" field (HTTP).
+Chromium is installed automatically on first use of the browser engine.
 
 COMMANDS
   chartjs2img serve [options]       Start HTTP server
@@ -33,11 +37,13 @@ RENDER OPTIONS
   --background-color <color>     CSS color or "transparent" (default: white)
   --format, -f <fmt>             png | jpeg (default: png)
   --quality, -q <0-100>          JPEG quality (default: 90)
+  --engine <engine>              skia | browser (default: skia)
 
 EXAMPLES OPTIONS
   --outdir, -o <dir>             Output directory (default: ./examples)
   --format, -f <fmt>             png | jpeg (default: png)
   --quality, -q <0-100>          JPEG quality (default: 90)
+  --engine <engine>              skia | browser (default: skia)
 
 ENVIRONMENT VARIABLES
   PORT                   Server listen port (default: 3000)
@@ -98,7 +104,8 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
       "devicePixelRatio": 1,     // optional, default 1 — N scales output to width*N x height*N
       "backgroundColor": "white",// optional, default "white"
       "format": "png",           // optional, "png" | "jpeg"
-      "quality": 90              // optional, 0-100 for jpeg
+      "quality": 90,             // optional, 0-100 for jpeg
+      "engine": "skia"           // optional, "skia" (default) | "browser"
     }
 
 CHART.JS CONFIGURATION REFERENCE
@@ -141,7 +148,7 @@ BUILT-IN PLUGINS (all pre-loaded, no configuration needed)
   chart.js 4.4.9                    Core charting library
   chartjs-plugin-datalabels 2.2.0   Show values on chart elements
   chartjs-plugin-annotation 3.1.0   Lines, boxes, labels as overlays
-  chartjs-plugin-zoom 2.2.0         Pan & zoom (initial range for static)
+  chartjs-plugin-zoom 2.2.0         Pan & zoom (browser engine only)
   chartjs-plugin-gradient 0.6.1     Gradient fills via simple config
   chartjs-chart-matrix 2.0.1        Heatmap / matrix charts
   chartjs-chart-sankey 0.12.1       Sankey flow diagrams
@@ -237,6 +244,15 @@ async function main(): Promise<void> {
     throw err
   }
 
+  // Validate --engine up front (mirrors the HTTP 400 for an invalid engine).
+  // Without this an unknown value would silently fall through to the browser
+  // engine in the renderer dispatch.
+  const engineArg = args['engine']
+  if (engineArg !== undefined && engineArg !== 'skia' && engineArg !== 'browser') {
+    console.error(`Invalid --engine: ${String(engineArg)} (must be "skia" or "browser")`)
+    process.exit(2)
+  }
+
   if (command === '--version' || command === 'version') {
     console.log(`chartjs2img v${VERSION}`)
     process.exit(0)
@@ -287,6 +303,7 @@ async function main(): Promise<void> {
       outdir,
       format: format as 'png' | 'jpeg',
       quality,
+      engine: args['engine'] as 'skia' | 'browser' | undefined,
     })
   } else if (command === 'render') {
     await cliRender({
@@ -298,6 +315,7 @@ async function main(): Promise<void> {
       backgroundColor: args['background-color'] as string,
       format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | undefined,
       quality: args['quality'] ? Number(args['quality']) : args['q'] ? Number(args['q']) : undefined,
+      engine: args['engine'] as 'skia' | 'browser' | undefined,
     })
   } else {
     console.error(`Unknown command: ${command}`)

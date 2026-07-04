@@ -33,9 +33,12 @@ bun install
 bun run build:lib   # ./dist/*.js + *.d.ts を生成
 ```
 
-Chromium は npm パッケージの依存 **ではありません**。レンダラは初回実行時に
-Chrome for Testing をユーザーキャッシュに自動ダウンロード (macOS/Windows/Linux-x64)、
-もしくは linux-arm64 なら `CHROMIUM_PATH` を読みます。
+既定の `skia` エンジンはブラウザを必要とせず、`skia-canvas`（ネイティブ
+Skia）でインプロセス描画します。`skia-canvas` は npm 依存として同梱される
+ため、追加インストールは不要です。`browser` エンジン（`engine: 'browser'`）
+を使うときだけ Chromium が必要で、その初回実行時に Chrome for Testing を
+ユーザーキャッシュに自動ダウンロード (macOS/Windows/Linux-x64)、もしくは
+linux-arm64 なら `CHROMIUM_PATH` を読みます。
 
 ## クイックスタート
 
@@ -63,9 +66,19 @@ if (messages.length) console.warn(messages)   // Chart.js の警告/エラー
 await closeBrowser()
 ```
 
-`renderChart` は非同期でブラウザ駆動。初回呼び出しで Chromium が起動 (遅延)、
-以降の呼び出しで共有されます。同時実行は `CONCURRENCY` (既定 8) で制限され、
-超過分はキュー待ちになります。
+`renderChart` は非同期。既定の `skia` エンジンではブラウザを起動せず
+インプロセスで即座に描画します。`engine: 'browser'` を渡した場合のみ、
+初回呼び出しで Chromium が起動 (遅延)、以降の呼び出しで共有されます。
+同時実行は `CONCURRENCY` (既定 8) で制限され、超過分はキュー待ちに
+なります。
+
+```ts
+// 実ブラウザとのピクセル一致が必要なときは browser エンジンを指定
+await renderChart({ chart, engine: 'browser' })
+```
+
+2 つのエンジンは**別々にキャッシュ**されます（キャッシュハッシュに
+`engine` が含まれるため、同じチャートでもエンジンごとに別エントリ）。
 
 ## Exports
 
@@ -80,6 +93,8 @@ import {
   VERSION,
   NAME,
   BUNDLED_LIBS,
+  DEFAULT_ENGINE,
+  type Engine,
   type RenderOptions,
   type RenderResult,
   type ConsoleMessage,
@@ -90,13 +105,26 @@ import {
 
 単一の描画エントリポイント。内部動作:
 
-1. 正規化したオプションから SHA-256 ハッシュを計算
-2. キャッシュ済みの PNG があれば返却 (`cached: true`)
-3. なければセマフォスロットを取得、Chromium を起動 (または再利用)、新しいページを開き、HTML テンプレート + Chart.js + 12 プラグインを注入、canvas をスクリーンショット、結果をキャッシュして返却
+1. 正規化したオプション（`engine` を含む）から SHA-256 ハッシュを計算
+2. キャッシュ済みの画像があれば返却 (`cached: true`)
+3. なければセマフォスロットを取得し、エンジンで分岐:
+   - **`skia`（既定）** — `skia-canvas` のネイティブキャンバスに Chart.js +
+     同梱プラグインを注入してインプロセス描画（ブラウザ起動なし）。
+   - **`browser`** — Chromium を起動 (または再利用)、新しいページを開き、
+     HTML テンプレート + Chart.js + プラグインを注入、canvas を
+     スクリーンショット。
+   結果をキャッシュして返却。
 
 ### `closeBrowser(): Promise<void>`
 
 共有 Chromium インスタンスと孤児ページを閉じる。プロセス終了時に呼び出し。冪等。
+`browser` エンジンを一度も使っていなければ **no-op**（`skia` エンジンは
+何も起動しないため）。
+
+### `DEFAULT_ENGINE` / `Engine`
+
+`Engine` は `'skia' | 'browser'` のユニオン型。`DEFAULT_ENGINE` は
+既定エンジン（＝ `'skia'`）を示すランタイム定数です。
 
 ### `rendererStats()`
 
@@ -159,6 +187,8 @@ interface RenderOptions {
   format?: 'png' | 'jpeg' | 'webp'
   /** JPEG / WebP 品質 0-100 (既定 90) */
   quality?: number
+  /** レンダリングエンジン (既定 'skia')。'skia' はブラウザ不要、'browser' はヘッドレス Chromium */
+  engine?: Engine
 }
 ```
 
@@ -200,7 +230,7 @@ interface ConsoleMessage {
 | `CACHE_MAX_ENTRIES`      | `1000`   | メモリ内 LRU キャッシュのサイズ                                    |
 | `CACHE_TTL_SECONDS`      | `3600`   | キャッシュエントリ生存時間                                         |
 | `PAGE_TIMEOUT_SECONDS`   | `60`     | 孤児タブをこの秒数で強制クローズ                                   |
-| `CHROMIUM_PATH`          | *(なし)* | Chromium バイナリへの明示パス (検出チェーンをスキップ)             |
+| `CHROMIUM_PATH`          | *(なし)* | `browser` エンジンの Chromium バイナリへの明示パス (検出チェーンをスキップ) |
 
 `renderChart` の初回呼び出し前に設定してください。ランタイムでの再設定は
 サポートされていません — 同時実行数を変えたければプロセス再起動が必要。
@@ -220,8 +250,8 @@ if (result.messages.some((m) => m.level === 'error')) {
 
 `renderChart` が **throw する** ケース:
 
-- Chromium 起動失敗 (linux-arm64 でバイナリ欠落、OOM など)
-- ページタイムアウト (`PAGE_TIMEOUT_SECONDS` 超過)
+- `browser` エンジンの Chromium 起動失敗 (linux-arm64 でバイナリ欠落、OOM など)
+- ページタイムアウト (`browser` エンジンで `PAGE_TIMEOUT_SECONDS` 超過)
 - `chart` フィールドが不正 (完全に欠落 — サーバーラッパーも同様にキャッチ)
 
 全体の分類は [エラーハンドリング](./error-handling) を参照。
@@ -249,9 +279,12 @@ for (const file of CONFIGS) {
 await closeBrowser()
 ```
 
-`bun run scripts/snapshot-dashboards.ts` で実行。共有 Chromium インスタンスが
-ループ全体を通して起動したままなので、100 件のダッシュボードは
-「ブラウザ 1 回起動 + 100 × 各チャートの時間」で完了します。
+`bun run scripts/snapshot-dashboards.ts` で実行。既定の `skia` エンジンでは
+各描画がブラウザ起動なしのインプロセス呼び出しなので、100 件の
+ダッシュボードは単純に「100 × 各チャートの時間」で完了します。
+`engine: 'browser'` を使う場合は共有 Chromium インスタンスがループ全体を
+通して起動したままになり、「ブラウザ 1 回起動 + 100 × 各チャートの時間」に
+なります。
 
 ## 例: Express ハンドラ
 
@@ -299,10 +332,11 @@ app.listen(3000)
 <!-- 図の元データ: docs/diagrams/library-surface.gg（`bun run docs:diagrams` で再生成） -->
 
 - **`lib.ts`** が公開 surface。`renderChart`、`closeBrowser`、
-  `rendererStats`、`computeHash` などを export。semver 対象。
-- **`renderer.ts`**、**`template.ts`**、**`cache.ts`**、
-  **`semaphore.ts`** は実装詳細。semver の対象外で、マイナーバージョン
-  間で変わる可能性があります。
+  `rendererStats`、`computeHash`、`DEFAULT_ENGINE`、型 `Engine` などを
+  export。semver 対象。
+- **`renderer.ts`**、**`engine-skia.ts`**、**`template.ts`**、
+  **`cache.ts`**、**`semaphore.ts`** は実装詳細。semver の対象外で、
+  マイナーバージョン間で変わる可能性があります。
 
 `chartjs2img/*` (パッケージルート以外) から import する場合、実装に手を伸ばすことに
 なります — これらのパスは semver の対象外です。[Exports](#exports) に列挙された

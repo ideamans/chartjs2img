@@ -2,7 +2,7 @@
 name: chartjs2img-render
 description: Render a Chart.js configuration JSON to a PNG/JPEG/WebP image using chartjs2img. Use when the user asks to render, generate, build, or preview a Chart.js chart as an image - either by pointing at a .json file or by handing over the config inline. Captures X-Chart-Messages and echoes Chart.js errors / warnings so a bad config can be fixed without guessing.
 license: MIT
-compatibility: Requires the `chartjs2img` CLI on PATH (run /chartjs2img-install if missing). Chromium is auto-downloaded on first render.
+compatibility: Requires the `chartjs2img` CLI on PATH (run /chartjs2img-install if missing). Renders on the `skia` engine by default (no browser needed); the optional `--engine browser` path auto-downloads Chromium on first use.
 allowed-tools: Bash(chartjs2img:*) Bash(bun:*) Bash(curl:*) Read Write
 ---
 
@@ -16,6 +16,7 @@ Render a Chart.js chart to an image, surface any problems, and hand back the out
 - Desired output: file path (`foo.png` / `foo.jpg` / `foo.webp`), or stdout (`-`).
 - Optional sizing: `--width`, `--height`, `--device-pixel-ratio`, `--background-color`.
 - Optional format / quality: `-f png|jpeg|webp`, `-q 0-100` (JPEG / WebP only).
+- Optional engine: `--engine skia|browser` (default `skia`, no browser needed; use `browser` for exact real-browser pixel parity).
 
 ## Workflow
 

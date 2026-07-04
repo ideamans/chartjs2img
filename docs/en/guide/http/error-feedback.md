@@ -8,10 +8,12 @@ description: How Chart.js errors and warnings surface over HTTP — X-Chart-Mess
 Rendering a chart over HTTP can produce three kinds of signal:
 
 1. **The image itself** — always returned, even when something went wrong.
-2. **Chart.js console messages** — captured from the headless browser
-   and returned via an HTTP header.
+2. **Chart.js console messages** — captured during the render (from the
+   in-process Skia canvas on the default engine, or the headless
+   browser on the `browser` engine) and returned via an HTTP header.
 3. **Server-level errors** — authentication, input validation, or
-   Chromium failures. Returned as standard HTTP status codes.
+   (on the `browser` engine) Chromium failures. Returned as standard
+   HTTP status codes.
 
 This page is about all three.
 
@@ -49,11 +51,11 @@ returns `200` with the PNG — a warning is an advisory, not a failure.
 | Status | Meaning                                                                                        |
 | ------ | ---------------------------------------------------------------------------------------------- |
 | `200`  | Render OK. May still carry `X-Chart-Messages` if Chart.js warned.                              |
-| `400`  | Client input invalid: missing `chart`, malformed JSON body, bad `?chart=` query parameter.     |
+| `400`  | Client input invalid: missing `chart`, malformed JSON body, bad `?chart=` query parameter, or an unknown `engine` value. |
 | `401`  | `API_KEY` required and not provided / wrong. See [Authentication](./auth).                     |
 | `404`  | Unknown path, expired/unknown cache hash.                                                      |
 | `405`  | Method not allowed on `/render` (e.g. `PUT`).                                                  |
-| `500`  | Internal server error — Chromium failed to launch, disk full, network problem with the CDN.   |
+| `500`  | Internal server error — disk full, OOM, or (on the `browser` engine) Chromium failed to launch or a CDN network problem. |
 
 The body of 4xx and 5xx responses is a JSON object:
 
@@ -99,11 +101,12 @@ When in doubt, the full Chart.js
 [error reference](https://www.chartjs.org/docs/latest/) tells you
 what each message means.
 
-## Chromium-level failures
+## Chromium-level failures (browser engine)
 
-If the browser itself fails to launch (missing binary, permissions,
-container without shared memory), the server responds `500` with a
-message like:
+These only occur on the `browser` engine — the default `skia` engine
+launches no browser. If the browser itself fails to launch (missing
+binary, permissions, container without shared memory), the server
+responds `500` with a message like:
 
 ```json
 { "error": "Failed to install Chrome automatically: ..." }

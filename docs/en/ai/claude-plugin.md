@@ -17,7 +17,9 @@ reference" step required.
 - `git` on `PATH` (the marketplace is a git clone).
 
 That's it. The plugin's `/chartjs2img-install` skill handles the CLI
-binary + auto-downloads Chromium.
+binary. Rendering defaults to the `skia` engine (no browser needed);
+Chromium is only auto-downloaded if you render with the `browser`
+engine.
 
 ## 1. Add the marketplace
 
@@ -127,10 +129,13 @@ Run `/plugin list` to confirm; if missing, repeat step 2.
 `/chartjs2img-install` again, or check whether your shell picked up
 `~/.local/bin` (start a new shell or `exec $SHELL`).
 
-**Rendering fails with a Chromium error** — on first render,
-chartjs2img downloads Chrome for Testing. If that fails (firewall,
-corporate proxy, linux-arm64), fall back to manual install + set
-`CHROMIUM_PATH`. See [Install](/en/guide/install).
+**Rendering fails with a Chromium error** — this only happens on the
+`browser` engine; the default `skia` engine needs no browser, so
+switching back to it (drop `--engine browser`) sidesteps the problem.
+On the `browser` engine, chartjs2img downloads Chrome for Testing on
+first use. If that fails (firewall, corporate proxy, linux-arm64),
+fall back to manual install + set `CHROMIUM_PATH`. See
+[Install](/en/guide/install).
 
 **Rendered image is blank** — check the skill's output for
 `X-Chart-Messages`. A typo in `chart.type` or missing `datasets` is

@@ -29,7 +29,11 @@ interface RenderOptions {
   format?: 'png' | 'jpeg' | 'webp'
   /** JPEG / WebP 品質 0-100 (既定 90) */
   quality?: number
+  /** レンダリングエンジン (既定 'skia')。'skia' はブラウザ不要、'browser' はヘッドレス Chromium */
+  engine?: Engine
 }
+
+type Engine = 'skia' | 'browser'   // DEFAULT_ENGINE === 'skia'
 ```
 
 ## `RenderResult` (renderer.ts)
@@ -81,11 +85,13 @@ interface ServerConfig {
   "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
-  "quality": 90
+  "quality": 90,
+  "engine": "skia"
 }
 ```
 
-必須フィールドは `chart` のみ。サーバーは存在チェックのみ行い、その他は
+必須フィールドは `chart` のみ。サーバーは `chart` の存在チェックと `engine`
+の値チェック（`"skia"` / `"browser"` のみ、不正値は `400`）を行い、その他は
 Chart.js 自身が検証して `X-Chart-Messages` でエラーを返します。
 
 ## HTTP クエリ — `GET /render`
@@ -100,6 +106,7 @@ GET /render?chart=<URL エンコードされた JSON>
           &backgroundColor=white
           &format=png
           &quality=90
+          &engine=skia
 ```
 
 必須は `chart` のみ。他は任意。該当するものはクエリで `number` にコーセ
@@ -166,7 +173,7 @@ Content-Type: application/json
 
 | ステータス                  | ボディ JSON                                      | 発生ケース                                              |
 | --------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
-| `400 Bad Request`           | `{ "error": "Missing chart parameter" }`         | GET `/render` で `chart=` クエリがない                  |
+| `400 Bad Request`           | `{ "error": "Missing chart parameter" }` / `{ "error": "Invalid engine: ..." }` | `chart` 欠落・JSON 構文エラー・`engine` が `"skia"`/`"browser"` 以外 |
 | `401 Unauthorized`          | `{ "error": "Unauthorized" }`                    | `API_KEY` が設定され、リクエストのキーが無い/不一致     |
 | `404 Not Found`             | `{ "error": "Not found" }` / キャッシュミスメッセージ | 未知のパス、またはキャッシュハッシュが存在しない      |
 | `405 Method Not Allowed`    | `{ "error": "Method not allowed" }`              | `/render` に GET/POST 以外のメソッド                    |
@@ -184,12 +191,14 @@ interface CliRenderArgs {
   backgroundColor?: string
   format?: 'png' | 'jpeg' | 'webp'
   quality?: number
+  engine?: Engine          // 'skia' (既定) | 'browser'
 }
 
 interface CliExamplesArgs {
   outdir: string           // 必須
   format?: 'png' | 'jpeg'
   quality?: number
+  engine?: Engine          // 'skia' (既定) | 'browser'
 }
 ```
 

@@ -7,7 +7,7 @@
 import { mkdirSync } from 'fs'
 import { join } from 'path'
 import { renderChart, closeBrowser } from './renderer'
-import type { RenderOptions } from './template'
+import type { Engine, RenderOptions } from './template'
 import { EXAMPLES } from './examples'
 
 export interface CliRenderArgs {
@@ -19,6 +19,7 @@ export interface CliRenderArgs {
   backgroundColor?: string
   format?: 'png' | 'jpeg'
   quality?: number
+  engine?: Engine
 }
 
 export async function cliRender(args: CliRenderArgs): Promise<void> {
@@ -54,6 +55,7 @@ export async function cliRender(args: CliRenderArgs): Promise<void> {
     backgroundColor: args.backgroundColor,
     format: args.format,
     quality: args.quality,
+    engine: args.engine,
   }
 
   try {
@@ -80,6 +82,7 @@ export interface CliExamplesArgs {
   outdir: string
   format?: 'png' | 'jpeg'
   quality?: number
+  engine?: Engine
 }
 
 function slugify(title: string): string {
@@ -108,6 +111,7 @@ export async function cliExamples(args: CliExamplesArgs): Promise<void> {
         height: ex.height,
         format: args.format ?? 'png',
         quality: args.quality,
+        engine: args.engine,
       })
 
       await Bun.write(filepath, result.buffer)
