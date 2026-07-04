@@ -8,5 +8,16 @@
     "sourceMap": true,
     "noEmit": false
   },
-  "include": ["src/lib.ts", "src/renderer.ts", "src/template.ts", "src/cache.ts", "src/semaphore.ts", "src/version.ts"]
+  "include": [
+    "src/lib.ts",
+    "src/renderer.ts",
+    "src/template.ts",
+    "src/cache.ts",
+    "src/semaphore.ts",
+    "src/version.ts",
+    "src/engine-skia.ts",
+    "src/chart-registry.ts",
+    "src/skia-polyfills.ts",
+    "src/skia-modules.d.ts"
+  ]
 }

@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import type { RenderOptions } from './template'
+import { DEFAULT_ENGINE, type RenderOptions } from './template'
 
 interface CacheEntry {
   buffer: Buffer
@@ -44,6 +44,8 @@ export function computeHash(options: RenderOptions): string {
     backgroundColor: options.backgroundColor ?? 'white',
     format: options.format ?? 'png',
     quality: options.quality ?? 90,
+    // Engines can differ pixel-for-pixel, so they must cache separately.
+    engine: options.engine ?? DEFAULT_ENGINE,
   })
   return createHash('sha256').update(json).digest('hex').slice(0, 16)
 }

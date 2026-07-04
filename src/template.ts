@@ -30,6 +30,17 @@ function cdnUrl(lib: (typeof LIBS)[keyof typeof LIBS]): string {
   return `${CDN}/${lib.pkg}@${lib.version}/${lib.file}`
 }
 
+/**
+ * Rendering engine:
+ *  - 'skia'    : skia-canvas (default) — no browser, fast, small footprint.
+ *  - 'browser' : headless Chromium (Puppeteer) — maximum fidelity / pixel
+ *                parity with a real browser and DOM-dependent plugins.
+ */
+export type Engine = 'skia' | 'browser'
+
+/** Engine used when a caller doesn't specify one. */
+export const DEFAULT_ENGINE: Engine = 'skia'
+
 export interface RenderOptions {
   /** Chart.js configuration object */
   chart: Record<string, unknown>
@@ -45,6 +56,8 @@ export interface RenderOptions {
   format?: 'png' | 'jpeg'
   /** JPEG quality 0-100 (default: 90) */
   quality?: number
+  /** Rendering engine (default: 'skia'). See {@link Engine}. */
+  engine?: Engine
 }
 
 export function buildHtml(options: RenderOptions): string {

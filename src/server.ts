@@ -69,6 +69,10 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
     throw new ValidationError('Missing or invalid required field: chart (must be an object)')
   }
 
+  if (body.engine !== undefined && body.engine !== 'skia' && body.engine !== 'browser') {
+    throw new ValidationError('Invalid engine: must be "skia" or "browser"')
+  }
+
   return {
     chart: body.chart as Record<string, unknown>,
     width: body.width as number | undefined,
@@ -77,6 +81,7 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
     backgroundColor: body.backgroundColor as string | undefined,
     format: body.format as RenderOptions['format'] | undefined,
     quality: body.quality as number | undefined,
+    engine: body.engine as RenderOptions['engine'] | undefined,
   }
 }
 
@@ -179,6 +184,7 @@ export async function startServer(config: ServerConfig): Promise<ServerHandle> {
             backgroundColor: url.searchParams.get('backgroundColor') || undefined,
             format: (url.searchParams.get('format') as RenderOptions['format']) || undefined,
             quality: url.searchParams.get('quality') ? Number(url.searchParams.get('quality')) : undefined,
+            engine: (url.searchParams.get('engine') as RenderOptions['engine']) || undefined,
           }
         } else {
           return Response.json({ error: 'Method not allowed' }, { status: 405 })
