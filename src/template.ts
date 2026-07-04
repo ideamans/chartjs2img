@@ -118,6 +118,12 @@ ${Object.values(LIBS)
       if (v && v.id) Chart.register(v);
     });
   }
+  // chartjs-plugin-gradient exposes its plugin object on the global under the
+  // package name but does NOT call Chart.register itself, so gradient configs
+  // silently fall back to the dataset's flat colors unless we register it here.
+  if (window['chartjs-plugin-gradient']) {
+    Chart.register(window['chartjs-plugin-gradient']);
+  }
 
   // Force all animations off for instant rendering
   config.options.animation = false;
