@@ -18,7 +18,10 @@
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "**/chart-registry.js",
+    "**/chart-registry.ts"
+  ],
   "bin": {
     "chartjs2img": "src/index.ts"
   },

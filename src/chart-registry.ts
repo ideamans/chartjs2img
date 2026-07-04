@@ -1,12 +1,5 @@
 // Chart.js + plugin registration for the skia engine.
-//
-// The `./skia-polyfills` import MUST come first: it installs the DOM globals
-// that some plugins reference at module-evaluation time (and it pulls in
-// skia-canvas). ES modules evaluate imports depth-first in source order, so
-// listing it first guarantees the polyfills are in place before chart.js and
-// the plugins run.
-import './skia-polyfills'
-
+import { installSkiaPolyfills } from './skia-polyfills'
 import { Chart, registerables, BasicPlatform } from 'chart.js'
 // chart.js ships DISTINCT esm (dist/chart.js) and cjs (dist/chart.cjs) builds
 // whose element classes are NOT `===`. chartjs-plugin-datalabels has no
@@ -48,6 +41,10 @@ let registered = false
 
 /** Register Chart.js + all bundled plugins exactly once (idempotent). */
 export function ensureRegistered(): void {
+  // Install DOM globals before any plugin code can run. Safe to call every
+  // time (idempotent); doing it here means the polyfills are guaranteed in
+  // place before the first render regardless of import order or tree-shaking.
+  installSkiaPolyfills()
   if (registered) return
   registered = true
 
