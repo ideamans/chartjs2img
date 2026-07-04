@@ -244,6 +244,15 @@ async function main(): Promise<void> {
     throw err
   }
 
+  // Validate --engine up front (mirrors the HTTP 400 for an invalid engine).
+  // Without this an unknown value would silently fall through to the browser
+  // engine in the renderer dispatch.
+  const engineArg = args['engine']
+  if (engineArg !== undefined && engineArg !== 'skia' && engineArg !== 'browser') {
+    console.error(`Invalid --engine: ${String(engineArg)} (must be "skia" or "browser")`)
+    process.exit(2)
+  }
+
   if (command === '--version' || command === 'version') {
     console.log(`chartjs2img v${VERSION}`)
     process.exit(0)

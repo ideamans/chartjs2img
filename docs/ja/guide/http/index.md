@@ -26,7 +26,8 @@ chartjs2img v0.4.0 listening on http://0.0.0.0:3000
 ```
 
 `Ctrl-C`（または `SIGTERM`）でクリーンに停止します。インフライトの
-リクエストを待ってから Chromium を閉じます。
+リクエストを待ってから、`browser` エンジンを使っていれば Chromium を
+閉じます（`skia` エンジンのみなら閉じるブラウザはありません）。
 
 POST の出力を先に見てみましょう。**HTTP** タブに切り替えると、
 実際にプレビューを生成する `curl` コマンドが確認できます:
@@ -74,9 +75,10 @@ curl -X POST http://localhost:3000/render \
 | `backgroundColor`  | string   | `"white"`      | CSS カラー（`"transparent"` 可）                      |
 | `format`           | string   | `"png"`        | `png` または `jpeg`                                   |
 | `quality`          | number   | `90`           | JPEG 品質 (0-100)                                     |
+| `engine`           | string   | `"skia"`       | レンダリングエンジン。`"skia"`（既定・ブラウザ不要）または `"browser"`（ヘッドレス Chromium）。不正値は `400` |
 
 ::: warning JSON のみ — 関数値は静かに破棄されます
-`chart` フィールドはヘッドレスブラウザへ渡る際に
+`chart` フィールドはレンダラへ渡る際に（どちらのエンジンでも）
 `JSON.stringify` を通過します。`formatter: (ctx) => ...` 等の
 コールバック、tooltip コールバック、scale tick コールバックは
 ここで消えます。静的な値を使ってください。
@@ -111,9 +113,11 @@ POST と同じ意味論ですが、全パラメータをクエリストリング
 GET /render?chart={"type":"bar","data":{...}}&width=400&height=300
 ```
 
-`chart` クエリは URL エンコードした JSON 文字列です。データ点が
-数百を超えるなら POST を推奨します。多くのクライアントは URL 長を
-サーバー制限より短く切り上げるためです。
+`chart` クエリは URL エンコードした JSON 文字列です。`engine` を
+はじめ POST ボディと同じフィールドをクエリで渡せます
+（例: `?engine=browser`）。データ点が数百を超えるなら POST を推奨
+します。多くのクライアントは URL 長をサーバー制限より短く切り
+上げるためです。
 
 ## `GET /cache/:hash`
 

@@ -19,22 +19,53 @@ Step-by-step, each box corresponds to the following module:
 | Step                 | Module                              | Notes                                                   |
 | -------------------- | ----------------------------------- | ------------------------------------------------------- |
 | Auth check           | `server.ts::checkAuth`              | 401 if `API_KEY` set and missing/wrong                  |
-| Compute hash         | `cache.ts::computeHash`             | SHA-256(canonical(request))[0:16]                       |
+| Compute hash         | `cache.ts::computeHash`             | SHA-256(canonical(request))[0:16] — includes `engine`   |
 | Cache lookup         | `cache.ts::getCache`                | Hit returns image with `X-Cache-Hit: true`              |
 | Semaphore acquire    | `semaphore.ts::acquire`             | Waits if `active == CONCURRENCY` (default 8)            |
 | Cache re-check       | `cache.ts::getCache` (again)        | A racing request may have finished while we waited      |
-| Ensure browser       | `renderer.ts::ensureBrowser`        | Launches puppeteer if not already running               |
-| New page             | `b.newPage()` + `schedulePageCleanup` | Safety-net timer force-closes the tab if we leak it    |
-| Render chart         | `template.ts::buildHtml` + `page.goto(dataUrl)` | Waits for `window.__chartRendered === true`; collects `window.__chartMessages` |
-| Screenshot           | `container.screenshot({ type, quality })`      | Buffer with PNG/JPEG bytes                              |
+| Engine dispatch      | `renderer.ts`                       | Branch on `engine`: `skia` (default, in-process) or `browser` (Chromium) |
 | Store in cache       | `cache.ts::setCache`                | Evicts oldest if at `CACHE_MAX_ENTRIES`                 |
-| Close page           | `clearPageCleanup` + `page.close()` | Releases the browser tab                                |
 | Release semaphore    | `semaphore.ts::release`             | Wakes next queued render, if any                        |
+
+### Engine dispatch
+
+Once a semaphore slot is held, the renderer branches on the requested
+engine:
+
+**`skia` (default)** — renders entirely in-process:
+
+| Step         | Notes                                                          |
+| ------------ | -------------------------------------------------------------- |
+| Build canvas | Native Skia canvas via `skia-canvas`, no browser              |
+| Render chart | Chart.js + bundled plugins (imported from npm) draw onto it   |
+| Encode       | `canvas.toBuffer(...)` → PNG/JPEG bytes                        |
+
+**`browser`** — renders through headless Chromium:
+
+| Step           | Module                                          | Notes                                                            |
+| -------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| Ensure browser | `renderer.ts::ensureBrowser`                    | Launches puppeteer if not already running                        |
+| New page       | `b.newPage()` + `schedulePageCleanup`           | Safety-net timer force-closes the tab if we leak it              |
+| Render chart   | `template.ts::buildHtml` + `page.goto(dataUrl)` | Waits for `window.__chartRendered === true`; collects `window.__chartMessages` |
+| Screenshot     | `container.screenshot({ type, quality })`       | Buffer with PNG/JPEG bytes                                       |
+| Close page     | `clearPageCleanup` + `page.close()`             | Releases the browser tab                                         |
 
 The response carries the image plus `X-Cache-*` headers and
 `X-Chart-Messages` if Chart.js emitted any warnings.
 
 ## Key design choices
+
+### Two engines, one render contract
+
+`skia` and `browser` produce the same `RenderResult` shape and share
+the cache, semaphore, and plugin set — callers pick per render and the
+rest of the pipeline is engine-agnostic. `skia` is the default because
+it needs no browser (fast, small footprint, nothing to launch); the 35
+built-in examples render in ~1.5 s total on it. `browser` exists for
+exact real-browser pixel parity and DOM-dependent behavior (e.g.
+`chartjs-plugin-zoom`, which is not bundled into the `skia` engine).
+The two engines cache independently because `computeHash` includes
+`engine` in its canonical input.
 
 ### The cache is deliberately coarse
 
@@ -57,7 +88,11 @@ A cache hit **does not** acquire the semaphore — we return the cached
 buffer immediately. This keeps repeated identical requests from
 consuming browser tabs.
 
-### One browser, many pages
+### One browser, many pages (browser engine)
+
+The next three subsections describe the **`browser` engine** only. The
+default `skia` engine launches nothing — no browser, no pages, no CDN
+fetches.
 
 `browser` is a module-level singleton. Each render gets its own tab
 (`b.newPage()`). On `browser.on('disconnected')` we null the reference
@@ -85,11 +120,11 @@ every plugin's CDN `<script>` tag, inline CSS, and an IIFE that:
 This template is what makes "render any Chart.js config" tractable — a
 single page init covers every chart type and every plugin we bundle.
 
-### Plugins are CDN-loaded at page init
+### Plugins are CDN-loaded at page init (browser engine)
 
-We do **not** bundle Chart.js plugins into the Node-side JavaScript.
-They're fetched from jsdelivr inside Chromium on every page load. That
-has two implications:
+On the `browser` engine we do **not** bundle Chart.js plugins into the
+Node-side JavaScript. They're fetched from jsdelivr inside Chromium on
+every page load. That has two implications:
 
 - First render after a browser cold-start is slower (network round-trips).
 - Offline operation requires a local mirror (nginx serving the same
@@ -97,6 +132,10 @@ has two implications:
 
 Upside: upgrading a plugin is a one-line change in
 [template.ts](./modules#template-ts) with no rebuild.
+
+The `skia` engine takes the opposite approach: Chart.js and every
+bundled plugin are imported from npm and run against the native Skia
+canvas in-process, so it works fully offline with no CDN dependency.
 
 ## What isn't in the flow
 

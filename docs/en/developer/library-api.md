@@ -39,9 +39,12 @@ bun install
 bun run build:lib   # produces ./dist/*.js + *.d.ts
 ```
 
-Chromium is **not** a dependency of the npm package. The renderer
-downloads Chrome for Testing to the user cache on first run
-(macOS/Windows/Linux-x64) or reads `CHROMIUM_PATH` on linux-arm64.
+The default `skia` engine (native `skia-canvas`) renders in-process
+and needs **no browser** — installing the package is enough. Chromium
+is **not** a dependency of the npm package; it is only used by the
+`browser` engine, which downloads Chrome for Testing to the user cache
+on first use (macOS/Windows/Linux-x64) or reads `CHROMIUM_PATH` on
+linux-arm64.
 
 ## Quick start
 
@@ -59,6 +62,7 @@ const { buffer, hash, cached, messages } = await renderChart({
   width: 800,
   height: 600,
   format: 'png',
+  engine: 'skia', // default — omit for skia, or pass 'browser'
 })
 
 await Bun.write('chart.png', buffer)         // or fs.writeFileSync for Node
@@ -69,9 +73,11 @@ if (messages.length) console.warn(messages)   // Chart.js warnings/errors
 await closeBrowser()
 ```
 
-`renderChart` is async and browser-backed. The first call launches a
-Chromium instance (lazy, shared across subsequent calls). Concurrency
-is bounded by `CONCURRENCY` (default 8); additional calls queue.
+`renderChart` is async. On the default `skia` engine it renders
+in-process (native Skia canvas) with no browser to launch. On the
+`browser` engine, the first call launches a Chromium instance (lazy,
+shared across subsequent calls). Either way, concurrency is bounded by
+`CONCURRENCY` (default 8); additional calls queue.
 
 ## Exports
 
@@ -83,9 +89,11 @@ import {
   closeBrowser,
   rendererStats,
   computeHash,
+  DEFAULT_ENGINE,
   VERSION,
   NAME,
   BUNDLED_LIBS,
+  type Engine,
   type RenderOptions,
   type RenderResult,
   type ConsoleMessage,
@@ -96,16 +104,24 @@ import {
 
 The single render entry point. Internally:
 
-1. computes a SHA-256 hash over the canonicalized options;
-2. returns the cached PNG if one exists (`cached: true`);
-3. otherwise acquires a semaphore slot, launches (or reuses) Chromium,
-   opens a fresh page, injects the HTML template + Chart.js + 12 plugins,
-   screenshots the canvas, caches the result, and returns.
+1. computes a SHA-256 hash over the canonicalized options (the hash
+   includes `engine`, so the two engines cache independently);
+2. returns the cached image if one exists (`cached: true`);
+3. otherwise acquires a semaphore slot and dispatches on `engine`:
+   - **`skia`** (default) — renders in-process against a native Skia
+     canvas (Chart.js + bundled plugins imported from npm), then
+     encodes the buffer;
+   - **`browser`** — launches (or reuses) Chromium, opens a fresh page,
+     injects the HTML template + Chart.js + plugins from CDN,
+     screenshots the canvas;
+
+   then caches the result and returns.
 
 ### `closeBrowser(): Promise<void>`
 
 Close the shared Chromium instance and any orphaned pages. Call on
-process shutdown. Idempotent.
+process shutdown. Idempotent — and a **no-op** if the `browser` engine
+was never used (the `skia` engine launches nothing to close).
 
 ### `rendererStats()`
 
@@ -151,6 +167,15 @@ console.log(BUNDLED_LIBS.datalabels.version)    // "2.2.0"
 Useful when surfacing "what version of Chart.js is bundled?" to your
 own users without parsing `chartjs2img llm`.
 
+### `DEFAULT_ENGINE`
+
+The engine used when `RenderOptions.engine` is omitted. Equals
+`'skia'`.
+
+```ts
+console.log(DEFAULT_ENGINE)   // "skia"
+```
+
 ## Types
 
 ### `RenderOptions`
@@ -171,8 +196,20 @@ interface RenderOptions {
   format?: 'png' | 'jpeg' | 'webp'
   /** JPEG/WebP quality 0-100 (default: 90) */
   quality?: number
+  /** Rendering engine (default: "skia") */
+  engine?: Engine
 }
 ```
+
+### `Engine`
+
+```ts
+type Engine = 'skia' | 'browser'
+```
+
+`'skia'` (the default, exported as `DEFAULT_ENGINE`) renders
+in-process with no browser. `'browser'` renders through headless
+Chromium.
 
 ### `RenderResult`
 
@@ -213,7 +250,7 @@ The library reads the same env vars as the CLI / server:
 | `CACHE_MAX_ENTRIES`      | `1000`  | In-memory LRU cache size                                           |
 | `CACHE_TTL_SECONDS`      | `3600`  | Cache entry lifetime                                               |
 | `PAGE_TIMEOUT_SECONDS`   | `60`    | Force-close orphaned tabs after this many seconds                  |
-| `CHROMIUM_PATH`          | *(none)*| Explicit path to a Chromium binary (skips the detection chain)     |
+| `CHROMIUM_PATH`          | *(none)*| Explicit path to a Chromium binary (browser engine only; skips the detection chain) |
 
 Set them before `renderChart` is first called. Runtime reconfiguration
 is not supported — restart the process to change concurrency.
@@ -234,7 +271,8 @@ if (result.messages.some((m) => m.level === 'error')) {
 
 `renderChart` **does** throw for:
 
-- Chromium launch failures (missing binary on linux-arm64, OOM, etc.)
+- Chromium launch failures on the `browser` engine (missing binary on
+  linux-arm64, OOM, etc.)
 - Page timeout (page exceeded `PAGE_TIMEOUT_SECONDS`)
 - Invalid `chart` field (missing entirely — the server wrapper also
   catches this)
@@ -264,9 +302,11 @@ for (const file of CONFIGS) {
 await closeBrowser()
 ```
 
-Run with `bun run scripts/snapshot-dashboards.ts`. The shared
-Chromium instance stays up for the whole loop, so 100 dashboards
-render in roughly one browser launch + 100 × per-chart time.
+Run with `bun run scripts/snapshot-dashboards.ts`. On the default
+`skia` engine there's no browser at all — 100 dashboards render as 100
+in-process rasterizations. On the `browser` engine, the shared
+Chromium instance stays up for the whole loop, so it's roughly one
+browser launch + 100 × per-chart time.
 
 ## Example: Express handler
 

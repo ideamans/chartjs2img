@@ -36,29 +36,50 @@ description: chartjs2img の全 src/*.ts の 1 行サマリ - 何を export し�
 **Exports**: `cliRender`、`cliExamples`、それぞれの引数インターフェース。
 **Imports**: `renderer.ts`, `examples.ts`, `template.ts` (型のみ)。
 
-## `src/renderer.ts` — Chromium パイプライン
+## `src/renderer.ts` — レンダリングパイプライン / エンジン分岐
 
 レンダリングの中枢。担当する処理:
 
-- **Chromium 検出 & 自動インストール** — `findChromiumExecutable()`、
-  `downloadChromeForTesting()`、`ensureChromiumInstalled()`。
-- **ブラウザライフサイクル** — `ensureBrowser()`、`launchBrowser()`、
-  `closeBrowser()`。モジュールレベルの単一 `browser` 参照、遅延起動、
-  `disconnected` で自動クリア。
-- **ページライフサイクル** — `schedulePageCleanup()` が
-  `PAGE_TIMEOUT_SECONDS` 後にタブを強制クローズする `setTimeout` を仕込む。
 - **レンダリングエントリ** — `renderChart()` がこのモジュールから
-  露出する唯一の関数。ハッシュ算出、キャッシュ get/set、セマフォ取得/解放、
-  HTML 構築、`page.goto(data:…)`、コンソール捕捉、スクショを全て行う。
+  露出する主関数。ハッシュ算出、キャッシュ get/set、セマフォ取得/解放を
+  行い、`engine`（既定 `skia`）で分岐する。
+- **エンジン分岐** — `skia` なら `engine-skia.ts::renderSkia` を遅延
+  import してインプロセス描画。`browser` なら以下の Chromium 経路を辿る。
+  分岐は `ensureBrowser` の前にあり、`skia` だけのプロセスは Chromium を
+  起動しない。
+- **Chromium 検出 & 自動インストール**（`browser` エンジン）— 検出・
+  ダウンロード・起動ロジック（`chromium.ts` と連携）。
+- **ブラウザライフサイクル**（`browser` エンジン）— `ensureBrowser()`、
+  `closeBrowser()`。モジュールレベルの単一 `browser` 参照、遅延起動、
+  `disconnected` で自動クリア。`browser` を一度も使わなければ
+  `closeBrowser()` は no-op。
+- **ページライフサイクル**（`browser` エンジン）— `schedulePageCleanup()`
+  が `PAGE_TIMEOUT_SECONDS` 後にタブを強制クローズする `setTimeout` を仕込む。
 - **ステータス** — `/health` 向けに `rendererStats()`。
 
 **Exports**: `renderChart`, `closeBrowser`, `rendererStats`,
 `ConsoleMessage`, `RenderResult`。
-**Imports**: `puppeteer-core`, `template.ts`, `semaphore.ts`, `cache.ts`。
+**Imports**: `puppeteer-core`, `engine-skia.ts`（遅延）, `template.ts`,
+`semaphore.ts`, `cache.ts`。
 
-## `src/template.ts` — ブラウザ側 HTML
+## `src/engine-skia.ts` — skia エンジン（既定）
 
-Chart.js + 12 プラグインの全 CDN `<script>` と、以下を行う IIFE を含む静的 HTML 文字列:
+`renderSkia()` が Chart.js 設定を `skia-canvas`（ネイティブ Skia）の
+キャンバスにインプロセス描画し、PNG / JPEG バッファを返します。Chart.js と
+同梱プラグインは npm から読み込み（`chart-registry.ts`）、`skia-polyfills.ts`
+で最小限の DOM グローバルを用意。`browser` エンジンと出力が一致するよう
+調整されており、`console.warn` / `console.error` をインプロセスで捕捉して
+`browser` エンジンと同じ診断メッセージを surface します。
+
+**Exports**: `renderSkia`, `SkiaRenderResult`。
+**Imports**: `skia-canvas`, `chart-registry.ts`, `skia-polyfills.ts`,
+`template.ts`（型のみ）。
+
+## `src/template.ts` — `browser` エンジンの HTML
+
+`browser` エンジン専用の静的 HTML 文字列。Chart.js + 12 プラグインの全 CDN
+`<script>` と、以下を行う IIFE を含む（`skia` エンジンはこのテンプレートを
+使わず `chart-registry.ts` でプラグインを登録します）:
 
 - 自動登録しないプラグインを登録 (datalabels、chartjs-chart-geo);
 - アニメーションを強制 OFF;

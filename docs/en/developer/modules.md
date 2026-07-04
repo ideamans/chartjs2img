@@ -37,31 +37,38 @@ or `404`. Handles auth with `checkAuth()`.
 **Exports**: `cliRender`, `cliExamples`, and their arg interfaces.
 **Imports**: `renderer.ts`, `examples.ts`, `template.ts` (type only).
 
-## `src/renderer.ts` — Chromium pipeline
+## `src/renderer.ts` — engine dispatch + render pipelines
 
 The rendering core. Manages:
 
-- **Chromium discovery & auto-install** — `findChromiumExecutable()`,
-  `downloadChromeForTesting()`, `ensureChromiumInstalled()`.
-- **Browser lifecycle** — `ensureBrowser()`, `launchBrowser()`,
-  `closeBrowser()`. Single module-level `browser` ref; launches
-  lazily, auto-clears on `disconnected`.
-- **Page lifecycle** — `schedulePageCleanup()` arms a `setTimeout`
-  that force-closes the tab after `PAGE_TIMEOUT_SECONDS`.
+- **Engine dispatch** — `renderChart()` branches on `engine` (default
+  `skia`): the `skia` engine renders in-process on a native
+  `skia-canvas` (Chart.js + plugins imported from npm), the `browser`
+  engine drives headless Chromium.
+- **Chromium discovery & auto-install** (browser engine) —
+  `findChromiumExecutable()`, `downloadChromeForTesting()`,
+  `ensureChromiumInstalled()`.
+- **Browser lifecycle** (browser engine) — `ensureBrowser()`,
+  `launchBrowser()`, `closeBrowser()`. Single module-level `browser`
+  ref; launches lazily, auto-clears on `disconnected`. `closeBrowser()`
+  is a no-op if the browser engine was never used.
+- **Page lifecycle** (browser engine) — `schedulePageCleanup()` arms a
+  `setTimeout` that force-closes the tab after `PAGE_TIMEOUT_SECONDS`.
 - **Render entry** — `renderChart()` is the single export the rest of
-  the codebase calls. It handles hash compute, cache get/set, semaphore
-  acquire/release, HTML build, `page.goto(data:…)`, console capture,
-  screenshot.
+  the codebase calls. It handles hash compute (including `engine`),
+  cache get/set, semaphore acquire/release, and dispatch to the
+  selected engine's render + encode path.
 - **Stats** — `rendererStats()` for `/health`.
 
 **Exports**: `renderChart`, `closeBrowser`, `rendererStats`,
-`ConsoleMessage`, `RenderResult`.
-**Imports**: `puppeteer-core`, `template.ts`, `semaphore.ts`, `cache.ts`.
+`DEFAULT_ENGINE`, `Engine`, `ConsoleMessage`, `RenderResult`.
+**Imports**: `skia-canvas`, `puppeteer-core`, `template.ts`,
+`semaphore.ts`, `cache.ts`.
 
-## `src/template.ts` — Browser-side HTML
+## `src/template.ts` — Browser-side HTML (browser engine)
 
-Static HTML string containing every CDN `<script>` for Chart.js + 12
-plugins, and an IIFE that:
+Used by the `browser` engine only. Static HTML string containing every
+CDN `<script>` for Chart.js + 12 plugins, and an IIFE that:
 
 - registers non-auto-registering plugins (datalabels, chartjs-chart-geo);
 - forces animations OFF;

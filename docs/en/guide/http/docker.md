@@ -1,6 +1,6 @@
 ---
 title: Docker
-description: Build and run the chartjs2img HTTP server in Docker — bundled Chromium, Noto Sans CJK, docker-compose, and reverse-proxy recipes.
+description: Build and run the chartjs2img HTTP server in Docker — both rendering engines (skia-canvas + Chromium), Noto Sans CJK, docker-compose, and reverse-proxy recipes.
 ---
 
 # Docker
@@ -19,8 +19,11 @@ docker build -t chartjs2img .
 What the image includes:
 
 - The compiled `chartjs2img` binary (via Bun's `--compile`)
-- Chromium (preinstalled, so no first-run download at service start)
-- **Noto Sans CJK** — Japanese, Chinese, and Korean labels render correctly
+- **skia-canvas** — the default `skia` engine, works out of the box
+- Chromium (preinstalled, so the `browser` engine needs no first-run
+  download at service start)
+- **Noto Sans CJK** — Japanese, Chinese, and Korean labels render
+  correctly on both engines
 
 ## Run
 
@@ -130,8 +133,9 @@ for native (non-Docker) notes.
 
 ### Container starts but renders time out
 
-Check `docker logs <container>` — look for Chromium launch errors.
-Common fixes:
+This applies to the **`browser` engine** only — the default `skia`
+engine launches no browser. Check `docker logs <container>` — look for
+Chromium launch errors. Common fixes:
 
 - Give the container enough shared memory: `--shm-size=1g`
 - Ensure the container user has write access to `/tmp` (Chromium
@@ -150,7 +154,8 @@ RUN apt-get update && apt-get install -y \
 
 ### Image builds but Chromium isn't found at runtime
 
-Set `CHROMIUM_PATH` explicitly:
+Only relevant when you request the `browser` engine. Set
+`CHROMIUM_PATH` explicitly:
 
 ```bash
 docker run -e CHROMIUM_PATH=/usr/bin/chromium chartjs2img

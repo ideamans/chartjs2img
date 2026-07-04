@@ -87,9 +87,11 @@ each message means.
 
 ## Non-Chart.js errors
 
-Messages about Chromium (download, launch, container permissions)
-appear **without** the `[chart …]` prefix and typically exit non-zero.
-They signal an environment problem, not a config problem:
+On the `browser` engine, messages about Chromium (download, launch,
+container permissions) appear **without** the `[chart …]` prefix and
+typically exit non-zero. They signal an environment problem, not a
+config problem (the default `skia` engine has no browser, so these
+don't occur):
 
 ```
 [renderer] Chrome/Chromium not found. Installing Chrome for Testing...

@@ -34,10 +34,11 @@ Banner / sparkline-style.
   you get.
 - **Device pixel ratio multiplies output dimensions directly.**
   `devicePixelRatio: 2` at 800 × 600 produces a 1600 × 1200 PNG. The
-  chart's layout is computed in 800 × 600 CSS pixels, but both the
-  Puppeteer viewport and Chart.js's internal canvas buffer rasterize
-  at 2× — so strokes and text both stay crisp. Lower it if you want
-  a smaller file.
+  chart's layout is computed in 800 × 600 logical pixels, but the
+  render surface (the Skia canvas, or the Puppeteer viewport on the
+  browser engine) and Chart.js's internal canvas buffer rasterize at
+  2× — so strokes and text both stay crisp. Lower it if you want a
+  smaller file.
 - **The screenshot is of `#chart-container`**, not the page. No HTML
   chrome, no margin, no surrounding white space beyond what you put
   in the chart itself.

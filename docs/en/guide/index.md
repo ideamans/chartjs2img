@@ -36,8 +36,14 @@ You should see the usage banner. If `chartjs2img: command not found`,
 open a new shell (so the updated `PATH` is picked up) or consult
 [Install](./install).
 
-On the first render, Chromium is **auto-downloaded** to your user
-cache (~250 MB). On linux-arm64 the auto-download is not available —
+By default this renders on the **`skia` engine** — an in-process
+native Skia canvas that needs **no browser at all**. Nothing to
+launch, nothing to download.
+
+If you pass `--engine browser`, chartjs2img renders through headless
+Chromium instead (for exact real-browser pixel parity). Chromium is
+**auto-downloaded** to your user cache (~250 MB) on first use of that
+engine only. On linux-arm64 the auto-download is not available —
 install Chromium from your distro and set `CHROMIUM_PATH`. Details in
 [Install](./install).
 

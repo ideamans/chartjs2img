@@ -17,8 +17,9 @@ chartjs2img は 3 種類の失敗を扱います。どれがどれかとどう�
 | 必要な API キーが無い                 | `401`           | *(該当なし — CLI に認証なし)* |
 | `POST /render` で `chart` 欠落        | `500`           | 1        |
 | GET `/render` で `chart=` パラメータ無し | `400`         | *(該当なし)* |
-| Chromium が起動できない (バイナリ無し) | `500`          | 1        |
-| Chromium がレンダリング中にクラッシュ | `500`           | 1        |
+| `engine` が `"skia"`/`"browser"` 以外 | `400`           | 2        |
+| Chromium が起動できない (`browser` エンジン・バイナリ無し) | `500`          | 1        |
+| Chromium がレンダリング中にクラッシュ (`browser` エンジン) | `500`           | 1        |
 
 `server.ts::handleRequest` (レンダー周りの try/catch) と `cli.ts::cliRender`
 (`JSON.parse` 失敗で exit、レンダラ例外は伝播) で処理。
@@ -44,7 +45,11 @@ chartjs2img の契約:
 
 ### メッセージの捕捉方法
 
-`renderer.ts` は 2 つのチャネルを繋ぎます:
+以下は `browser` エンジンの捕捉経路です。`skia` エンジンでは
+`engine-skia.ts` が `console.warn` / `console.error` をインプロセスで
+ラップし、同じ `{level, message}` 形状のメッセージを surface します。
+
+`browser` エンジンの `renderer.ts` は 2 つのチャネルを繋ぎます:
 
 ```ts
 page.on('console', msg => { /* error/warning コンソール呼び出しを捕捉 */ })
@@ -61,11 +66,13 @@ page.on('pageerror', err => { /* 未捕捉例外を捕捉 */ })
 発火するため、ブラウザ内インターセプトでそれを捕捉。逆に Chromium レベルの
 メッセージ (リソース読み込み失敗、CORS) は Node 側リスナーにしか出ません。
 
-## 3. システムエラー (Chromium 起動不能、ディスク満杯、OOM)
+## 3. システムエラー (`browser` エンジンの Chromium 起動不能、ディスク満杯、OOM)
 
 例外として上に浮上。HTTP サーバーは `500` を JSON ボディ付きで返し、
 CLI は非 0 で終了 (メッセージは stderr)。リトライは試みません — Chromium が
 繰り返し死ぬなら、systemd やオーケストレータで再起動するのが筋。
+（既定の `skia` エンジンはブラウザを起動しないため、この種の障害は
+起きません。）
 
 ## 関連する Chart.js の挙動
 
@@ -118,6 +125,11 @@ chartjs2img が自前 TypeScript SDK を持つときには、境界はおそら�
 | `page.goto` + `waitForFunction`   | 30 秒 (ハードコード)              | throw; リクエストは `500` / CLI は非 0 終了                |
 | `PAGE_TIMEOUT_SECONDS`            | 既定 `60`、環境変数で変更可能     | タブを強制クローズ。進行中レンダラがあれば呼び出し元にも 500/例外が届く |
 | ブラウザ起動                      | puppeteer 既定 ~30 秒              | 同上                                                      |
+
+`page.goto` / ページ強制クローズ / ブラウザ起動のタイマーは `browser`
+エンジンに固有です。既定の `skia` エンジンはインプロセス描画のため
+これらのタブ／ブラウザ由来のタイムアウトはありませんが、描画中に
+例外が出れば同様に呼び出し元へ伝播します。
 
 HTTP サーバーには **全体リクエストタイムアウトはありません** — クライアントは
 独自のクライアント側タイムアウトを設定すべきです。

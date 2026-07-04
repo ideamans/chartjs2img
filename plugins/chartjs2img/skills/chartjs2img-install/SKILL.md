@@ -2,7 +2,7 @@
 name: chartjs2img-install
 description: Install or update the chartjs2img CLI from the latest GitHub release. Use when the user asks to install chartjs2img, set up the binary, update / upgrade to the newest version, or when another chartjs2img skill reports that the `chartjs2img` command is missing from PATH. Detects OS + arch, picks the right release archive, tries a writable directory on PATH (~/.local/bin, /usr/local/bin, etc.), and falls back to dropping the binary in /tmp with a sudo hint if nothing is writable.
 license: MIT
-compatibility: Requires curl (or wget), tar (linux/macos) or unzip (windows), and network access to github.com / api.github.com. Standalone — does NOT need `chartjs2img` to already be installed. Chromium is auto-downloaded by chartjs2img itself on first render (except on linux-arm64; see notes).
+compatibility: Requires curl (or wget), tar (linux/macos) or unzip (windows), and network access to github.com / api.github.com. Standalone — does NOT need `chartjs2img` to already be installed. The default `skia` engine needs no browser; only the optional `browser` engine auto-downloads Chromium on first use (except on linux-arm64; see notes).
 allowed-tools: Bash(curl:*) Bash(wget:*) Bash(tar:*) Bash(unzip:*) Bash(which:*) Bash(command:*) Bash(uname:*) Bash(mkdir:*) Bash(mv:*) Bash(cp:*) Bash(rm:*) Bash(chmod:*) Bash(ls:*) Bash(echo:*) Bash(test:*) Bash(sh:*) Bash(bash:*) Read Write
 ---
 
@@ -155,13 +155,15 @@ echo "  sudo mv $FALLBACK /usr/local/bin/chartjs2img"
 
 Do **not** run `sudo` from the skill — that needs a terminal.
 
-## Chromium note
+## Chromium note (browser engine only)
 
-chartjs2img auto-downloads Chrome for Testing on first render for
-macOS/Windows/Linux-x64 (~250 MB into the user cache). **linux-arm64
-is not covered by Chrome for Testing** — on that platform tell the
-user to `apt install chromium-browser` (or equivalent) and set
-`CHROMIUM_PATH`:
+The default `skia` engine renders with no browser, so most users never
+need Chromium. It is only required for the optional `--engine browser`
+path. When that engine is used, chartjs2img auto-downloads Chrome for
+Testing on first use for macOS/Windows/Linux-x64 (~250 MB into the user
+cache). **linux-arm64 is not covered by Chrome for Testing** — on that
+platform, if the user wants the browser engine, tell them to
+`apt install chromium-browser` (or equivalent) and set `CHROMIUM_PATH`:
 
 ```bash
 export CHROMIUM_PATH=/usr/bin/chromium-browser

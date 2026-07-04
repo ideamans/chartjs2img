@@ -1,6 +1,6 @@
 ---
 title: Docker
-description: chartjs2img HTTP サーバーを Docker で構築・運用 — 同梱 Chromium と Noto Sans CJK、docker-compose、リバースプロキシ例。
+description: chartjs2img HTTP サーバーを Docker で構築・運用 — skia-canvas と Chromium を両方同梱、Noto Sans CJK、docker-compose、リバースプロキシ例。
 ---
 
 # Docker
@@ -19,8 +19,11 @@ docker build -t chartjs2img .
 イメージの内容:
 
 - コンパイル済み `chartjs2img` バイナリ（Bun の `--compile` 出力）
-- Chromium（事前インストール済み — 起動時の自動ダウンロード不要）
-- **Noto Sans CJK** — 日本語・中国語・韓国語ラベルが豆腐化しない
+- 既定の `skia` エンジン（skia-canvas — そのまま動作）
+- `browser` エンジン用の Chromium（事前インストール済み — 起動時の
+  自動ダウンロード不要）
+- **Noto Sans CJK** — 両エンジンで日本語・中国語・韓国語ラベルが
+  豆腐化しない
 
 ## 実行
 
@@ -133,8 +136,9 @@ Docker を使わない linux-arm64 の場合は
 
 ### コンテナは起動するがレンダリングがタイムアウト
 
-`docker logs <container>` を確認。Chromium 起動エラーが典型です。
-よくある対処:
+`docker logs <container>` を確認。`browser` エンジン利用時は
+Chromium 起動エラーが典型です（既定の `skia` エンジンは
+ブラウザを起動しないため該当しません）。よくある対処:
 
 - 共有メモリを増やす: `--shm-size=1g`
 - コンテナ内ユーザーが `/tmp`（Chromium のスクラッチ領域）に書き

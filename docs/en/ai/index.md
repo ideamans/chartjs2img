@@ -51,8 +51,10 @@ standard [Quick start](/en/guide/) or [Install](/en/guide/install)
 page; any install that puts `chartjs2img` on `$PATH` is picked up by
 the skills automatically.
 
-Chromium is handled separately by chartjs2img at render time — see
-the main install guide if you're on linux-arm64.
+Rendering uses the default `skia` engine, which needs **no browser**.
+Chromium is only involved if you opt into the `browser` engine, and
+chartjs2img handles it at render time — see the main install guide if
+you're on linux-arm64.
 
 ## At a glance: what chartjs2img exposes
 

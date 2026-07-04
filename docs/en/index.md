@@ -23,10 +23,12 @@ landing:
 
   features:
     items:
+      - title: Two rendering engines
+        body: The default `skia` engine renders in-process with no browser — fast and dependency-free. Switch to the `browser` engine (headless Chromium) for exact real-browser pixel parity.
       - title: Chart.js + 12 plugins bundled
         body: Core plus datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the date-fns adapter. No extra installation.
       - title: HTTP API + CLI
-        body: POST JSON, get an image back. Or pipe JSON into the CLI and redirect to a file. Same engine, cache, and plugin bundle.
+        body: POST JSON, get an image back. Or pipe JSON into the CLI and redirect to a file. Same renderer, cache, and plugin bundle.
       - title: Hash-based caching
         body: Identical requests return cached images instantly. SHA-256 hashes travel in headers so clients can build CDN-friendly URLs.
       - title: LLM-native

@@ -17,8 +17,9 @@ These are **the request itself is broken**. Examples:
 | Missing API key when one is required | `401`       | *(not applicable — CLI has no auth)* |
 | `POST /render` without `chart`       | `500`       | 1        |
 | GET `/render` without `chart=` param | `400`       | *(not applicable)* |
-| Chromium can't launch (missing binary)| `500`      | 1        |
-| Chromium crashed mid-render          | `500`       | 1        |
+| `engine` not `"skia"`/`"browser"`    | `400`       | 2        |
+| Chromium can't launch, browser engine (missing binary)| `500` | 1  |
+| Chromium crashed mid-render, browser engine | `500`        | 1        |
 
 Handled in `server.ts::handleRequest` (try/catch around the render) and
 `cli.ts::cliRender` (exits on `JSON.parse` failure; lets renderer throw
@@ -46,7 +47,10 @@ experience.
 
 ### How messages are captured
 
-`renderer.ts` wires two channels:
+On the default `skia` engine, Chart.js runs in-process and its
+`console.warn` / `console.error` output is intercepted directly.
+
+On the `browser` engine, `renderer.ts` wires two channels:
 
 ```ts
 page.on('console', msg => { /* capture error/warning console calls */ })
@@ -64,12 +68,14 @@ side `console` listener attaches; the in-browser interception catches
 those. Conversely, some Chromium-level messages (resource load
 failures, CORS) only show up in the Node-side listener.
 
-## 3. System errors (Chromium won't launch, disk full, OOM)
+## 3. System errors (disk full, OOM, or — on the browser engine — Chromium won't launch)
 
 Bubble out as exceptions. HTTP server returns `500` with the message in
 the JSON body; CLI exits non-zero with the message on stderr. There's
 no attempt to retry — systemd or your orchestrator should restart the
-service if Chromium dies repeatedly.
+service if it dies repeatedly. Chromium launch/crash failures only
+occur on the `browser` engine; the default `skia` engine renders
+in-process with no browser to launch.
 
 ## Related Chart.js behavior
 

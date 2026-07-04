@@ -23,18 +23,55 @@ description: chartjs2img の単一リクエストパス - HTTP 受付からPNG �
 | キャッシュルックアップ | `cache.ts::getCache`                     | ヒット時は `X-Cache-Hit: true` で返却                                 |
 | セマフォ取得          | `semaphore.ts::acquire`                  | `active == CONCURRENCY`（既定 8）なら待機                             |
 | キャッシュ再チェック  | `cache.ts::getCache`（再）               | 待機中に並行リクエストが完了していれば拾う                             |
-| ブラウザ確保          | `renderer.ts::ensureBrowser`             | 動いていなければ puppeteer を起動                                      |
-| 新規ページ            | `b.newPage()` + `schedulePageCleanup`    | セーフティネットタイマーでリーク防御                                   |
-| チャート描画          | `template.ts::buildHtml` + `page.goto(dataUrl)` | `window.__chartRendered === true` を待機、`__chartMessages` を回収 |
-| スクリーンショット    | `container.screenshot({ type, quality })` | PNG / JPEG バイトを含む Buffer                                        |
+| エンジン分岐          | `renderer.ts`（`engine` で分岐）         | 既定 `skia` はブラウザ不要。以降のブラウザ関連ステップは `browser` エンジンのみ |
+| — skia 描画           | `engine-skia.ts::renderSkia`             | skia-canvas にインプロセス描画（下記 `browser` ステップ群を丸ごと置換） |
+| ブラウザ確保 *(browser)* | `renderer.ts::ensureBrowser`          | 動いていなければ puppeteer を起動                                      |
+| 新規ページ *(browser)*   | `b.newPage()` + `schedulePageCleanup` | セーフティネットタイマーでリーク防御                                   |
+| チャート描画 *(browser)* | `template.ts::buildHtml` + `page.goto(dataUrl)` | `window.__chartRendered === true` を待機、`__chartMessages` を回収 |
+| スクリーンショット *(browser)* | `container.screenshot({ type, quality })` | PNG / JPEG バイトを含む Buffer                              |
 | キャッシュ保存        | `cache.ts::setCache`                     | `CACHE_MAX_ENTRIES` 超過時は古いエントリを追い出し                     |
-| ページクローズ        | `clearPageCleanup` + `page.close()`      | ブラウザタブを解放                                                    |
+| ページクローズ *(browser)* | `clearPageCleanup` + `page.close()`   | ブラウザタブを解放                                                    |
 | セマフォ解放          | `semaphore.ts::release`                  | キューの次のレンダリングを起床                                         |
+
+上の図とテーブルの「ブラウザ確保 → ページクローズ」は `browser`
+エンジンのページパスを描いています。既定の `skia` エンジンは
+「エンジン分岐」で分かれ、`engine-skia.ts::renderSkia` が
+skia-canvas にインプロセス描画するため、`ensureBrowser` より**前**に
+分岐し、`skia` だけを使うプロセスは Chromium を一切起動しません。
 
 レスポンスには画像本体に加え `X-Cache-*` ヘッダと、Chart.js が
 警告を出した場合のみ `X-Chart-Messages` が付与されます。
 
 ## キーとなる設計判断
+
+### レンダリングエンジンは 2 つ
+
+すべてのレンダリングは 2 つのエンジンのいずれかで動きます。既定は
+`skia` です。
+
+- **`skia`（既定）** — `skia-canvas`（ネイティブ Skia）でブラウザを
+  起動せずインプロセス描画。高速（1 チャート数十 ms）・軽量で、
+  Chart.js と同梱プラグインは npm から読み込みます。
+- **`browser`** — `puppeteer-core` 経由のヘッドレス Chromium。実
+  ブラウザとのピクセル一致・最大忠実度が必要な場合に使用。プラグインは
+  ページ内に CDN から読み込みます。
+
+エンジンはレンダリング毎に選択（ライブラリ `engine`、CLI `--engine`、
+HTTP `engine`）。設計上のポイント:
+
+- 分岐は `ensureBrowser` の**前**に行い、`skia` だけを使うプロセスは
+  Chromium を起動しません。エンジンモジュールは遅延 import されるため、
+  `browser` 専用・メタデータ専用の呼び出しは skia-canvas + Chart.js を
+  読み込みません。
+- 2 つのエンジンは**別々にキャッシュ**されます（`computeHash` の入力に
+  `engine` が含まれる）。ピクセルが異なりうるため、同じチャートでも
+  エンジンごとに別エントリになります。
+- `chartjs-plugin-zoom` は `skia` エンジンに**含まれません**（操作専用で
+  静的描画に影響しないため）。必要なら `browser` エンジンを使います。
+- `bun build --compile` の単体バイナリでのみ、`euler` / `venn` は
+  skia-canvas のコンパイル時特有の制約により ellipse フォールバック描画に
+  なります（交差部の塗りに軽微なアーティファクト）。`bun run`・npm
+  ライブラリ・サーバーでは完全な忠実度で描画します。
 
 ### キャッシュは意図的に粗粒度
 
@@ -55,23 +92,25 @@ backgroundColor, format, quality}` を JSON.stringify した正規化文字列
 キャッシュヒットはセマフォを取得 **しません** — 即座にキャッシュバッファ
 を返します。これにより繰り返し同じリクエストがブラウザタブを消費しません。
 
-### 1 ブラウザ、多ページ
+### 1 ブラウザ、多ページ（`browser` エンジン）
 
-`browser` はモジュールレベルのシングルトン。各レンダリングは独自のタブ
+以下は `browser` エンジンのみに当てはまります。`browser` はモジュール
+レベルのシングルトン。各レンダリングは独自のタブ
 (`b.newPage()`) を取ります。`browser.on('disconnected')` で参照を null 化し、
 次のリクエストで再起動。タブは時間制御されており、`PAGE_TIMEOUT_SECONDS`
 を超えたレンダリングはクリーンアップタイマがタブを強制クローズ — ハング
 レンダーによる孤児ページリークを防ぎます。
 
-### Chromium は `--no-sandbox` で起動
+### Chromium は `--no-sandbox` で起動（`browser` エンジン）
 
 Docker 内で root 実行するための必須。これなしでは Chromium が起動
 拒否します。Docker 外で root 実行するケースは既にもっと大きな問題が
 あると思ってください。
 
-### HTML テンプレートは静的
+### HTML テンプレートは静的（`browser` エンジン）
 
-`template.ts::buildHtml` は、全プラグインの CDN `<script>` タグ、インライン
+`browser` エンジンでは `template.ts::buildHtml` が、全プラグインの CDN
+`<script>` タグ、インライン
 CSS、および次を行う IIFE を含む単一の HTML 文書を生成します:
 
 1. 自動登録しないプラグインを登録 (datalabels、chartjs-chart-geo)。
@@ -83,10 +122,12 @@ CSS、および次を行う IIFE を含む単一の HTML 文書を生成しま�
 このテンプレートが「任意の Chart.js 設定を描画する」ことを実現しています
 — 単一のページ初期化が全チャートタイプと全プラグインに対応。
 
-### プラグインはページ初期化時に CDN から読み込み
+### プラグインはページ初期化時に CDN から読み込み（`browser` エンジン）
 
-Chart.js プラグインを Node 側の JavaScript にバンドルしていません。
-Chromium 内で jsdelivr から毎ページロードで取得しています。この結果:
+`browser` エンジンでは、Chart.js プラグインを Node 側の JavaScript に
+バンドルせず、Chromium 内で jsdelivr から毎ページロードで取得します
+（`skia` エンジンはプラグインを npm から読み込むため CDN に依存しません）。
+この結果:
 
 - ブラウザコールドスタート後の初回レンダーは遅くなる (ネットワークラウンドトリップ)。
 - オフライン運用にはローカルミラーが必要 (同じパスを配信する nginx、または
@@ -107,7 +148,7 @@ Chromium 内で jsdelivr から毎ページロードで取得しています。�
 
 | 環境変数                  | 既定値   | 変わること                                                      |
 | ------------------------- | -------- | --------------------------------------------------------------- |
-| `CONCURRENCY`             | `8`      | セマフォスロット上限 — 同時ブラウザタブ数                        |
+| `CONCURRENCY`             | `8`      | セマフォスロット上限 — 同時レンダリング数（`browser` エンジンでは同時ブラウザタブ数） |
 | `PAGE_TIMEOUT_SECONDS`    | `60`     | 1 レンダリングの上限時間。超えるとタブを強制終了                 |
 | `CACHE_MAX_ENTRIES`       | `1000`   | LRU 容量                                                         |
 | `CACHE_TTL_SECONDS`       | `3600`   | エントリ毎の TTL                                                 |

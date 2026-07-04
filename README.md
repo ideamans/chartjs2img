@@ -1,6 +1,13 @@
 # chartjs2img
 
-Server-side Chart.js rendering service. Takes a Chart.js configuration as JSON, renders it to an image using headless Chromium (via `puppeteer-core`), and returns the result. Ships as an HTTP API, a CLI, and a TypeScript / Node library.
+Server-side Chart.js rendering service. Takes a Chart.js configuration as JSON, renders it to an image, and returns the result. Ships as an HTTP API, a CLI, and a TypeScript / Node library.
+
+Two rendering engines are built in:
+
+- **`skia`** *(default)* — [skia-canvas](https://github.com/samizdatco/skia-canvas). Renders in-process with **no browser**: fast (tens of ms per chart), small footprint, nothing to launch. Chart.js and every bundled plugin run against a native Skia canvas.
+- **`browser`** — headless Chromium via `puppeteer-core`. Maximum fidelity / real-browser pixel parity and DOM-dependent behavior. Chromium is installed automatically on first use of this engine.
+
+Pick per render: `engine: 'skia' | 'browser'` (library), `--engine` (CLI), or the `engine` field (HTTP). The default is `skia`, so the common path needs no browser at all.
 
 Built for generating charts in contexts where a browser isn't available — email campaigns, PowerPoint generation, PDF reports, Slack bots, LLM tool calls, etc.
 
@@ -8,6 +15,7 @@ Full documentation (EN / JA): <https://chartjs2img.ideamans.com>
 
 ## Features
 
+- **Two rendering engines** — `skia` (default, no browser) and `browser` (headless Chromium), selectable per render (see [Rendering Engines](#rendering-engines))
 - **Chart.js 4.4 + 11 plugins + date-fns adapter** built-in (see [Included Plugins](#included-plugins))
 - **HTTP API** — POST JSON, get an image back
 - **CLI** — pipe JSON in, get an image out
@@ -41,9 +49,48 @@ Verify it's working:
 bun --version
 ```
 
-## Chrome / Chromium
+## Rendering Engines
 
-chartjs2img requires Chrome or Chromium to render charts. On first run, it searches for an existing installation in this order:
+Every render runs on one of two engines. The default is `skia`.
+
+| | `skia` *(default)* | `browser` |
+|---|---|---|
+| Backend | skia-canvas (native Skia, in-process) | headless Chromium (`puppeteer-core`) |
+| Browser needed | **No** | Yes (auto-installed on first use) |
+| Speed | Fast — tens of ms/chart, no process launch | Slower — browser startup + page load |
+| Fidelity | Matches the browser for all 35 built-in examples | Real-browser pixel parity, reference |
+| Plugins | Bundled from npm | Loaded from CDN inside the page |
+| Best for | Default / high throughput / no-browser hosts | Exact pixel parity, DOM-dependent needs |
+
+Select the engine per render:
+
+```bash
+# CLI
+chartjs2img render -i chart.json -o chart.png --engine skia     # default
+chartjs2img render -i chart.json -o chart.png --engine browser
+```
+
+```ts
+// Library
+await renderChart({ chart, engine: 'skia' })     // default
+await renderChart({ chart, engine: 'browser' })
+```
+
+```json
+// HTTP POST /render body
+{ "chart": { }, "engine": "skia" }
+```
+
+Notes on the `skia` engine:
+
+- `chartjs-plugin-zoom` is **not** included (it is an interaction-only plugin that needs a live DOM); use the `browser` engine if you rely on it.
+- In a `bun build --compile` standalone binary, `euler` / `venn` charts fall back to an ellipse renderer (minor overlap-fill artifacts) due to a skia-canvas quirk under the compiled runtime. `bun run`, the npm library, and the server render them at full fidelity.
+
+The two engines cache independently (the cache hash includes the engine).
+
+## Chrome / Chromium (browser engine)
+
+The `browser` engine requires Chrome or Chromium. (The default `skia` engine does **not** — you can skip this entirely if you only use `skia`.) On first use of the `browser` engine, chartjs2img searches for an existing installation in this order:
 
 1. `CHROMIUM_PATH` environment variable
 2. `ms-playwright` browser cache (`~/Library/Caches/ms-playwright/` etc. — reused if a prior Playwright install is present)
@@ -77,7 +124,7 @@ This installs the Node.js packages. Bun uses `node_modules` just like npm, but i
 
 ### 2. Start the development server
 
-> **Zero-config:** You do **not** need to install Chromium manually. On first run, if Chromium is not found, it will be downloaded automatically (~250 MB one-time download). Just run the command below and wait for the install to complete.
+> **Zero-config:** The default `skia` engine needs no browser at all. If you request the `browser` engine, Chromium is downloaded automatically on first use if not found (~250 MB one-time download) — no manual install needed.
 
 ```bash
 bun run dev
@@ -165,7 +212,8 @@ Render a chart from a JSON body.
   "devicePixelRatio": 1,
   "backgroundColor": "white",
   "format": "png",
-  "quality": 90
+  "quality": 90,
+  "engine": "skia"
 }
 ```
 
@@ -178,6 +226,7 @@ Render a chart from a JSON body.
 | `backgroundColor` | string | `"white"` | CSS background color (`"transparent"` supported) |
 | `format` | string | `"png"` | Output format: `png` or `jpeg` |
 | `quality` | number | 90 | JPEG quality (0-100) |
+| `engine` | string | `"skia"` | Rendering engine: `skia` or `browser` |
 
 **Response headers:**
 
@@ -322,6 +371,7 @@ bun run src/index.ts render -i chart.json -o chart.png -w 1200 -h 400 -f jpeg -q
 | `--background-color <color>` | Background (default: white) |
 | `-f, --format <fmt>` | png, jpeg (default: png) |
 | `-q, --quality <0-100>` | JPEG quality (default: 90) |
+| `--engine <engine>` | Rendering engine: skia, browser (default: skia) |
 
 ### Batch rendering built-in examples
 
@@ -347,7 +397,7 @@ This iterates the 35 bundled chart configs (the same set shown by `GET /examples
 Use chartjs2img programmatically from any Bun or Node program:
 
 ```ts
-import { renderChart, closeBrowser, computeHash, BUNDLED_LIBS, VERSION } from 'chartjs2img'
+import { renderChart, closeBrowser, computeHash, DEFAULT_ENGINE, BUNDLED_LIBS, VERSION } from 'chartjs2img'
 
 const result = await renderChart({
   chart: {
@@ -360,12 +410,14 @@ const result = await renderChart({
   width: 800,
   height: 600,
   format: 'png',
+  engine: 'skia', // default — omit for skia, or pass 'browser'
 })
 
 await Bun.write('chart.png', result.buffer)
 if (result.messages.length) console.warn(result.messages)
 
-// Call once on process shutdown to release the shared browser
+// Call once on process shutdown. A no-op if the browser engine was never
+// used (the skia engine launches nothing to close).
 await closeBrowser()
 ```
 
@@ -374,14 +426,15 @@ Exports:
 | Symbol | Purpose |
 |--------|---------|
 | `renderChart(options)` | Render a single chart using a lazily-created default `Renderer` |
-| `closeBrowser()` | Close the shared headless browser on shutdown |
+| `closeBrowser()` | Close the shared headless browser on shutdown (no-op if only `skia` was used) |
 | `rendererStats()` | Browser / concurrency / page counters (same shape as `/health`) |
 | `Renderer` | Class for advanced callers that want isolated browser pools / concurrency |
 | `computeHash(options)` | Deterministic hash of a render input (for your own cache layer) |
+| `DEFAULT_ENGINE` | The engine used when none is specified (`'skia'`) |
 | `BUNDLED_LIBS` | Frozen table of Chart.js + plugin versions baked into the page |
 | `VERSION`, `NAME` | Package identification |
 
-Types: `RenderOptions`, `RenderResult`, `ConsoleMessage`, `RendererConfig`, `RendererStats`.
+Types: `RenderOptions`, `RenderResult`, `ConsoleMessage`, `RendererConfig`, `RendererStats`, `Engine`.
 
 ## Error Feedback
 
@@ -437,7 +490,7 @@ All settings can be configured via environment variables, making it easy to conf
 
 ## Included Plugins
 
-All plugins are loaded from CDN inside the headless browser. No extra installation needed.
+Both engines bundle the same Chart.js + plugin versions: the `skia` engine imports them from npm, and the `browser` engine loads them from CDN inside the page. No extra installation needed. (`chartjs-plugin-zoom` runs on the `browser` engine only — see [Rendering Engines](#rendering-engines).)
 
 ### Core
 
@@ -494,8 +547,9 @@ docker run -p 3000:3000 \
 
 The Docker image includes:
 - Bun runtime
-- Playwright + Chromium (headless)
-- Noto Sans CJK fonts (Japanese, Chinese, Korean — no tofu characters)
+- skia-canvas (the default engine — works out of the box)
+- Chromium (headless), for the `browser` engine
+- Noto Sans CJK fonts (Japanese, Chinese, Korean — no tofu characters, used by both engines)
 
 ### Docker Compose
 
@@ -522,14 +576,16 @@ bun run build
 bun build src/index.ts --compile --outfile chartjs2img
 ```
 
-This produces a `./chartjs2img` binary that can be distributed without requiring Bun or Node.js on the target machine.
+This produces a `./chartjs2img` binary that can be distributed without requiring Bun or Node.js on the target machine. The `skia` engine (native Skia canvas) is fully embedded — the binary renders every built-in example type on the default engine with no external dependencies.
 
-> **Note:** Playwright's Chromium browser is **not** bundled into the binary, but it will be **downloaded automatically** on first run if not found. Just distribute the binary — everything else is handled.
+> **Note:** The `browser` engine's Chromium is **not** bundled into the binary, but it is **downloaded automatically** on first use if not found. For the default `skia` engine nothing extra is needed. (One caveat: `euler` / `venn` charts on the `skia` engine use an ellipse fallback inside the compiled binary — see [Rendering Engines](#rendering-engines).)
 
 ```bash
-# Use the compiled binary — Chromium auto-installs on first run
-./chartjs2img serve --port 3000
+# Default skia engine — no browser needed
 ./chartjs2img render -i chart.json -o chart.png
+# Browser engine — Chromium auto-installs on first use
+./chartjs2img render -i chart.json -o chart.png --engine browser
+./chartjs2img serve --port 3000
 ```
 
 ## Claude Code Plugin
@@ -576,21 +632,20 @@ Request flow:
                       │ Acquired
                       ▼
                  ┌──────────┐
-                 │  Ensure  │──▶ Launch browser if not running
-                 │ Browser  │    Auto-restart if crashed
+                 │  Engine  │──▶ skia (default) or browser?
+                 │ Dispatch │
                  └──────────┘
-                      │
-                      ▼
-                 ┌──────────┐
-                 │ New Page  │──▶ Fresh tab with 60s timeout
-                 │ (Tab)     │
-                 └──────────┘
-                      │
-                      ▼
-                 ┌──────────┐
-                 │ Render   │──▶ Load HTML + Chart.js + plugins
-                 │ Chart    │    Screenshot canvas element
-                 └──────────┘
+                   │        │
+        skia ◀─────┘        └─────▶ browser
+          │                          │
+          ▼                          ▼
+ ┌──────────────┐           ┌──────────────┐
+ │ skia-canvas  │           │ Ensure browser│──▶ launch/restart Chromium
+ │ Chart.js +   │           │ New page (tab)│
+ │ plugins      │           │ Load HTML +   │
+ │ (in-process) │           │ Chart.js +    │
+ │ toBuffer()   │           │ plugins, shot │
+ └──────────────┘           └──────────────┘
                       │
                       ▼
                  ┌──────────┐

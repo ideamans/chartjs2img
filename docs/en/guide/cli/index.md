@@ -66,6 +66,13 @@ chartjs2img render -i chart.json -o retina.png --device-pixel-ratio 3
 chartjs2img render -i chart.json -o transparent.png --background-color transparent
 ```
 
+### Switching engines
+
+```bash
+chartjs2img render -i chart.json -o chart.png --engine skia     # default
+chartjs2img render -i chart.json -o chart.png --engine browser  # headless Chromium
+```
+
 ## Input shape
 
 The CLI input is the Chart.js config **directly** — no wrapper.
@@ -90,10 +97,9 @@ Compare with the HTTP body, which wraps it in a `chart` field.
 
 ::: warning JSON only — functions are silently dropped
 The config travels through `JSON.stringify` on its way into the
-headless browser, which drops function values, symbols, and
-`undefined`. Any `formatter: (ctx) => ...` callback, tooltip
-callback, or scale tick callback will disappear in transit. Use
-static values instead.
+renderer, which drops function values, symbols, and `undefined`. Any
+`formatter: (ctx) => ...` callback, tooltip callback, or scale tick
+callback will disappear in transit. Use static values instead.
 :::
 
 Every `type` plus the options each plugin adds are documented in
@@ -112,24 +118,40 @@ LLM-targeted reference.
 | `--background-color <color>`  | `white`  | CSS color, or `transparent`          |
 | `-f, --format <fmt>`          | `png`    | `png` or `jpeg`                      |
 | `-q, --quality <0-100>`       | `90`     | Quality for JPEG                     |
+| `--engine <engine>`           | `skia`   | Rendering engine: `skia` or `browser` |
+
+### Rendering engine
+
+`--engine skia` (the default) renders in-process on a native Skia
+canvas — fast, no browser, nothing to launch. `--engine browser`
+renders through headless Chromium for exact real-browser pixel
+parity; Chromium is auto-installed on first use of that engine. See
+[Install → Chromium / Chrome detection](../install#chromium--chrome-detection)
+for the browser-engine prerequisites, and note that `chartjs-plugin-zoom`
+is only available on the `browser` engine.
 
 ## Other subcommands
 
 ### `chartjs2img examples`
 
 Render every built-in example into an output directory. Useful for
-smoke-testing a new plugin or Chromium version.
+smoke-testing a new plugin bundle or engine.
 
 ```bash
 chartjs2img examples -o ./out
 chartjs2img examples -o ./out -f jpeg -q 80
+chartjs2img examples -o ./out --engine browser
 ```
 
-| Flag                    | Default       | Description      |
-| ----------------------- | ------------- | ---------------- |
-| `--outdir, -o <dir>`    | `./examples`  | Output directory |
-| `-f, --format <fmt>`    | `png`         | `png` or `jpeg`  |
-| `-q, --quality <0-100>` | `90`          | JPEG quality     |
+| Flag                    | Default       | Description                           |
+| ----------------------- | ------------- | ------------------------------------- |
+| `--outdir, -o <dir>`    | `./examples`  | Output directory                      |
+| `-f, --format <fmt>`    | `png`         | `png` or `jpeg`                       |
+| `-q, --quality <0-100>` | `90`          | JPEG quality                          |
+| `--engine <engine>`     | `skia`        | Rendering engine: `skia` or `browser` |
+
+On the default `skia` engine the 35 built-in examples render in about
+1.5 s total, since there's no browser to launch.
 
 ### `chartjs2img llm`
 
@@ -156,7 +178,7 @@ Prints the version.
 | Code | Meaning                                           |
 | ---- | ------------------------------------------------- |
 | `0`  | Success                                           |
-| `1`  | I/O failure or Chromium launch failure            |
+| `1`  | I/O failure or (browser engine) Chromium launch failure |
 | `2`  | Argument error (missing value for a value flag)   |
 
 Chart.js runtime errors (invalid `type`, dataset shape mismatch, etc.)
@@ -165,11 +187,14 @@ do **not** cause a non-zero exit. They are surfaced via stderr — see
 
 ## Performance notes
 
-- Chromium is launched on the first render in the process and reused
-  for subsequent renders within the same invocation. One-shot CLI
-  calls pay the launch cost (~300 ms) every time.
+- On the default `skia` engine there's no browser to launch — each
+  render is an in-process Skia rasterization (tens of ms per chart),
+  so even one-shot CLI calls start rendering immediately.
+- On the `browser` engine, Chromium is launched on the first render in
+  the process and reused for subsequent renders within the same
+  invocation. One-shot CLI calls pay the launch cost every time.
 - For batch rendering of many charts, prefer `chartjs2img examples -o
-  ./out` (which reuses one browser across all entries) or run the
+  ./out` (which reuses one renderer across all entries) or run the
   [HTTP server](../http/) and POST each chart.
 
 ## Where to next
