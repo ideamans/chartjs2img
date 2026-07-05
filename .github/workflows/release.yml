@@ -142,6 +142,11 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: artifacts
+          # Only the binary archives. Without this, download-artifact also
+          # tries to fetch the `*.dockerbuild` metadata artifact that
+          # docker/build-push-action uploads, which it cannot extract and
+          # which fails the whole step ("download failed after 5 retries").
+          pattern: chartjs2img_*
 
       - name: Collect archives and generate checksums
         run: |
