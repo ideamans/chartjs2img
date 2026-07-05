@@ -90,6 +90,8 @@ import {
   rendererStats,
   computeHash,
   DEFAULT_ENGINE,
+  registerFonts,
+  getFontLibrary,
   VERSION,
   NAME,
   BUNDLED_LIBS,
@@ -97,6 +99,7 @@ import {
   type RenderOptions,
   type RenderResult,
   type ConsoleMessage,
+  type FontLibrary,
 } from 'chartjs2img'
 ```
 
@@ -176,6 +179,46 @@ The engine used when `RenderOptions.engine` is omitted. Equals
 console.log(DEFAULT_ENGINE)   // "skia"
 ```
 
+### `registerFonts(families)` / `getFontLibrary()`
+
+Custom fonts for the **`skia` engine** — bring your own font (e.g. an
+[`@fontsource/*`](https://fontsource.org) package) and render without
+relying on system fonts. This is the recommended way to get reliable
+multi-language / CJK output from the library.
+
+```ts
+import { registerFonts, renderChart } from 'chartjs2img'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+// Install a font package: `bun add @fontsource/noto-sans-jp`
+await registerFonts({
+  'Noto Sans JP': [
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'),
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-700-normal.woff2'),
+  ],
+})
+
+// Name it via the fontFamily option (or per-chart options.font.family)
+await renderChart({ chart, fontFamily: 'Noto Sans JP' })
+```
+
+- Accepts `.woff2` / `.woff` / `.ttf` / `.otf` / `.ttc`. Register several
+  script subsets under **one** family name for combined coverage, e.g.
+  `{ 'App': [latin, japanese, korean, sc] }`.
+- Fonts are **process-global** once registered; register once at startup.
+- `getFontLibrary()` returns the underlying skia-canvas `FontLibrary`
+  singleton for `has()`, `families`, `reset()`, or its other `use()`
+  overloads.
+- Both load skia-canvas **lazily**, so browser-engine-only consumers never
+  pull in the native module. Register **through this package** (not by
+  importing `skia-canvas` yourself) so the fonts land on the same
+  skia-canvas instance the engine renders with.
+
+> **skia only.** The `browser` engine uses Chromium's own font stack;
+> `fontFamily` there must name a font Chromium already has. In Docker the
+> browser engine relies on the installed Noto CJK fonts.
+
 ## Types
 
 ### `RenderOptions`
@@ -198,6 +241,12 @@ interface RenderOptions {
   quality?: number
   /** Rendering engine (default: "skia") */
   engine?: Engine
+  /**
+   * Default font family for all chart text (Chart.js options.font.family).
+   * Pair with registerFonts() on the skia engine. A per-chart
+   * options.font.family wins.
+   */
+  fontFamily?: string
 }
 ```
 

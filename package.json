@@ -82,6 +82,7 @@
     "skia-canvas": "^3.0.8"
   },
   "devDependencies": {
+    "@fontsource/noto-sans-jp": "^5.2.9",
     "@tailwindcss/vite": "^4.2.2",
     "@types/bun": "latest",
     "daisyui": "^5.5.19",
