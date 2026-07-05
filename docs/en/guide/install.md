@@ -67,7 +67,7 @@ and move the binary yourself.
 ### Linux / macOS
 
 ```sh
-VERSION=0.4.0
+VERSION=0.5.0
 OS=linux       # or darwin
 ARCH=amd64     # or arm64
 
@@ -81,7 +81,7 @@ sudo mv chartjs2img /usr/local/bin/
 ### Windows (PowerShell)
 
 ```powershell
-$Version = "0.4.0"
+$Version = "0.5.0"
 $Url = "https://github.com/ideamans/chartjs2img/releases/download/v$Version/chartjs2img_${Version}_windows_amd64.zip"
 
 Invoke-WebRequest $Url -OutFile chartjs2img.zip

@@ -37,31 +37,36 @@ jobs:
 
   build:
     needs: verify-version
+    # Build each target on a NATIVE runner. The default skia engine bundles
+    # skia-canvas, whose native .node module is platform-specific and cannot
+    # be cross-compiled — a cross-target `bun --compile` embeds the build
+    # host's skia.node and the binary fails at runtime (dlopen) on other
+    # platforms. Native compile (no --target) embeds the correct binary.
     strategy:
       fail-fast: true
       matrix:
         include:
-          - target: bun-linux-x64
+          - runner: ubuntu-latest
             os: linux
             arch: amd64
             ext: tar.gz
-          - target: bun-linux-arm64
+          - runner: ubuntu-24.04-arm
             os: linux
             arch: arm64
             ext: tar.gz
-          - target: bun-darwin-x64
+          - runner: macos-13
             os: darwin
             arch: amd64
             ext: tar.gz
-          - target: bun-darwin-arm64
+          - runner: macos-14
             os: darwin
             arch: arm64
             ext: tar.gz
-          - target: bun-windows-x64
+          - runner: windows-latest
             os: windows
             arch: amd64
             ext: zip
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
 
@@ -74,10 +79,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Compile binary
+      - name: Compile binary (native)
         shell: bash
         env:
-          TARGET: ${{ matrix.target }}
           OS: ${{ matrix.os }}
         run: |
           set -euo pipefail
@@ -86,21 +90,18 @@ jobs:
           else
             BIN=chartjs2img
           fi
-          bun build src/index.ts --compile \
-            --target="$TARGET" \
-            --outfile "$BIN"
+          bun build src/index.ts --compile --outfile "$BIN"
 
-      - name: Create archive
-        id: archive
+      - name: Stage archive contents
         shell: bash
         env:
           VERSION: ${{ needs.verify-version.outputs.version }}
           OS: ${{ matrix.os }}
           ARCH: ${{ matrix.arch }}
-          EXT: ${{ matrix.ext }}
         run: |
           set -euo pipefail
           NAME="chartjs2img_${VERSION}_${OS}_${ARCH}"
+          echo "ARCHIVE_NAME=$NAME" >> "$GITHUB_ENV"
           mkdir -p "dist/$NAME"
           if [ "$OS" = "windows" ]; then
             mv chartjs2img.exe "dist/$NAME/"
@@ -109,20 +110,25 @@ jobs:
           fi
           [ -f README.md ] && cp README.md "dist/$NAME/" || true
           [ -f LICENSE ] && cp LICENSE "dist/$NAME/" || true
-          cd dist
-          if [ "$EXT" = "zip" ]; then
-            zip -rq "${NAME}.${EXT}" "$NAME"
-          else
-            tar -czf "${NAME}.${EXT}" "$NAME"
-          fi
-          echo "archive=dist/${NAME}.${EXT}" >> "$GITHUB_OUTPUT"
-          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Create archive (tar.gz)
+        if: matrix.os != 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist && tar -czf "${ARCHIVE_NAME}.tar.gz" "$ARCHIVE_NAME"
+
+      - name: Create archive (zip)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/$env:ARCHIVE_NAME" -DestinationPath "dist/$env:ARCHIVE_NAME.zip"
 
       - name: Upload archive artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ steps.archive.outputs.name }}
-          path: ${{ steps.archive.outputs.archive }}
+          name: ${{ env.ARCHIVE_NAME }}
+          path: dist/${{ env.ARCHIVE_NAME }}.${{ matrix.ext }}
           if-no-files-found: error
           retention-days: 1
 

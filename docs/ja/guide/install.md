@@ -61,7 +61,7 @@ Releases からの手動ダウンロード、Docker、ソースビルドを紹�
 ### Linux / macOS
 
 ```sh
-VERSION=0.4.0
+VERSION=0.5.0
 OS=linux       # または darwin
 ARCH=amd64     # または arm64
 
@@ -75,7 +75,7 @@ sudo mv chartjs2img /usr/local/bin/
 ### Windows (PowerShell)
 
 ```powershell
-$Version = "0.4.0"
+$Version = "0.5.0"
 $Url = "https://github.com/ideamans/chartjs2img/releases/download/v$Version/chartjs2img_${Version}_windows_amd64.zip"
 
 Invoke-WebRequest $Url -OutFile chartjs2img.zip

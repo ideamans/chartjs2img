@@ -97,11 +97,11 @@ gh skill update chartjs2img-render    # 名前で 1 つだけ
 
 ```bash
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-render \
-  --ref v0.4.0 \
+  --ref v0.5.0 \
   --agent claude-code
 ```
 
-`v0.4.0` を欲しい chartjs2img タグに置き換え。ピン止め解除を明示しない限り
+`v0.5.0` を欲しい chartjs2img タグに置き換え。ピン止め解除を明示しない限り
 `gh skill update` はピンを離しません。
 
 ## `gh skill` でできないこと

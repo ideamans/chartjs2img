@@ -37,25 +37,33 @@ jobs:
         run: bun test
 
   # -------------------------------------------------------------------
-  # 2. Cross-compile binaries for smoke tests (linux amd64 runner)
+  # 2. Compile binaries for smoke tests — NATIVELY, one per runner.
+  #
+  # The default `skia` engine bundles skia-canvas, whose native `.node`
+  # module is platform-specific and CANNOT be cross-compiled: a
+  # `bun build --compile --target=<other-platform>` embeds the BUILD
+  # host's skia.node, so the resulting binary fails at runtime with
+  # `dlopen ... not a mach-o file` on the target. Build each target on a
+  # matching runner instead (native compile, no --target) so it embeds
+  # the correct skia.node.
   # -------------------------------------------------------------------
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - target: bun-linux-x64
+          - runner: ubuntu-latest
             artifact: linux-amd64
             ext: ""
-          - target: bun-linux-arm64
+          - runner: ubuntu-24.04-arm
             artifact: linux-arm64
             ext: ""
-          - target: bun-darwin-arm64
+          - runner: macos-14
             artifact: darwin-arm64
             ext: ""
-          - target: bun-windows-x64
+          - runner: windows-latest
             artifact: windows-amd64
             ext: ".exe"
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
 
@@ -65,10 +73,10 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Cross-compile
+      - name: Compile (native)
+        shell: bash
         run: |
           bun build src/index.ts --compile \
-            --target=${{ matrix.target }} \
             --outfile=chartjs2img${{ matrix.ext }}
 
       - uses: actions/upload-artifact@v6
@@ -157,7 +165,7 @@ jobs:
           echo "LLM doc lines: $LINES"
           [ "$LINES" -gt 1000 ]
 
-      - name: Generate examples (triggers auto-install of Chrome for Testing)
+      - name: Generate examples (skia engine — default, no browser)
         run: ./chartjs2img examples -o ./test-output
 
       - name: Restore system Chrome
@@ -227,7 +235,7 @@ jobs:
           Write-Host "LLM doc lines: $lines"
           if ($lines -lt 1000) { exit 1 }
 
-      - name: Generate examples (triggers auto-install of Chrome for Testing)
+      - name: Generate examples (skia engine — default, no browser)
         shell: pwsh
         run: .\chartjs2img.exe examples -o test-output
 
