@@ -54,9 +54,12 @@ Releases からの手動ダウンロード、Docker、ソースビルドを紹�
 |-----------------------|-----------------------------------------------|
 | Linux x64             | `chartjs2img_<version>_linux_amd64.tar.gz`    |
 | Linux ARM64           | `chartjs2img_<version>_linux_arm64.tar.gz`    |
-| macOS (Intel)         | `chartjs2img_<version>_darwin_amd64.tar.gz`   |
 | macOS (Apple Silicon) | `chartjs2img_<version>_darwin_arm64.tar.gz`   |
 | Windows x64           | `chartjs2img_<version>_windows_amd64.zip`     |
+
+> **Intel Mac (darwin-amd64):** ビルド済みバイナリは提供していません
+> （Mac は Apple Silicon が対象）。Intel Mac では `bun` / Docker / npm で
+> 実行するか、ソースからビルドしてください。
 
 ### Linux / macOS
 

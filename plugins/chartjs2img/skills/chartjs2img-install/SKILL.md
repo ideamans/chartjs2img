@@ -44,10 +44,13 @@ Normalize to the release-asset naming (note: release uses underscore form `linux
 Release assets follow `chartjs2img_<version>_<os>_<arch>.<ext>` where
 `<ext>` is `zip` for windows and `tar.gz` for everything else.
 
-Supported combinations: `linux_amd64`, `linux_arm64`, `darwin_amd64`,
-`darwin_arm64`, `windows_amd64`. Windows ARM64 is not currently built —
-tell the user and stop (they can build from source with `bun run
-build` on a native Windows ARM64 machine if they need it).
+Supported combinations: `linux_amd64`, `linux_arm64`, `darwin_arm64`,
+`windows_amd64`. Two targets are NOT built — if the user is on one, tell
+them and stop:
+- **Intel Mac (`darwin_amd64`)** — Mac binaries are Apple Silicon only.
+  Intel users can run via `bun` / Docker / npm, or build from source.
+- **Windows ARM64** — they can build from source with `bun run build` on
+  a native Windows ARM64 machine if they need it.
 
 ### 2. Look up the latest release
 

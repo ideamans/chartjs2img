@@ -54,10 +54,10 @@ jobs:
             os: linux
             arch: arm64
             ext: tar.gz
-          - runner: macos-13
-            os: darwin
-            arch: amd64
-            ext: tar.gz
+          # darwin-amd64 (Intel Mac) is intentionally not built: the
+          # macos-13 Intel runner queue is unreliable, and Intel Macs are
+          # legacy. Apple Silicon (darwin-arm64) covers modern Macs; Intel
+          # users can run via `bun`, Docker, npm, or build from source.
           - runner: macos-14
             os: darwin
             arch: arm64

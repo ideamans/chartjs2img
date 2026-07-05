@@ -60,9 +60,12 @@ and move the binary yourself.
 |-----------------------|----------------------------------------------|
 | Linux x64             | `chartjs2img_<version>_linux_amd64.tar.gz`   |
 | Linux ARM64           | `chartjs2img_<version>_linux_arm64.tar.gz`   |
-| macOS (Intel)         | `chartjs2img_<version>_darwin_amd64.tar.gz`  |
 | macOS (Apple Silicon) | `chartjs2img_<version>_darwin_arm64.tar.gz`  |
 | Windows x64           | `chartjs2img_<version>_windows_amd64.zip`    |
+
+> **Intel Mac (darwin-amd64):** no prebuilt binary is published (Apple
+> Silicon is the supported Mac target). On an Intel Mac, run via `bun`,
+> Docker, or npm, or build from source.
 
 ### Linux / macOS
 
