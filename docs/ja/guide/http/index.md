@@ -17,7 +17,7 @@ chartjs2img serve --port 3000
 起動時の表示例:
 
 ```
-chartjs2img v0.5.1 listening on http://0.0.0.0:3000
+chartjs2img v0.6.0 listening on http://0.0.0.0:3000
   POST /render      - render chart from JSON body
   GET  /render      - render chart from query params
   GET  /cache/:hash - retrieve cached image
@@ -147,7 +147,7 @@ curl -o chart.png "http://localhost:3000/cache/$HASH"
 ```json
 {
   "status": "ok",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "renderer": {
     "browserConnected": true,
     "concurrency": { "max": 8, "active": 2, "pending": 0 },
