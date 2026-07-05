@@ -58,6 +58,17 @@ export interface RenderOptions {
   quality?: number
   /** Rendering engine (default: 'skia'). See {@link Engine}. */
   engine?: Engine
+  /**
+   * Default font family for all chart text (sets Chart.js
+   * `options.font.family`). A per-chart `options.font.family` in the config
+   * takes precedence.
+   *
+   * On the `skia` engine this pairs with fonts registered via
+   * `registerFonts` / `FontLibrary` — register the family, then name it here
+   * to render without relying on system fonts. On the `browser` engine the
+   * name must resolve to a font Chromium already has (system/web font).
+   */
+  fontFamily?: string
 }
 
 export function buildHtml(options: RenderOptions): string {
@@ -67,6 +78,7 @@ export function buildHtml(options: RenderOptions): string {
     height = 600,
     devicePixelRatio = 1,
     backgroundColor = 'white',
+    fontFamily,
   } = options
 
   return `<!DOCTYPE html>
@@ -96,6 +108,9 @@ ${Object.values(LIBS)
   // Set device pixel ratio
   config.options = config.options || {};
   config.options.devicePixelRatio = ${devicePixelRatio};
+
+  // Default font family (chart-wide). A per-chart options.font.family wins.
+  ${fontFamily ? `config.options.font = Object.assign({ family: ${JSON.stringify(fontFamily)} }, config.options.font || {});` : ''}
 
   // Set responsive
   config.options.responsive = true;

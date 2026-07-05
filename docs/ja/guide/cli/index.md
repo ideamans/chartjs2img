@@ -124,6 +124,7 @@ scale tick コールバックは届きません。静的な値を使ってくだ
 | `-f, --format <fmt>`          | `png`    | `png` または `jpeg`                           |
 | `-q, --quality <0-100>`       | `90`     | JPEG の品質                                   |
 | `--engine <engine>`           | `skia`   | `skia`（既定・ブラウザ不要）または `browser`（ヘッドレス Chromium） |
+| `--font-family <name>`        | ホスト既定 | チャートの既定フォントファミリ（ホストにインストール済みのフォント名） |
 
 ## その他のサブコマンド
 

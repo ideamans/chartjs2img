@@ -213,7 +213,8 @@ Render a chart from a JSON body.
   "backgroundColor": "white",
   "format": "png",
   "quality": 90,
-  "engine": "skia"
+  "engine": "skia",
+  "fontFamily": "Noto Sans"
 }
 ```
 
@@ -227,6 +228,7 @@ Render a chart from a JSON body.
 | `format` | string | `"png"` | Output format: `png` or `jpeg` |
 | `quality` | number | 90 | JPEG quality (0-100) |
 | `engine` | string | `"skia"` | Rendering engine: `skia` or `browser` |
+| `fontFamily` | string | *(host default)* | Default chart font family — must be installed on the host (see [Custom fonts](#custom-fonts-library)) |
 
 **Response headers:**
 
@@ -372,6 +374,7 @@ bun run src/index.ts render -i chart.json -o chart.png -w 1200 -h 400 -f jpeg -q
 | `-f, --format <fmt>` | png, jpeg (default: png) |
 | `-q, --quality <0-100>` | JPEG quality (default: 90) |
 | `--engine <engine>` | Rendering engine: skia, browser (default: skia) |
+| `--font-family <name>` | Default chart font family (must be installed on the host) |
 
 ### Batch rendering built-in examples
 
@@ -431,10 +434,43 @@ Exports:
 | `Renderer` | Class for advanced callers that want isolated browser pools / concurrency |
 | `computeHash(options)` | Deterministic hash of a render input (for your own cache layer) |
 | `DEFAULT_ENGINE` | The engine used when none is specified (`'skia'`) |
+| `registerFonts(families)` | Register custom fonts for the `skia` engine (see [Custom fonts](#custom-fonts-library)) |
+| `getFontLibrary()` | The skia-canvas `FontLibrary` singleton the engine renders with |
 | `BUNDLED_LIBS` | Frozen table of Chart.js + plugin versions baked into the page |
 | `VERSION`, `NAME` | Package identification |
 
-Types: `RenderOptions`, `RenderResult`, `ConsoleMessage`, `RendererConfig`, `RendererStats`, `Engine`.
+Types: `RenderOptions`, `RenderResult`, `ConsoleMessage`, `RendererConfig`, `RendererStats`, `Engine`, `FontLibrary`.
+
+### Custom fonts (library)
+
+The `skia` engine can render with fonts you bring yourself — no system
+fonts required — which is the easiest way to get reliable
+multi-language / CJK output. Install a font package (e.g. an
+[`@fontsource/*`](https://fontsource.org)), register the family, and name
+it via `fontFamily`:
+
+```ts
+import { renderChart, registerFonts } from 'chartjs2img'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+// bun add @fontsource/noto-sans-jp
+await registerFonts({
+  'Noto Sans JP': [
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'),
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-700-normal.woff2'),
+  ],
+})
+
+await renderChart({ chart, fontFamily: 'Noto Sans JP' })
+```
+
+Accepts `.woff2` / `.woff` / `.ttf` / `.otf` / `.ttc`; register several
+script subsets under one family name for combined coverage. Register
+**through this package** (not by importing `skia-canvas` yourself) so the
+fonts land on the same instance the engine renders with. This is
+**library-only** — the CLI `--font-family` and HTTP `fontFamily` select a
+font already installed on the host; they don't register new ones.
 
 ## Error Feedback
 

@@ -126,6 +126,12 @@ export async function renderSkia(options: RenderOptions): Promise<SkiaRenderResu
     opts.responsive = false
     opts.maintainAspectRatio = false
     opts.animation = false
+    // Default font family (chart-wide). A per-chart options.font.family wins.
+    // Pair with fonts registered via registerFonts()/FontLibrary to render
+    // without system fonts.
+    if (options.fontFamily) {
+      opts.font = { family: options.fontFamily, ...((opts.font as Record<string, unknown>) ?? {}) }
+    }
     config.options = opts
 
     // Background fill. The browser engine renders onto a coloured <body>;

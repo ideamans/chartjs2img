@@ -82,6 +82,7 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
     format: body.format as RenderOptions['format'] | undefined,
     quality: body.quality as number | undefined,
     engine: body.engine as RenderOptions['engine'] | undefined,
+    fontFamily: body.fontFamily as string | undefined,
   }
 }
 
@@ -185,6 +186,7 @@ export async function startServer(config: ServerConfig): Promise<ServerHandle> {
             format: (url.searchParams.get('format') as RenderOptions['format']) || undefined,
             quality: url.searchParams.get('quality') ? Number(url.searchParams.get('quality')) : undefined,
             engine: (url.searchParams.get('engine') as RenderOptions['engine']) || undefined,
+            fontFamily: url.searchParams.get('fontFamily') || undefined,
           }
         } else {
           return Response.json({ error: 'Method not allowed' }, { status: 405 })

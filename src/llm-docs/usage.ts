@@ -83,6 +83,7 @@ Wrap the Chart.js config in a \`"chart"\` field alongside optional render settin
 | \`format\` | string | \`"png"\` | \`"png"\` or \`"jpeg"\` |
 | \`quality\` | number | 90 | JPEG quality (0-100) |
 | \`engine\` | string | \`"skia"\` | Rendering engine: \`"skia"\` or \`"browser"\` |
+| \`fontFamily\` | string | host default | Default chart font family; must already be installed on the host (custom fonts can only be registered via the TS library, not HTTP/CLI) |
 
 ### Error Feedback
 

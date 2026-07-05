@@ -20,6 +20,7 @@ export interface CliRenderArgs {
   format?: 'png' | 'jpeg'
   quality?: number
   engine?: Engine
+  fontFamily?: string
 }
 
 export async function cliRender(args: CliRenderArgs): Promise<void> {
@@ -56,6 +57,7 @@ export async function cliRender(args: CliRenderArgs): Promise<void> {
     format: args.format,
     quality: args.quality,
     engine: args.engine,
+    fontFamily: args.fontFamily,
   }
 
   try {

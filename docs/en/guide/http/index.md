@@ -17,7 +17,7 @@ chartjs2img serve --port 3000
 On startup the server prints:
 
 ```
-chartjs2img v0.5.1 listening on http://0.0.0.0:3000
+chartjs2img v0.6.0 listening on http://0.0.0.0:3000
   POST /render      - render chart from JSON body
   GET  /render      - render chart from query params
   GET  /cache/:hash - retrieve cached image
@@ -77,6 +77,7 @@ curl -X POST http://localhost:3000/render \
 | `format`           | string  | `"png"`        | `png` or `jpeg`                                       |
 | `quality`          | number  | `90`           | JPEG quality (0-100)                                  |
 | `engine`           | string  | `"skia"`       | Rendering engine: `skia` or `browser`                |
+| `fontFamily`       | string  | host default   | Default chart font family — must already be installed on the host (custom fonts are registered only via the [library](/en/developer/library-api)) |
 
 The `engine` field also works as the `?engine=` query parameter on
 `GET /render`. An unknown value returns `400`. The default `skia`
@@ -149,7 +150,7 @@ counters. Useful for liveness / readiness probes.
 ```json
 {
   "status": "ok",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "renderer": {
     "browserConnected": true,
     "concurrency": { "max": 8, "active": 2, "pending": 0 },

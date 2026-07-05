@@ -94,10 +94,13 @@ import {
   NAME,
   BUNDLED_LIBS,
   DEFAULT_ENGINE,
+  registerFonts,
+  getFontLibrary,
   type Engine,
   type RenderOptions,
   type RenderResult,
   type ConsoleMessage,
+  type FontLibrary,
 } from 'chartjs2img'
 ```
 
@@ -125,6 +128,45 @@ import {
 
 `Engine` は `'skia' | 'browser'` のユニオン型。`DEFAULT_ENGINE` は
 既定エンジン（＝ `'skia'`）を示すランタイム定数です。
+
+### `registerFonts(families)` / `getFontLibrary()`
+
+**`skia` エンジン**向けのカスタムフォント。フォントパッケージ（例:
+[`@fontsource/*`](https://fontsource.org)）を併用し、システムフォントに
+依存せず描画できます。ライブラリで多言語・CJK を確実に出したいときの
+推奨手段です。
+
+```ts
+import { registerFonts, renderChart } from 'chartjs2img'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+// フォントパッケージを導入: `bun add @fontsource/noto-sans-jp`
+await registerFonts({
+  'Noto Sans JP': [
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff2'),
+    require.resolve('@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-700-normal.woff2'),
+  ],
+})
+
+// fontFamily オプション（または各チャートの options.font.family）で指定
+await renderChart({ chart, fontFamily: 'Noto Sans JP' })
+```
+
+- `.woff2` / `.woff` / `.ttf` / `.otf` / `.ttc` に対応。複数 script subset を
+  **1つの family 名**にまとめて登録すれば合成カバレッジになります
+  （例: `{ 'App': [latin, japanese, korean, sc] }`）。
+- 登録したフォントは**プロセス全体で共有**。起動時に一度登録すれば十分。
+- `getFontLibrary()` は skia-canvas の `FontLibrary` シングルトンを返し、
+  `has()` / `families` / `reset()` や他の `use()` オーバーロードに使えます。
+- どちらも skia-canvas を**遅延ロード**するため、browser エンジンのみの
+  利用者はネイティブモジュールを読み込みません。**必ず本パッケージ経由で**
+  登録してください（自前で `skia-canvas` を import すると別コピーに解決され、
+  エンジンが描画に使うインスタンスと一致しないことがあります）。
+
+> **skia 専用。** `browser` エンジンは Chromium 自身のフォントスタックを
+> 使うため、`fontFamily` には Chromium が既に持つフォント名を指定する必要が
+> あります（Docker では同梱の Noto CJK を利用）。
 
 ### `rendererStats()`
 
@@ -189,6 +231,11 @@ interface RenderOptions {
   quality?: number
   /** レンダリングエンジン (既定 'skia')。'skia' はブラウザ不要、'browser' はヘッドレス Chromium */
   engine?: Engine
+  /**
+   * 全チャートテキストの既定フォントファミリ (Chart.js options.font.family)。
+   * skia エンジンでは registerFonts() と併用。各チャートの options.font.family が優先。
+   */
+  fontFamily?: string
 }
 ```
 

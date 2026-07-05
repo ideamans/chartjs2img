@@ -119,6 +119,7 @@ LLM-targeted reference.
 | `-f, --format <fmt>`          | `png`    | `png` or `jpeg`                      |
 | `-q, --quality <0-100>`       | `90`     | Quality for JPEG                     |
 | `--engine <engine>`           | `skia`   | Rendering engine: `skia` or `browser` |
+| `--font-family <name>`        | host default | Default chart font family (must be installed on the host) |
 
 ### Rendering engine
 

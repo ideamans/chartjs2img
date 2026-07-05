@@ -17,7 +17,7 @@ chartjs2img serve --port 3000
 起動時の表示例:
 
 ```
-chartjs2img v0.5.1 listening on http://0.0.0.0:3000
+chartjs2img v0.6.0 listening on http://0.0.0.0:3000
   POST /render      - render chart from JSON body
   GET  /render      - render chart from query params
   GET  /cache/:hash - retrieve cached image
@@ -76,6 +76,7 @@ curl -X POST http://localhost:3000/render \
 | `format`           | string   | `"png"`        | `png` または `jpeg`                                   |
 | `quality`          | number   | `90`           | JPEG 品質 (0-100)                                     |
 | `engine`           | string   | `"skia"`       | レンダリングエンジン。`"skia"`（既定・ブラウザ不要）または `"browser"`（ヘッドレス Chromium）。不正値は `400` |
+| `fontFamily`       | string   | ホスト既定     | チャートの既定フォントファミリ。ホストにインストール済みのフォント名を指定（カスタムフォント登録は [ライブラリ](/ja/developer/library-api) のみ） |
 
 ::: warning JSON のみ — 関数値は静かに破棄されます
 `chart` フィールドはレンダラへ渡る際に（どちらのエンジンでも）
@@ -146,7 +147,7 @@ curl -o chart.png "http://localhost:3000/cache/$HASH"
 ```json
 {
   "status": "ok",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "renderer": {
     "browserConnected": true,
     "concurrency": { "max": 8, "active": 2, "pending": 0 },

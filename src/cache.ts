@@ -46,6 +46,10 @@ export function computeHash(options: RenderOptions): string {
     quality: options.quality ?? 90,
     // Engines can differ pixel-for-pixel, so they must cache separately.
     engine: options.engine ?? DEFAULT_ENGINE,
+    // The default font family affects text rendering. NOTE: this keys on the
+    // family NAME, not the registered font bytes — registering different fonts
+    // under the same name across renders is a cache hazard (documented).
+    fontFamily: options.fontFamily ?? '',
   })
   return createHash('sha256').update(json).digest('hex').slice(0, 16)
 }
