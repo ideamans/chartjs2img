@@ -76,6 +76,7 @@ curl -X POST http://localhost:3000/render \
 | `format`           | string   | `"png"`        | `png` または `jpeg`                                   |
 | `quality`          | number   | `90`           | JPEG 品質 (0-100)                                     |
 | `engine`           | string   | `"skia"`       | レンダリングエンジン。`"skia"`（既定・ブラウザ不要）または `"browser"`（ヘッドレス Chromium）。不正値は `400` |
+| `fontFamily`       | string   | ホスト既定     | チャートの既定フォントファミリ。ホストにインストール済みのフォント名を指定（カスタムフォント登録は [ライブラリ](/ja/developer/library-api) のみ） |
 
 ::: warning JSON のみ — 関数値は静かに破棄されます
 `chart` フィールドはレンダラへ渡る際に（どちらのエンジンでも）

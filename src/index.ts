@@ -38,6 +38,7 @@ RENDER OPTIONS
   --format, -f <fmt>             png | jpeg (default: png)
   --quality, -q <0-100>          JPEG quality (default: 90)
   --engine <engine>              skia | browser (default: skia)
+  --font-family <name>           Default chart font family (must be installed on the host)
 
 EXAMPLES OPTIONS
   --outdir, -o <dir>             Output directory (default: ./examples)
@@ -105,7 +106,8 @@ INPUT JSON SCHEMA (for "render" CLI and POST /render)
       "backgroundColor": "white",// optional, default "white"
       "format": "png",           // optional, "png" | "jpeg"
       "quality": 90,             // optional, 0-100 for jpeg
-      "engine": "skia"           // optional, "skia" (default) | "browser"
+      "engine": "skia",          // optional, "skia" (default) | "browser"
+      "fontFamily": "Noto Sans"  // optional, default chart font family (must be installed on the host)
     }
 
 CHART.JS CONFIGURATION REFERENCE
@@ -316,6 +318,7 @@ async function main(): Promise<void> {
       format: (args['format'] ?? args['f']) as 'png' | 'jpeg' | undefined,
       quality: args['quality'] ? Number(args['quality']) : args['q'] ? Number(args['q']) : undefined,
       engine: args['engine'] as 'skia' | 'browser' | undefined,
+      fontFamily: args['font-family'] as string | undefined,
     })
   } else {
     console.error(`Unknown command: ${command}`)
