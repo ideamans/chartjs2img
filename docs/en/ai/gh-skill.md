@@ -97,11 +97,11 @@ you want a specific release:
 
 ```bash
 gh skill install ideamans/chartjs2img plugins/chartjs2img/skills/chartjs2img-render \
-  --ref v0.5.0 \
+  --ref v0.5.1 \
   --agent claude-code
 ```
 
-Replace `v0.5.0` with the chartjs2img tag you want. `gh skill update`
+Replace `v0.5.1` with the chartjs2img tag you want. `gh skill update`
 won't move you off a pinned ref unless you explicitly unpin.
 
 ## What you can't do with `gh skill`
