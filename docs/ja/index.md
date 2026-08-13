@@ -1,6 +1,6 @@
 ---
 layout: page
-title: chartjs2img
+title: Chart.js の設定から画像を生成するレンダラ
 landing:
   hero:
     name: chartjs2img

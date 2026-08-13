@@ -1,5 +1,5 @@
 ---
-title: gh skill (Copilot / Cursor / Gemini CLI / Codex)
+title: gh skill for coding agents
 description: Install the chartjs2img skills into any Agent Skills-compatible host using gh skill install - GitHub Copilot, Cursor, Gemini CLI, or OpenAI Codex.
 ---
 

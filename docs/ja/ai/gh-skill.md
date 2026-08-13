@@ -1,5 +1,5 @@
 ---
-title: gh skill (Copilot / Cursor / Gemini CLI / Codex)
+title: コーディングエージェント向けの gh skill
 description: gh skill install で Agent Skills 対応ホストに chartjs2img スキルをインストール - GitHub Copilot、Cursor、Gemini CLI、OpenAI Codex。
 ---
 

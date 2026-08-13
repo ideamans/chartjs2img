@@ -1,6 +1,6 @@
 ---
 layout: page
-title: chartjs2img
+title: Render Chart.js configurations to images
 landing:
   hero:
     name: chartjs2img

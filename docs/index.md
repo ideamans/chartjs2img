@@ -1,6 +1,6 @@
 ---
 layout: page
-title: chartjs2img
+title: chartjs2img — Server-side Chart.js rendering
 aside: false
 sidebar: false
 description: 'Server-side Chart.js rendering for the AI era. Pick English or Japanese to read the documentation for the chartjs2img CLI and HTTP API.'
