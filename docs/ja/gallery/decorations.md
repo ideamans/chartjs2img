@@ -1,6 +1,6 @@
 ---
 title: ラベルと注釈
-description: '装飾系プラグイン — チャート本体は通常のものだが、その上に何かを 描き足したり、塗りを変えたりします。chartjs-plugin-datalabels を利用。'
+description: 'データラベル・注釈・グラデーション塗りといった装飾系プラグインの作例集です。datalabels は既定がOFFなので display: true を明示する必要があります。'
 ---
 
 # ラベルと注釈

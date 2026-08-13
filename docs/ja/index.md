@@ -89,6 +89,7 @@ landing:
   acknowledgments:
     title: オープンソースの肩の上に
     intro: chartjs2img は以下のプロジェクトの上に立っています。ライセンスと告知は Docker イメージとソースツリーに同梱しています。
+description: 'Chart.js の設定JSONを渡すと PNG が返るサーバーサイドのレンダラです。Chart.js と12個のプラグインを同梱した単一バイナリで、HTTP API と CLI の両方から使えます。'
 ---
 
 <Landing />

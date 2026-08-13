@@ -91,6 +91,7 @@ landing:
   acknowledgments:
     title: Built on open source
     intro: chartjs2img stands on the shoulders of these projects. Licenses and notices are reproduced inside the Docker image and the source tree.
+description: 'Send a Chart.js configuration as JSON and get a rendered PNG back, with no browser on the receiving side. Ships Chart.js plus 12 plugins as a single binary with an HTTP API and CLI.'
 ---
 
 <Landing />

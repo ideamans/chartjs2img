@@ -1,6 +1,6 @@
 ---
 title: Quick start
-description: Install the chartjs2img binary and render your first Chart.js chart to PNG in under a minute.
+description: 'Install the chartjs2img binary and render your first chart in under a minute. Covers macOS, Linux, and Windows, with manual alternatives to piping a remote script into a shell.'
 ---
 
 # Quick start
