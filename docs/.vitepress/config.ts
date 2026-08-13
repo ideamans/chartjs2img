@@ -28,7 +28,7 @@ const FORCE_LIGHT_SCRIPT = `(()=>{try{localStorage.removeItem('vitepress-theme-a
 const config: ReturnType<typeof withTheme> = withTheme({
   title: 'chartjs2img',
   description:
-    'Server-side Chart.js rendering service — CLI + HTTP API, 12 plugins bundled, image output via headless Chromium. Built for contexts without a browser (email, PDF, slides) and for LLM-authored charts.',
+    'Server-side Chart.js rendering. CLI and HTTP API, 12 plugins bundled, images from headless Chromium — for places without a browser and for charts an LLM wrote.',
   cleanUrls: true,
   lastUpdated: true,
   // Skeleton pages won't all exist until Phase 1 completes — relax until content lands.

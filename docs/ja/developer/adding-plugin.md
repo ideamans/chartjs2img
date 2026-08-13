@@ -1,6 +1,6 @@
 ---
 title: Chart.js プラグインの追加
-description: chartjs2img に新しい Chart.js プラグインを組み込む方法 - 3 ファイル変更と検証手順。
+description: '別の Chart.js エコシステムプラグイン (新しいチャートタイプ、新しい装飾器) を同梱して、ユーザーが追加セットアップなしで設定から使えるようにします。'
 ---
 
 # Chart.js プラグインの追加

@@ -1,6 +1,6 @@
 ---
 title: LLM ドキュメントの追加
-description: chartjs2img llm リファレンス出力の拡張方法 - ファイル形式、登録、慣習。
+description: 'chartjs2img llm は約 1400 行の Markdown リファレンスを出力し、 LLM に「chartjs2img 向けの Chart.js 設定を書く方法」を教えます。'
 ---
 
 # LLM ドキュメントの追加
