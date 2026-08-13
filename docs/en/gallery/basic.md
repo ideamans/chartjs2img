@@ -1,6 +1,6 @@
 ---
 title: Basic chart types
-description: Bar, horizontal bar, line, pie, doughnut, radar, polar area, scatter, and bubble - the 9 built-in Chart.js core types, each rendered with a realistic minimal example.
+description: 'Bar, horizontal bar, line, pie, doughnut, radar, polar area, scatter, and bubble: the 9 built-in Chart.js types, each with a realistic minimal example.'
 ---
 
 # Basic chart types

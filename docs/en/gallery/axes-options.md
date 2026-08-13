@@ -1,6 +1,6 @@
 ---
 title: Axes & chart options
-description: Dual axes, logarithmic scale, negative values, rotated ticks, and custom grid / tick styling - options that shape how Chart.js renders without changing the chart type.
+description: 'Dual axes, logarithmic scale, negative values, rotated ticks, and custom grid styling: options that shape how Chart.js renders without changing the type.'
 ---
 
 # Axes & chart options

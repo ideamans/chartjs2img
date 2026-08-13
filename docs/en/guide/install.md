@@ -1,6 +1,6 @@
 ---
 title: Install
-description: Install chartjs2img via the one-liner script, GitHub Releases, Docker, or from source. The default skia engine needs no browser; Chromium is only for the browser engine. Includes Chromium detection notes and Linux ARM64 caveats.
+description: 'Install chartjs2img via the one-liner, GitHub Releases, Docker, or from source. The default skia engine needs no browser; Chromium is only for browser mode.'
 ---
 
 # Install

@@ -1,6 +1,6 @@
 ---
 title: Bundled plugins
-description: The 12 Chart.js plugins bundled with chartjs2img - datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and the date-fns adapter.
+description: 'The 12 Chart.js plugins bundled with chartjs2img: datalabels, annotation, zoom, gradient, treemap, matrix, sankey, wordcloud, geo, graph, venn, and date-fns.'
 ---
 
 # Bundled plugins

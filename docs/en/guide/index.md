@@ -1,6 +1,6 @@
 ---
 title: Quick start
-description: 'Install the chartjs2img binary and render your first chart in under a minute. Covers macOS, Linux, and Windows, with manual alternatives to piping a remote script into a shell.'
+description: 'Install the chartjs2img binary and render your first chart in under a minute. Covers macOS, Linux, and Windows, plus manual alternatives to the install script.'
 ---
 
 # Quick start
