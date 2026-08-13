@@ -1,4 +1,5 @@
 import { withTheme } from 'vitepress-daisyui-theme/config'
+import { withMachineReadability } from 'vitepress-machine-readability'
 
 /**
  * Three-entry structure (mirrors gridgram):
@@ -209,6 +210,9 @@ const config: ReturnType<typeof withTheme> = withTheme({
     ja: {
       label: '日本語',
       lang: 'ja',
+      // en と ja で同じ見出しのページがある（CLI、AI / ML など）。
+      // <title> が完全に一致しないよう、日本語側は別の後置きにする
+      titleTemplate: ':title | chartjs2img ドキュメント',
       themeConfig: {
         logoLink: '/ja/',
         nav: [
@@ -315,4 +319,27 @@ config.head = [
   ['script', { id: 'c2i-force-light' }, FORCE_LIGHT_SCRIPT],
 ]
 
-export default config
+// 検索エンジンとAIから読める状態にする。テーマの解決結果を包む
+// ルートの `/` は nginx が /en/ へ 302 で送るだけのページ。
+// sitemap に載せると「転送されるURL」を申告することになり、
+// 点検でも /en/ と同じページを2回数えて重複扱いになる。
+config.sitemap = {
+  ...(config.sitemap ?? {}),
+  transformItems: (items: { url: string }[]) => items.filter((i) => i.url !== '' && i.url !== 'index.html'),
+}
+
+export default withMachineReadability(config, {
+  hostname: 'https://chartjs2img.ideamans.com/',
+  organization: {
+    name: 'アイデアマンズ株式会社',
+    url: 'https://www.ideamans.com/',
+  },
+  // 版下は plans/artboard の Chartjs2imgBoard.vue。作り直したら差し替える
+  defaultImage: '/ogp.png',
+  markdownSource: true,
+  lint: {
+    level: 'warn',
+    // ルートは言語選択だけのページ（/en/ へ送る）。本文も見出しも無くて当然
+    exclude: ['index.html'],
+  },
+})
