@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22.23.4-bookworm-slim
 
 # System libs for BOTH engines:
 #   - skia-canvas (default engine): libfontconfig1 + Noto CJK fonts
