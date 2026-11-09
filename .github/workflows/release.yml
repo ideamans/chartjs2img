@@ -58,7 +58,7 @@ jobs:
           # macos-13 Intel runner queue is unreliable, and Intel Macs are
           # legacy. Apple Silicon (darwin-arm64) covers modern Macs; Intel
           # users can run via `bun`, Docker, npm, or build from source.
-          - runner: macos-14
+          - runner: macos-15
             os: darwin
             arch: arm64
             ext: tar.gz
@@ -77,7 +77,8 @@ jobs:
           bun-version: 1.3.0
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Compile binary (native)
         shell: bash

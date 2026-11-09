@@ -22,7 +22,8 @@ jobs:
           bun-version: 1.3.0
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Regenerate AI artifacts
         run: bun run ai:regen
@@ -57,7 +58,7 @@ jobs:
           - runner: ubuntu-24.04-arm
             artifact: linux-arm64
             ext: ""
-          - runner: macos-14
+          - runner: macos-15
             artifact: darwin-arm64
             ext: ""
           - runner: windows-latest
@@ -71,7 +72,9 @@ jobs:
         with:
           bun-version: 1.3.0
 
-      - run: bun install --frozen-lockfile
+      - name: Install dependencies (retries transient download errors)
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Compile (native)
         shell: bash
@@ -97,7 +100,9 @@ jobs:
         with:
           bun-version: 1.3.0
 
-      - run: bun install --frozen-lockfile
+      - name: Install dependencies (retries transient download errors)
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Generate examples
         run: bun run src/index.ts examples -o ./test-output
@@ -137,7 +142,7 @@ jobs:
   # -------------------------------------------------------------------
   test-darwin-arm64:
     needs: build
-    runs-on: macos-14  # Apple Silicon (M1)
+    runs-on: macos-15  # Apple Silicon
     steps:
       - uses: actions/download-artifact@v7
         with:

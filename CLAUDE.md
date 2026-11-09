@@ -59,12 +59,40 @@ bun test                         # ユニットテスト
 
 CI も同じことをする。ローカルで通してから push すること。
 
+CI の install は `scripts/ci-install.sh`（`bun install --frozen-lockfile` を最大3回）。
+skia-canvas の install スクリプトはネイティブモジュールを GitHub Releases から1回だけ取りに行き、
+504 などで失敗すると再試行せずに落ちる（2026-11-09 に全ジョブがこれで落ちた）。
+ワークフローに install を足すときは、直接 `bun install` を書かずにこのスクリプトを呼ぶ。
+
 ## バージョン
 
 `package.json` の `version` が唯一の原本。`src/version.ts` がそれを読み、
 `plugins/chartjs2img/.claude-plugin/plugin.json` の `version` は
 これと一致していなければならない（`validate-plugin-skills` が検査し、
 リリースワークフローがタグとの一致も検査する）。上げるときは同じコミットで両方。
+
+## npm への公開
+
+`v*` のタグを push すると `.github/workflows/publish.yml` がテストとビルドのあと npm に**そのまま公開する**
+（承認待ちにしない）。認証は npm の Trusted Publishing（GitHub Actions の OIDC）で、`NPM_TOKEN` などのシークレットは使わない。
+provenance は自動で付く。
+
+```bash
+# package.json の version を上げてコミット・push してから
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+同じタグで release.yml（バイナリ・Docker）も動く。npm は publish.yml が出す（以前は手元から出していた）。
+タグは plugin.json の version とも突き合わせる。
+
+- タグと package.json の version が違えば落ちる。npm に同じ版があれば何もしない
+- プレリリース（`1.2.0-beta.0`）は `latest` ではなく識別子の dist-tag（`beta`）で出る
+- 手元から `npm publish` しない（トークンを置かない）
+- タグを打ち直さずに出し直すときは、Actions の「Publish to npm」を workflow_dispatch で起動する（選んだブランチの package.json の版を出す）
+- PR で `publish.yml` を変えると、公開せずにビルドと `npm pack --dry-run` までが走る
+- package.json の `repository` はこのリポジトリを指すこと。provenance の検証で照合され、違うと公開が `E422` で落ちる（ワークフローが先に検査する）
+- 前提: npmjs.com の `chartjs2img` の設定で、Trusted Publisher に GitHub Actions・`ideamans/chartjs2img`・`publish.yml`・権限 **publish** を登録してあること。
+  stage publish の権限だけだと `npm publish` は `E403 OIDC permission denied` になる
 
 ## 参照
 
