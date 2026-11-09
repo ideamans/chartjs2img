@@ -57,7 +57,7 @@ Supported `chart.type` values out of the box: `bar`, `line`, `pie`,
 | [chartjs-chart-wordcloud](https://github.com/sgratzl/chartjs-chart-wordcloud)          | 4.4.3   | `wordcloud` — word clouds                     |
 | [chartjs-chart-geo](https://github.com/sgratzl/chartjs-chart-geo)                      | 4.3.3   | `choropleth`, `bubbleMap` — geographic charts |
 | [chartjs-chart-graph](https://github.com/sgratzl/chartjs-chart-graph)                  | 4.3.3   | `graph`, `forceDirectedGraph`, `dendrogram`, `tree` — networks |
-| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn)                    | 4.3.3   | `venn`, `euler` — set diagrams                |
+| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn)                    | 4.3.7   | `venn`, `euler` — set diagrams                |
 
 ## Date adapter
 

@@ -10,6 +10,9 @@ alongside the CLI and HTTP server. The CLI and server are thin
 wrappers around this library — rendering behavior is identical
 regardless of which entry point you use.
 
+Requires **Node 22.12 or later** (or Bun). This follows `puppeteer-core` 25,
+which the `browser` engine uses.
+
 ## When to use the library directly
 
 - You're already inside a Bun / Node service and want to render

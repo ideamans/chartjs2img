@@ -397,7 +397,7 @@ This iterates the 35 bundled chart configs (the same set shown by `GET /examples
 
 ## Library API
 
-Use chartjs2img programmatically from any Bun or Node program:
+Use chartjs2img programmatically from any Bun or Node program (Node 22.12 or later, following `puppeteer-core` 25):
 
 ```ts
 import { renderChart, closeBrowser, computeHash, DEFAULT_ENGINE, BUNDLED_LIBS, VERSION } from 'chartjs2img'
@@ -553,7 +553,7 @@ Both engines bundle the same Chart.js + plugin versions: the `skia` engine impor
 | [chartjs-chart-wordcloud](https://github.com/sgratzl/chartjs-chart-wordcloud) | 4.4.3 | Word clouds |
 | [chartjs-chart-geo](https://github.com/sgratzl/chartjs-chart-geo) | 4.3.3 | Choropleth and bubble maps |
 | [chartjs-chart-graph](https://github.com/sgratzl/chartjs-chart-graph) | 4.3.3 | Network graphs |
-| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn) | 4.3.3 | Venn and Euler diagrams |
+| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn) | 4.3.7 | Venn and Euler diagrams |
 
 ### Date Adapter
 

@@ -19,7 +19,7 @@ export const LIBS = {
   wordcloud: { pkg: 'chartjs-chart-wordcloud', version: '4.4.3', file: 'build/index.umd.min.js' },
   geo: { pkg: 'chartjs-chart-geo', version: '4.3.3', file: 'build/index.umd.min.js' },
   graph: { pkg: 'chartjs-chart-graph', version: '4.3.3', file: 'build/index.umd.min.js' },
-  venn: { pkg: 'chartjs-chart-venn', version: '4.3.3', file: 'build/index.umd.min.js' },
+  venn: { pkg: 'chartjs-chart-venn', version: '4.3.7', file: 'build/index.umd.min.js' },
   // Date adapter — chartjs-adapter-date-fns.bundle.min.js ships date-fns
   // inside the UMD so no second <script> is needed. (The previously-used
   // chartjs-adapter-dayjs-4 does not ship a browser UMD build.)

@@ -64,6 +64,16 @@ skia-canvas の install スクリプトはネイティブモジュールを GitH
 504 などで失敗すると再試行せずに落ちる（2026-11-09 に全ジョブがこれで落ちた）。
 ワークフローに install を足すときは、直接 `bun install` を書かずにこのスクリプトを呼ぶ。
 
+## 依存
+
+- `bun.lock` はコミットする（以前は .gitignore していた）。無いと CI の `--frozen-lockfile` が効かず毎回最新を解決し、
+  Dependabot も推移的依存を見られない（アラート 0 のまま利用者側の `npm audit` で High 14 だった）
+- `puppeteer-core` は 25 以上。24 系は最新の 24.43 でも `extract-zip`・`basic-ftp`・`zod` 3 が残る。25 は Node 22.12 以上を要るので
+  `engines.node` もそれに合わせている
+- `chartjs-chart-venn` は 4.3.7 以上。4.3.3 は `@upsetjs/venn.js` 1 → `fmin` 0.0.2 → `rollup` 0.25 を引き込んでいた。
+  版を上げたら `src/template.ts` の `LIBS`（browser エンジンが CDN から読む版）も揃える
+- 利用者に届くのはランタイム依存だけ。確認は `npm pack` した tarball を空のプロジェクトに入れて `npm audit`
+
 ## バージョン
 
 `package.json` の `version` が唯一の原本。`src/version.ts` がそれを読み、

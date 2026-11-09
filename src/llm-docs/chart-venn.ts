@@ -1,4 +1,4 @@
-export const doc = `## chartjs-chart-venn 4.3.3 — Venn & Euler Diagrams
+export const doc = `## chartjs-chart-venn 4.3.7 — Venn & Euler Diagrams
 
 Chart types: \`"venn"\`, \`"euler"\`
 
