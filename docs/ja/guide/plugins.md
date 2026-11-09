@@ -55,7 +55,7 @@ chartjs2img は Chart.js コア **+ 12 プラグインエコシステム** を�
 | [chartjs-chart-wordcloud](https://github.com/sgratzl/chartjs-chart-wordcloud)           | 4.4.3     | `wordcloud` — ワードクラウド                     |
 | [chartjs-chart-geo](https://github.com/sgratzl/chartjs-chart-geo)                       | 4.3.3     | `choropleth`, `bubbleMap` — 地理系チャート       |
 | [chartjs-chart-graph](https://github.com/sgratzl/chartjs-chart-graph)                   | 4.3.3     | `graph`, `forceDirectedGraph`, `dendrogram`, `tree` — ネットワーク |
-| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn)                     | 4.3.3     | `venn`, `euler` — 集合図                         |
+| [chartjs-chart-venn](https://github.com/sgratzl/chartjs-chart-venn)                     | 4.3.7     | `venn`, `euler` — 集合図                         |
 
 ## 日付アダプタ
 

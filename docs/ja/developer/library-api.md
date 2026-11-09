@@ -9,6 +9,9 @@ chartjs2img は CLI と HTTP サーバーに加えて、小さな **TypeScript /
 Node ライブラリ** の surface を公開しています。CLI とサーバーはどちらも
 このライブラリの薄いラッパー — どのエントリから呼んでも描画挙動は同じです。
 
+**Node 22.12 以上**（または Bun）が必要です。`browser` エンジンが使う
+`puppeteer-core` 25 の要件に合わせています。
+
 ## ライブラリを直接使うべき場面
 
 - 既に Bun / Node サービス内にいて、CLI の spawn や sidecar への HTTP 呼び出しのオーバーヘッドなしで Chart.js を描画したい。
