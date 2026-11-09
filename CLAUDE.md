@@ -59,6 +59,11 @@ bun test                         # ユニットテスト
 
 CI も同じことをする。ローカルで通してから push すること。
 
+CI の install は `scripts/ci-install.sh`（`bun install --frozen-lockfile` を最大3回）。
+skia-canvas の install スクリプトはネイティブモジュールを GitHub Releases から1回だけ取りに行き、
+504 などで失敗すると再試行せずに落ちる（2026-11-09 に全ジョブがこれで落ちた）。
+ワークフローに install を足すときは、直接 `bun install` を書かずにこのスクリプトを呼ぶ。
+
 ## バージョン
 
 `package.json` の `version` が唯一の原本。`src/version.ts` がそれを読み、

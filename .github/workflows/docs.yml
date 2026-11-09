@@ -16,7 +16,9 @@ jobs:
         with:
           bun-version: 1.3.0
 
-      - run: bun install --frozen-lockfile
+      - name: Install dependencies (retries transient download errors)
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Install gridgram `gg` (for docs:diagrams)
         env:

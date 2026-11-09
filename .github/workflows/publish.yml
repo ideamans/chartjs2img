@@ -92,7 +92,8 @@ jobs:
 
       - name: Install
         if: steps.check.outputs.skip != 'true'
-        run: bun install --frozen-lockfile
+        shell: bash
+        run: bash scripts/ci-install.sh
 
       - name: Typecheck
         if: steps.check.outputs.skip != 'true'
