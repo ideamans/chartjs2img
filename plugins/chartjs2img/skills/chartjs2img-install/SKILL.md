@@ -48,7 +48,8 @@ Supported combinations: `linux_amd64`, `linux_arm64`, `darwin_arm64`,
 `windows_amd64`. Two targets are NOT built — if the user is on one, tell
 them and stop:
 - **Intel Mac (`darwin_amd64`)** — Mac binaries are Apple Silicon only.
-  Intel users can run via `bun` / Docker / npm, or build from source.
+  Intel users can use the npm package (`npm install -g chartjs2img`,
+  Node 22.12+, version 0.7.2 or later), Docker, or build from source.
 - **Windows ARM64** — they can build from source with `bun run build` on
   a native Windows ARM64 machine if they need it.
 
@@ -191,6 +192,7 @@ Always finish with a summary line:
 - **Network / rate limit**: propagate the HTTP status. For GitHub API rate limits, suggest retrying or setting `GITHUB_TOKEN`.
 - **Arch mismatch** (x86_64 userland under Rosetta on Apple Silicon): trust `uname -m`; if the resulting binary fails `--version` with "cannot execute binary file", retry with the other `arch`.
 - **Existing `chartjs2img` installed by npm global / bun link**: still update in place at `command -v chartjs2img`. Don't try to uninstall the previous method.
+- **npm-installed `chartjs2img` 0.6.0 – 0.7.1 fails under Node** (`ERR_MODULE_NOT_FOUND`, or the bin points at a missing `src/index.ts`). That is a packaging bug fixed in 0.7.2, not a broken host: `npm install -g chartjs2img@latest` fixes it.
 - **Behind a corporate proxy**: the user will need to set `HTTPS_PROXY` / `HTTP_PROXY` before `curl`. Flag this if the initial download fails with a connection error.
 
 ## After a successful install

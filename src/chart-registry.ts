@@ -1,5 +1,5 @@
 // Chart.js + plugin registration for the skia engine.
-import { installSkiaPolyfills } from './skia-polyfills'
+import { installSkiaPolyfills } from './skia-polyfills.ts'
 import { Chart, registerables, BasicPlatform } from 'chart.js'
 // chart.js ships DISTINCT esm (dist/chart.js) and cjs (dist/chart.cjs) builds
 // whose element classes are NOT `===`. chartjs-plugin-datalabels has no

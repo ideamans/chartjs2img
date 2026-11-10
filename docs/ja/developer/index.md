@@ -29,7 +29,7 @@ chartjs2img/
 ├── src/
 │   ├── index.ts         # CLI エントリポイント: argv 解析、サブコマンド振り分け
 │   ├── cli.ts           # `render` + `examples` CLI の実装
-│   ├── server.ts        # `serve` HTTP サーバー (Bun.serve)
+│   ├── server.ts        # `serve` HTTP サーバー (Bun.serve / node:http)
 │   ├── renderer.ts      # レンダリングエントリ + エンジン分岐（skia / browser）
 │   ├── engine-skia.ts   # skia エンジン（skia-canvas でインプロセス描画・既定）
 │   ├── template.ts      # browser エンジンで読み込まれる静的 HTML テンプレート

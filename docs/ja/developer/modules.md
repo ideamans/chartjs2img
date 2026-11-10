@@ -19,7 +19,7 @@ description: chartjs2img の全 src/*.ts の 1 行サマリ - 何を export し�
 
 ## `src/server.ts` — HTTP サーバー
 
-`startServer()` が `Bun.serve()` を起動、`/render`、`/cache/:hash`、`/health`、
+`startServer()` が `Bun.serve()`（Node では `node:http`）を起動、`/render`、`/cache/:hash`、`/health`、
 `/examples` にリクエストをルーティング (未知のパスは 404)。認証は
 `checkAuth()` で処理。
 

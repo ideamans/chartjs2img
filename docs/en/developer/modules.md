@@ -19,7 +19,7 @@ dispatches to one of `serve`, `render`, `examples`, `llm`, `help`, or
 
 ## `src/server.ts` — HTTP server
 
-`startServer()` spins up `Bun.serve()` on the configured host + port,
+`startServer()` spins up `Bun.serve()` (or `node:http` under Node) on the configured host + port,
 routes requests to `/render`, `/cache/:hash`, `/health`, `/examples`,
 or `404`. Handles auth with `checkAuth()`.
 

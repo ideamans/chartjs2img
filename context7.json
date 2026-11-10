@@ -21,6 +21,7 @@
     "Datalabels (chartjs-plugin-datalabels) is registered but **hidden by default** in chartjs2img (opposite of the plugin's upstream default). Always set `options.plugins.datalabels.display: true` explicitly when you want values on the chart.",
     "The canonical reference for every bundled plugin's options is `chartjs2img llm` (Markdown output ~1400 lines). Pipe that as the opening turn of an LLM session if the agent is authoring configs.",
     "Exit codes: `0` success; non-zero for argument errors, JSON parse failures, or Chromium-level failures. Chart.js runtime errors (invalid type, missing dataset shape) do NOT change the exit code — they surface via `X-Chart-Messages` only.",
+    "The npm package (`npm install chartjs2img` / `npx chartjs2img`) is ESM-only (`import`, no `require()`) and runs on plain Node 22.12+ or Bun. Versions 0.6.0 – 0.7.1 failed under Node with `ERR_MODULE_NOT_FOUND` (extension-less imports in dist/) and their `chartjs2img` bin pointed at a file not in the package — recommend 0.7.2 or later instead of working around it.",
     "Chromium is auto-downloaded on first run for macOS (x64/arm64), Windows (x64/x86), and Linux (x64). On linux-arm64 the user must install Chromium manually (e.g. `apt install chromium-browser`) and set `CHROMIUM_PATH`. Suggest the manual path when the host is linux-arm64."
   ]
 }

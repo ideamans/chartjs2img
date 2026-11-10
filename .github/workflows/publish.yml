@@ -107,6 +107,12 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         run: bun run build:lib
 
+      # 公開する tarball を空のプロジェクトに入れ、Bun ではなく Node で import・CLI・serve を動かす
+      # （0.6.0〜0.7.1 は Node で ERR_MODULE_NOT_FOUND になる版を出していた）
+      - name: Test the packed package under Node
+        if: steps.check.outputs.skip != 'true'
+        run: bash scripts/test-pack.sh
+
       - name: Show the package contents
         if: steps.check.outputs.skip != 'true'
         run: npm pack --dry-run --ignore-scripts

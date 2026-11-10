@@ -8,11 +8,13 @@
 // ./lib is the *public* surface for external TypeScript consumers and
 // must not be a dependency of internal code — that would make its
 // export list a constraint on internal refactoring.
-import { renderChart, rendererStats } from './renderer'
-import type { RenderOptions } from './template'
-import { getCache, cacheStats } from './cache'
-import { buildExamplesHtml } from './examples-gallery'
-import { VERSION } from './version'
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import { renderChart, rendererStats } from './renderer.ts'
+import type { RenderOptions } from './template.ts'
+import { getCache, cacheStats } from './cache.ts'
+import { buildExamplesHtml } from './examples-gallery.ts'
+import { VERSION } from './version.ts'
 
 export interface ServerConfig {
   port: number
@@ -87,14 +89,10 @@ function parseRenderOptions(body: Record<string, unknown>): RenderOptions {
 }
 
 export async function startServer(config: ServerConfig): Promise<ServerHandle> {
-  const server = Bun.serve({
-    port: config.port,
-    hostname: config.host,
-    async fetch(req) {
-      const res = await handleRequest(req, config)
-      res.headers.set('X-Powered-By', `chartjs2img/${VERSION}`)
-      return res
-    },
+  const server = await listen(config.port, config.host, async (req) => {
+    const res = await handleRequest(req, config)
+    res.headers.set('X-Powered-By', `chartjs2img/${VERSION}`)
+    return res
   })
 
   async function handleRequest(req: Request, config: ServerConfig): Promise<Response> {
@@ -230,14 +228,87 @@ export async function startServer(config: ServerConfig): Promise<ServerHandle> {
     console.log(`  Authentication: enabled (API key)`)
   }
 
-  // Bun's Server types port/hostname as optional, but after a successful
-  // listen both are always populated. Fall back to the requested values
-  // if needed to keep the Handle shape strict.
+  return server
+}
+
+// ---------------------------------------------------------------------------
+// Runtime adapter: a fetch-style handler served by Bun.serve under Bun (the
+// dev mode and the compiled binary) and by node:http under Node (the npm
+// package's `chartjs2img serve`). Both paths hand handleRequest a standard
+// Request and send back its Response unchanged.
+// ---------------------------------------------------------------------------
+
+type FetchHandler = (req: Request) => Promise<Response>
+
+async function listen(port: number, hostname: string, fetch: FetchHandler): Promise<ServerHandle> {
+  const bun = (globalThis as { Bun?: typeof Bun }).Bun
+  if (bun) {
+    const server = bun.serve({ port, hostname, fetch })
+    // Bun's Server types port/hostname as optional, but after a successful
+    // listen both are always populated. Fall back to the requested values
+    // if needed to keep the Handle shape strict.
+    return {
+      port: server.port ?? port,
+      hostname: server.hostname ?? hostname,
+      async stop() {
+        await server.stop()
+      },
+    }
+  }
+
+  const server = createServer((req, res) => {
+    toWebRequest(req, hostname, port)
+      .then(fetch)
+      .then((response) => sendWebResponse(res, response))
+      .catch((err) => {
+        console.error('[server] request failed:', err)
+        if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Internal server error' }))
+      })
+  })
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(port, hostname, () => {
+      server.off('error', reject)
+      resolve()
+    })
+  })
+  const addr = server.address() as AddressInfo
   return {
-    port: server.port ?? config.port,
-    hostname: server.hostname ?? config.host,
-    async stop() {
-      await server.stop()
+    port: addr.port,
+    hostname,
+    stop() {
+      return new Promise<void>((resolve) => {
+        server.close(() => resolve())
+        server.closeAllConnections()
+      })
     },
   }
+}
+
+async function toWebRequest(req: IncomingMessage, hostname: string, port: number): Promise<Request> {
+  const host = req.headers.host ?? `${hostname}:${port}`
+  const url = new URL(req.url ?? '/', `http://${host}`)
+  const headers = new Headers()
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) continue
+    for (const v of Array.isArray(value) ? value : [value]) headers.append(key, v)
+  }
+  const method = req.method ?? 'GET'
+  let body: BodyInit | undefined
+  if (method !== 'GET' && method !== 'HEAD') {
+    const chunks: Buffer[] = []
+    for await (const chunk of req) chunks.push(chunk as Buffer)
+    body = Buffer.concat(chunks) as unknown as BodyInit
+  }
+  return new Request(url, { method, headers, body })
+}
+
+async function sendWebResponse(res: ServerResponse, response: Response): Promise<void> {
+  const headers: Record<string, string> = {}
+  response.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+  res.writeHead(response.status, headers)
+  res.end(Buffer.from(await response.arrayBuffer()))
 }

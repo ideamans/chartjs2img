@@ -9,9 +9,9 @@
 // below are all things skia does differently from a browser's <canvas>, each
 // resolved so the two engines produce matching output. See RESULT notes in
 // the skia spike for the investigation behind each one.
-import type { RenderOptions } from './template'
-import type { ConsoleMessage } from './renderer'
-import { Chart, BasicPlatform, ensureRegistered } from './chart-registry'
+import type { RenderOptions } from './template.ts'
+import type { ConsoleMessage } from './renderer.ts'
+import { Chart, BasicPlatform, ensureRegistered } from './chart-registry.ts'
 import { Canvas } from 'skia-canvas'
 
 // Chart types from chartjs-chart-graph apply their layout over rAF ticks, so a
@@ -132,6 +132,15 @@ export async function renderSkia(options: RenderOptions): Promise<SkiaRenderResu
     if (options.fontFamily) {
       opts.font = { family: options.fontFamily, ...((opts.font as Record<string, unknown>) ?? {}) }
     }
+    // forceDirectedGraph lays out with a d3-force simulation that is ticked by
+    // a timer. Capturing it after "positions look stable" made the image
+    // depend on timer scheduling — identical under Bun by luck, but different
+    // run-to-run under Node. Run the whole simulation synchronously instead
+    // (300 ticks = d3's default alpha decay down to alphaMin) and don't
+    // restart it, so the layout is deterministic on every runtime. Callers
+    // can still override either key via options.simulation.
+    const sim = (opts.simulation ?? {}) as Record<string, unknown>
+    opts.simulation = { initialIterations: 300, autoRestart: false, ...sim }
     config.options = opts
 
     // Background fill. The browser engine renders onto a coloured <body>;

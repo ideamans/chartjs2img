@@ -11,7 +11,9 @@ wrappers around this library — rendering behavior is identical
 regardless of which entry point you use.
 
 Requires **Node 22.12 or later** (or Bun). This follows `puppeteer-core` 25,
-which the `browser` engine uses.
+which the `browser` engine uses. The published package is plain ESM
+(`"type": "module"`, `import` only — no `require()` entry) and runs under
+Node without Bun since 0.7.2 (0.6.0 – 0.7.1 failed with `ERR_MODULE_NOT_FOUND`).
 
 ## When to use the library directly
 
@@ -30,7 +32,7 @@ simpler to operate. See [HTTP server](/en/guide/http/) and
 ## Install
 
 ```bash
-# from npm (once published)
+# from npm
 bun add chartjs2img
 # or
 npm install chartjs2img
@@ -52,6 +54,7 @@ linux-arm64.
 ## Quick start
 
 ```ts
+import { writeFile } from 'node:fs/promises'
 import { renderChart, closeBrowser } from 'chartjs2img'
 
 const { buffer, hash, cached, messages } = await renderChart({
@@ -68,7 +71,7 @@ const { buffer, hash, cached, messages } = await renderChart({
   engine: 'skia', // default — omit for skia, or pass 'browser'
 })
 
-await Bun.write('chart.png', buffer)         // or fs.writeFileSync for Node
+await writeFile('chart.png', buffer)
 console.log('rendered', buffer.length, 'bytes — cached?', cached)
 if (messages.length) console.warn(messages)   // Chart.js warnings/errors
 
@@ -335,7 +338,7 @@ See [Error handling](./error-handling) for the full taxonomy.
 
 ```ts
 // scripts/snapshot-dashboards.ts
-import { readdirSync, readFileSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { renderChart, closeBrowser } from 'chartjs2img'
 
@@ -345,7 +348,7 @@ for (const file of CONFIGS) {
   const chart = JSON.parse(readFileSync(join('./dashboards', file), 'utf8'))
   const result = await renderChart({ chart, width: 1200, height: 600 })
   const out = file.replace(/\.json$/, '.png')
-  await Bun.write(join('./snapshots', out), result.buffer)
+  writeFileSync(join('./snapshots', out), result.buffer)
   if (result.messages.length) {
     console.warn(file, result.messages)
   }

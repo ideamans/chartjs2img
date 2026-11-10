@@ -4,8 +4,8 @@
 // example chart *data*. Keeping a 100+ line HTML/JS template string
 // next to 800 lines of chart config was two responsibilities in one
 // module — edits to either side risked unrelated churn in the other.
-import { EXAMPLES } from './examples'
-import { LIBS } from './template'
+import { EXAMPLES } from './examples.ts'
+import { LIBS } from './template.ts'
 
 const LIBS_INFO = Object.fromEntries(Object.entries(LIBS).map(([k, v]) => [k, v.version]))
 

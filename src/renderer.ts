@@ -11,10 +11,10 @@
 // can spin up an isolated Renderer and tear it down without affecting
 // whatever other code the same process is running.
 import puppeteer, { type Browser, type Page } from 'puppeteer-core'
-import { buildHtml, DEFAULT_ENGINE, type RenderOptions } from './template'
-import { Semaphore } from './semaphore'
-import { computeHash, getCache, setCache } from './cache'
-import { ensureChromiumInstalled } from './chromium'
+import { buildHtml, DEFAULT_ENGINE, type RenderOptions } from './template.ts'
+import { Semaphore } from './semaphore.ts'
+import { computeHash, getCache, setCache } from './cache.ts'
+import { ensureChromiumInstalled } from './chromium.ts'
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -236,7 +236,7 @@ export class Renderer {
       // library-metadata callers don't pull in skia-canvas + Chart.js either.
       const engine = options.engine ?? DEFAULT_ENGINE
       if (engine === 'skia') {
-        const { renderSkia } = await import('./engine-skia')
+        const { renderSkia } = await import('./engine-skia.ts')
         const { buffer, messages } = await renderSkia(options)
         setCache(hash, buffer, contentType)
         return { buffer, hash, contentType, cached: false, messages }

@@ -74,6 +74,21 @@ skia-canvas の install スクリプトはネイティブモジュールを GitH
   版を上げたら `src/template.ts` の `LIBS`（browser エンジンが CDN から読む版）も揃える
 - 利用者に届くのはランタイム依存だけ。確認は `npm pack` した tarball を空のプロジェクトに入れて `npm audit`
 
+## Node で動くこと（npm パッケージ）
+
+npm の利用者は Bun ではなく Node で動かす。0.6.0〜0.7.1 は Bun でしか動かなかった（dist の import に拡張子が無く
+`ERR_MODULE_NOT_FOUND`、bin は tarball に無い `src/index.ts`）のに、CI が Bun だけだったので誰も気づかなかった。
+
+- **`src/` の相対 import は `./x.ts` と拡張子付きで書く。** tsc が dist で `./x.js` に書き換える
+  （`module: nodenext` + `rewriteRelativeImportExtensions`）。拡張子を省くと `typecheck` が落ちる
+- **ランタイムのコード（ライブラリ・CLI・サーバー）で `Bun.*` を使わない。** `node:fs` / `node:child_process` /
+  `node:http` を使う。サーバーは Bun なら `Bun.serve`、Node なら `node:http`（`src/server.ts` の `listen`）
+- **確認は `bun run test:pack`。** tarball を空のプロジェクトに入れて Node で import・CLI・serve を動かし、
+  全 example を Bun の描画とピクセル比較する。CI の `test-node-package` が Node 22.12 / 24 / 26 で回す。
+  `CHARTJS2IMG_TEST_BROWSER=1` で browser エンジンも試す
+- 描画が時間に依存すると Node と Bun で結果が割れる（forceDirectedGraph がそうだった）。skia エンジンでは
+  タイマー任せにせず同期的に決める
+
 ## バージョン
 
 `package.json` の `version` が唯一の原本。`src/version.ts` がそれを読み、
