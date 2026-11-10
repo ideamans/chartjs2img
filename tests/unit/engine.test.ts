@@ -51,3 +51,32 @@ describe('skia engine render', () => {
     expect(res.messages.some((m) => m.level === 'error')).toBe(true)
   })
 })
+
+describe('skia engine determinism', () => {
+  test('forceDirectedGraph lays out the same every time (no timer race)', async () => {
+    // Calls the engine directly — renderChart would answer the 2nd call from cache.
+    const { renderSkia } = await import('../../src/engine-skia')
+    const chart = {
+      type: 'forceDirectedGraph',
+      data: {
+        labels: ['A', 'B', 'C', 'D', 'E', 'F'],
+        datasets: [
+          {
+            data: [{}, {}, {}, {}, {}, {}],
+            edges: [
+              { source: 0, target: 1 },
+              { source: 0, target: 2 },
+              { source: 1, target: 3 },
+              { source: 2, target: 4 },
+              { source: 4, target: 5 },
+            ],
+          },
+        ],
+      },
+    }
+    const a = await renderSkia({ chart, width: 300, height: 200 })
+    const b = await renderSkia({ chart, width: 300, height: 200 })
+    expect(a.messages.filter((m) => m.level === 'error')).toHaveLength(0)
+    expect(Buffer.compare(a.buffer, b.buffer)).toBe(0)
+  })
+})

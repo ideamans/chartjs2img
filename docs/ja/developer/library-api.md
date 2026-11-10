@@ -10,7 +10,9 @@ Node ライブラリ** の surface を公開しています。CLI とサーバ�
 このライブラリの薄いラッパー — どのエントリから呼んでも描画挙動は同じです。
 
 **Node 22.12 以上**（または Bun）が必要です。`browser` エンジンが使う
-`puppeteer-core` 25 の要件に合わせています。
+`puppeteer-core` 25 の要件に合わせています。公開パッケージは素の ESM
+（`"type": "module"`、`import` のみで `require()` の入口は無い）で、0.7.2 から Bun なしの Node で動きます
+（0.6.0〜0.7.1 は `ERR_MODULE_NOT_FOUND` で失敗していました）。
 
 ## ライブラリを直接使うべき場面
 
@@ -24,7 +26,7 @@ Node ライブラリ** の surface を公開しています。CLI とサーバ�
 ## インストール
 
 ```bash
-# npm から (公開後)
+# npm から
 bun add chartjs2img
 # または
 npm install chartjs2img
@@ -46,6 +48,7 @@ linux-arm64 なら `CHROMIUM_PATH` を読みます。
 ## クイックスタート
 
 ```ts
+import { writeFile } from 'node:fs/promises'
 import { renderChart, closeBrowser } from 'chartjs2img'
 
 const { buffer, hash, cached, messages } = await renderChart({
@@ -61,7 +64,7 @@ const { buffer, hash, cached, messages } = await renderChart({
   format: 'png',
 })
 
-await Bun.write('chart.png', buffer)         // Node なら fs.writeFileSync
+await writeFile('chart.png', buffer)
 console.log('rendered', buffer.length, 'bytes — cached?', cached)
 if (messages.length) console.warn(messages)   // Chart.js の警告/エラー
 
@@ -310,7 +313,7 @@ if (result.messages.some((m) => m.level === 'error')) {
 
 ```ts
 // scripts/snapshot-dashboards.ts
-import { readdirSync, readFileSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { renderChart, closeBrowser } from 'chartjs2img'
 
@@ -320,7 +323,7 @@ for (const file of CONFIGS) {
   const chart = JSON.parse(readFileSync(join('./dashboards', file), 'utf8'))
   const result = await renderChart({ chart, width: 1200, height: 600 })
   const out = file.replace(/\.json$/, '.png')
-  await Bun.write(join('./snapshots', out), result.buffer)
+  writeFileSync(join('./snapshots', out), result.buffer)
   if (result.messages.length) {
     console.warn(file, result.messages)
   }

@@ -70,7 +70,7 @@ and move the binary yourself.
 ### Linux / macOS
 
 ```sh
-VERSION=0.7.1
+VERSION=0.7.2
 OS=linux       # or darwin
 ARCH=amd64     # or arm64
 
@@ -84,13 +84,31 @@ sudo mv chartjs2img /usr/local/bin/
 ### Windows (PowerShell)
 
 ```powershell
-$Version = "0.7.1"
+$Version = "0.7.2"
 $Url = "https://github.com/ideamans/chartjs2img/releases/download/v$Version/chartjs2img_${Version}_windows_amd64.zip"
 
 Invoke-WebRequest $Url -OutFile chartjs2img.zip
 Expand-Archive chartjs2img.zip -DestinationPath .
 # move chartjs2img.exe somewhere on your PATH, e.g. %USERPROFILE%\bin
 ```
+
+## npm (Node 22.12+ or Bun)
+
+The npm package carries both the library and the CLI, and runs on plain
+Node — no Bun required.
+
+```sh
+npx chartjs2img render -i chart.json -o chart.png   # one-off
+npm install -g chartjs2img                          # or put `chartjs2img` on PATH
+```
+
+The default `skia` engine's native module (`skia-canvas`) is downloaded by its
+install script. If your npm is configured to skip install scripts, approve
+`skia-canvas` (`npm install-scripts approve skia-canvas`) and install again.
+
+> **0.6.0 – 0.7.1 did not work under Node** (`ERR_MODULE_NOT_FOUND` on import,
+> and the `chartjs2img` bin pointed at a file missing from the package). Use
+> 0.7.2 or later.
 
 ## Docker (HTTP server only)
 

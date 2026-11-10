@@ -8,16 +8,7 @@
     "sourceMap": true,
     "noEmit": false
   },
-  "include": [
-    "src/lib.ts",
-    "src/renderer.ts",
-    "src/template.ts",
-    "src/cache.ts",
-    "src/semaphore.ts",
-    "src/version.ts",
-    "src/engine-skia.ts",
-    "src/chart-registry.ts",
-    "src/skia-polyfills.ts",
-    "src/skia-modules.d.ts"
-  ]
+  // Everything under src/: the library entry (lib.ts) and the CLI
+  // (index.ts → the package's `chartjs2img` bin) both ship as dist/*.js.
+  "include": ["src/**/*.ts"]
 }

@@ -4,11 +4,12 @@
 //
 // Internal files import directly from source modules; see server.ts
 // for the rationale on not routing through ./lib.
-import { mkdirSync } from 'fs'
+import { mkdirSync } from 'node:fs'
+import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'path'
-import { renderChart, closeBrowser } from './renderer'
-import type { Engine, RenderOptions } from './template'
-import { EXAMPLES } from './examples'
+import { renderChart, closeBrowser } from './renderer.ts'
+import type { Engine, RenderOptions } from './template.ts'
+import { EXAMPLES } from './examples.ts'
 
 export interface CliRenderArgs {
   input?: string
@@ -23,21 +24,26 @@ export interface CliRenderArgs {
   fontFamily?: string
 }
 
+/** Write binary data to stdout and resolve once it has been flushed. */
+function writeStdout(data: Uint8Array): Promise<void> {
+  return new Promise((resolve, reject) => {
+    process.stdout.write(data, (err) => (err ? reject(err) : resolve()))
+  })
+}
+
 export async function cliRender(args: CliRenderArgs): Promise<void> {
   let jsonStr: string
 
   if (!args.input || args.input === '-') {
-    const chunks: Uint8Array[] = []
-    const reader = Bun.stdin.stream().getReader()
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
+    // Runtime-neutral (Node and Bun): no Bun.stdin / Bun.file, so the npm
+    // package's `chartjs2img` bin works under plain Node.
+    const chunks: Buffer[] = []
+    for await (const chunk of process.stdin) {
+      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
     }
     jsonStr = Buffer.concat(chunks).toString('utf-8')
   } else {
-    const file = Bun.file(args.input)
-    jsonStr = await file.text()
+    jsonStr = await readFile(args.input, 'utf-8')
   }
 
   let chart: Record<string, unknown>
@@ -70,9 +76,9 @@ export async function cliRender(args: CliRenderArgs): Promise<void> {
     }
 
     if (!args.output || args.output === '-') {
-      await Bun.write(Bun.stdout, result.buffer)
+      await writeStdout(result.buffer)
     } else {
-      await Bun.write(args.output, result.buffer)
+      await writeFile(args.output, result.buffer)
       console.error(`Written to ${args.output} (hash: ${result.hash})`)
     }
   } finally {
@@ -116,11 +122,11 @@ export async function cliExamples(args: CliExamplesArgs): Promise<void> {
         engine: args.engine,
       })
 
-      await Bun.write(filepath, result.buffer)
+      await writeFile(filepath, result.buffer)
 
       // Also write the JSON config alongside
       const jsonPath = join(args.outdir, `${String(i + 1).padStart(2, '0')}-${slugify(ex.title)}.json`)
-      await Bun.write(jsonPath, JSON.stringify(ex.config, null, 2))
+      await writeFile(jsonPath, JSON.stringify(ex.config, null, 2))
 
       console.log(`  [${i + 1}/${EXAMPLES.length}] ${filename} (${ex.title})`)
     }

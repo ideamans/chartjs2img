@@ -29,7 +29,7 @@ chartjs2img/
 ├── src/
 │   ├── index.ts         # CLI entry point: argv parser, subcommand dispatch
 │   ├── cli.ts           # `render` + `examples` CLI implementations
-│   ├── server.ts        # `serve` HTTP server (Bun.serve)
+│   ├── server.ts        # `serve` HTTP server (Bun.serve / node:http)
 │   ├── renderer.ts      # Engine dispatch: skia (in-process) + browser (puppeteer/Chromium) pipelines
 │   ├── template.ts      # Static HTML template loaded in the browser
 │   ├── cache.ts         # In-memory LRU + TTL cache

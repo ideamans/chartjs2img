@@ -4,13 +4,14 @@
  * Import this file to render Chart.js configurations to images from
  * any Bun / Node program:
  *
+ *     import { writeFile } from 'node:fs/promises'
  *     import { renderChart, closeBrowser } from 'chartjs2img'
  *
  *     const result = await renderChart({
  *       chart: { type: 'bar', data: { labels: ['A','B'], datasets: [{ data: [1,2] }] } },
  *       width: 800, height: 600, format: 'png',
  *     })
- *     await Bun.write('chart.png', result.buffer)
+ *     await writeFile('chart.png', result.buffer)
  *     if (result.messages.length) console.warn(result.messages)
  *     await closeBrowser() // on process shutdown
  *
@@ -32,14 +33,14 @@
 // servers that want isolated browser pools, or programs that want to
 // configure concurrency per-instance) can instantiate `Renderer`
 // directly.
-export { renderChart, closeBrowser, rendererStats, Renderer } from './renderer'
-export type { RenderResult, ConsoleMessage, RendererConfig, RendererStats } from './renderer'
+export { renderChart, closeBrowser, rendererStats, Renderer } from './renderer.ts'
+export type { RenderResult, ConsoleMessage, RendererConfig, RendererStats } from './renderer.ts'
 
 // Input shape + engine selection. The default engine is skia-canvas
 // (`DEFAULT_ENGINE`); pass `engine: 'browser'` per render for headless
 // Chromium when maximum fidelity is required.
-export type { RenderOptions, Engine } from './template'
-export { DEFAULT_ENGINE } from './template'
+export type { RenderOptions, Engine } from './template.ts'
+export { DEFAULT_ENGINE } from './template.ts'
 
 // ---------------------------------------------------------------------------
 // Custom fonts (skia engine)
@@ -97,11 +98,11 @@ export async function getFontLibrary(): Promise<import('skia-canvas').FontLibrar
 
 // Deterministic hash computation — useful for building a CDN-facing
 // cache layer or for deduping submissions before rendering.
-export { computeHash } from './cache'
+export { computeHash } from './cache.ts'
 
 // Identification. `VERSION` is the value the CLI reports and the
 // X-Powered-By HTTP header surfaces.
-export { VERSION, NAME } from './version'
+export { VERSION, NAME } from './version.ts'
 
 /**
  * The exact Chart.js + plugin versions bundled into the rendering
@@ -109,4 +110,4 @@ export { VERSION, NAME } from './version'
  * inside this chartjs2img?" to their own users without parsing
  * `chartjs2img llm`.
  */
-export { LIBS as BUNDLED_LIBS } from './template'
+export { LIBS as BUNDLED_LIBS } from './template.ts'

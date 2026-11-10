@@ -31,9 +31,19 @@ Full documentation (EN / JA): <https://chartjs2img.ideamans.com>
 - **Examples gallery** — built-in `/examples` page (35 configurations) for visual verification
 - **Single binary** — compile with `bun build --compile` for easy distribution
 
-## Prerequisites
+## Install from npm
 
-You need [Bun](https://bun.sh) installed. If you haven't installed it yet:
+```bash
+npx chartjs2img render -i chart.json -o chart.png   # CLI, one-off
+npm install -g chartjs2img                          # CLI on PATH
+npm install chartjs2img                             # library (see Library API)
+```
+
+Runs on plain Node 22.12+ (or Bun). If your npm skips install scripts, approve `skia-canvas` (`npm install-scripts approve skia-canvas`, then install again) — its install script downloads the default engine's native module. Versions 0.6.0 – 0.7.1 did not work under Node; use 0.7.2 or later.
+
+## Prerequisites (working from source)
+
+To run from a checkout of this repository you need [Bun](https://bun.sh) installed. If you haven't installed it yet:
 
 ```bash
 # macOS / Linux
@@ -397,9 +407,10 @@ This iterates the 35 bundled chart configs (the same set shown by `GET /examples
 
 ## Library API
 
-Use chartjs2img programmatically from any Bun or Node program (Node 22.12 or later, following `puppeteer-core` 25):
+Use chartjs2img programmatically from any Bun or Node program (Node 22.12 or later, following `puppeteer-core` 25). The npm package is ESM-only and runs under plain Node since 0.7.2 (0.6.0 – 0.7.1 failed with `ERR_MODULE_NOT_FOUND`); it also ships the `chartjs2img` CLI (`npx chartjs2img --help`).
 
 ```ts
+import { writeFile } from 'node:fs/promises'
 import { renderChart, closeBrowser, computeHash, DEFAULT_ENGINE, BUNDLED_LIBS, VERSION } from 'chartjs2img'
 
 const result = await renderChart({
@@ -416,7 +427,7 @@ const result = await renderChart({
   engine: 'skia', // default — omit for skia, or pass 'browser'
 })
 
-await Bun.write('chart.png', result.buffer)
+await writeFile('chart.png', result.buffer)
 if (result.messages.length) console.warn(result.messages)
 
 // Call once on process shutdown. A no-op if the browser engine was never

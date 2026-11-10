@@ -64,7 +64,7 @@ Releases からの手動ダウンロード、Docker、ソースビルドを紹�
 ### Linux / macOS
 
 ```sh
-VERSION=0.7.1
+VERSION=0.7.2
 OS=linux       # または darwin
 ARCH=amd64     # または arm64
 
@@ -78,13 +78,28 @@ sudo mv chartjs2img /usr/local/bin/
 ### Windows (PowerShell)
 
 ```powershell
-$Version = "0.7.1"
+$Version = "0.7.2"
 $Url = "https://github.com/ideamans/chartjs2img/releases/download/v$Version/chartjs2img_${Version}_windows_amd64.zip"
 
 Invoke-WebRequest $Url -OutFile chartjs2img.zip
 Expand-Archive chartjs2img.zip -DestinationPath .
 # chartjs2img.exe を PATH の通ったディレクトリ（例: %USERPROFILE%\bin）へ移動
 ```
+
+## npm（Node 22.12 以上、または Bun）
+
+npm パッケージにはライブラリと CLI の両方が入っており、Bun なしの素の Node で動きます。
+
+```sh
+npx chartjs2img render -i chart.json -o chart.png   # 1回だけ使う
+npm install -g chartjs2img                          # PATH に chartjs2img を置く
+```
+
+既定の `skia` エンジンのネイティブモジュール（`skia-canvas`）は、その install スクリプトが取得します。
+npm が install スクリプトを止める設定なら、`skia-canvas` を許可して（`npm install-scripts approve skia-canvas`）入れ直してください。
+
+> **0.6.0〜0.7.1 は Node で動きませんでした**（import が `ERR_MODULE_NOT_FOUND`、`chartjs2img` コマンドは
+> パッケージに含まれないファイルを指していた）。0.7.2 以降を使ってください。
 
 ## Docker (HTTP サーバーのみ)
 

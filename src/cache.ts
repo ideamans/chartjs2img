@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import { DEFAULT_ENGINE, type RenderOptions } from './template'
+import { DEFAULT_ENGINE, type RenderOptions } from './template.ts'
 
 interface CacheEntry {
   buffer: Buffer

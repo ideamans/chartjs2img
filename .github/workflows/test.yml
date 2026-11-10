@@ -38,6 +38,44 @@ jobs:
         run: bun test
 
   # -------------------------------------------------------------------
+  # 1b. The npm package under plain Node (no Bun at runtime).
+  #
+  # 0.6.0 - 0.7.1 shipped a dist/ that only Bun could load
+  # (ERR_MODULE_NOT_FOUND under Node) and a bin pointing at a file that
+  # wasn't in the tarball; every other job here runs Bun, so nothing
+  # caught it. scripts/test-pack.sh packs the tarball, installs it into an
+  # empty project and, with node: imports the library and renders (skia +
+  # browser), runs the CLI and the HTTP server, and pixel-compares every
+  # built-in example against Bun's render from source.
+  # -------------------------------------------------------------------
+  test-node-package:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.12.0', '24', '26']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies (retries transient download errors)
+        shell: bash
+        run: bash scripts/ci-install.sh
+
+      - name: Pack, install and run under Node ${{ matrix.node }}
+        env:
+          # ubuntu-latest ships Google Chrome, so the browser engine is tried too.
+          CHARTJS2IMG_TEST_BROWSER: '1'
+        run: bash scripts/test-pack.sh
+
+  # -------------------------------------------------------------------
   # 2. Compile binaries for smoke tests — NATIVELY, one per runner.
   #
   # The default `skia` engine bundles skia-canvas, whose native `.node`

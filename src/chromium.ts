@@ -11,9 +11,19 @@
 //
 // Split out from renderer.ts so renderer owns browser/page lifecycle,
 // not platform-specific binary discovery.
-import { existsSync, readdirSync, mkdirSync, writeFileSync, chmodSync, unlinkSync } from 'fs'
-import { join } from 'path'
-import { homedir, platform, arch } from 'os'
+import { existsSync, readdirSync, mkdirSync, writeFileSync, chmodSync, unlinkSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import { join } from 'node:path'
+import { homedir, platform, arch } from 'node:os'
+
+/** Run a command with inherited stdio and resolve to its exit code (Node and Bun). */
+function run(cmd: string, args: string[]): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, { stdio: ['ignore', 'inherit', 'inherit'] })
+    child.on('error', reject)
+    child.on('close', (code) => resolve(code ?? 1))
+  })
+}
 
 /**
  * Find a Chromium/Chrome executable already installed on this machine.
@@ -158,17 +168,14 @@ export async function downloadChromeForTesting(): Promise<string> {
 
   console.log('[chromium] Extracting...')
   if (os === 'win32') {
-    const proc = Bun.spawn(
-      ['powershell', '-Command', `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${installDir}'`],
-      { stdout: 'inherit', stderr: 'inherit' },
-    )
-    if ((await proc.exited) !== 0) throw new Error('Failed to extract (PowerShell Expand-Archive)')
+    const code = await run('powershell', [
+      '-Command',
+      `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${installDir}'`,
+    ])
+    if (code !== 0) throw new Error('Failed to extract (PowerShell Expand-Archive)')
   } else {
-    const proc = Bun.spawn(['unzip', '-o', '-q', zipPath, '-d', installDir], {
-      stdout: 'inherit',
-      stderr: 'inherit',
-    })
-    if ((await proc.exited) !== 0) throw new Error('Failed to extract (unzip)')
+    const code = await run('unzip', ['-o', '-q', zipPath, '-d', installDir])
+    if (code !== 0) throw new Error('Failed to extract (unzip)')
   }
 
   try {

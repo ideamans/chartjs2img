@@ -85,8 +85,8 @@ Set via \`options.simulation\` (or dataset \`simulation\`):
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| \`autoRestart\` | boolean | \`true\` | Restart on data change |
-| \`initialIterations\` | number | — | Pre-render iterations (higher = more stable layout) |
+| \`autoRestart\` | boolean | \`true\` (skia engine: \`false\`) | Restart on data change |
+| \`initialIterations\` | number | — (skia engine: \`300\`) | Pre-render iterations (higher = more stable layout) |
 | \`forces.center\` | object | enabled | Centering force: \`{x, y}\` |
 | \`forces.collide\` | object | disabled | Collision: \`{radius, strength}\` |
 | \`forces.link\` | object | enabled | Spring: \`{distance, strength}\` |
@@ -94,6 +94,11 @@ Set via \`options.simulation\` (or dataset \`simulation\`):
 | \`forces.x\` | object | disabled | X pull: \`{x, strength}\` |
 | \`forces.y\` | object | disabled | Y pull: \`{y, strength}\` |
 | \`forces.radial\` | object | disabled | Circular: \`{radius, x, y, strength}\` |
+
+On the default \`skia\` engine the layout is computed synchronously (300 ticks, the
+full d3-force cool-down) so the same config always renders the same image, on Node
+and Bun alike. The \`browser\` engine keeps the plugin defaults and captures the
+layout once it stops moving, so the two engines can place nodes differently.
 
 ### dendrogram (Hierarchical Cluster)
 

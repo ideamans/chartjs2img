@@ -1,10 +1,10 @@
-#!/usr/bin/env bun
-import { startServer } from './server'
-import { cliRender, cliExamples } from './cli'
-import { closeBrowser } from './renderer'
-import { VERSION } from './version'
-import { getLlmDocs } from './llm-docs'
-import { parseArgs, CliArgError } from './cli-args'
+#!/usr/bin/env node
+import { startServer } from './server.ts'
+import { cliRender, cliExamples } from './cli.ts'
+import { closeBrowser } from './renderer.ts'
+import { VERSION } from './version.ts'
+import { getLlmDocs } from './llm-docs/index.ts'
+import { parseArgs, CliArgError } from './cli-args.ts'
 
 function printUsage(): void {
   console.log(`chartjs2img v${VERSION} - Render Chart.js charts to images
@@ -295,7 +295,7 @@ async function main(): Promise<void> {
     }
     process.once('SIGINT', shutdown)
     process.once('SIGTERM', shutdown)
-    // Bun.serve keeps the event loop alive; main() returning is fine.
+    // The HTTP server keeps the event loop alive; main() returning is fine.
   } else if (command === 'examples') {
     const outdir = (args['outdir'] as string) ?? (args['o'] as string) ?? './examples'
     const format = ((args['format'] ?? args['f']) as string) ?? 'png'
