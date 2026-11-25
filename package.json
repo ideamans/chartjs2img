@@ -93,9 +93,9 @@
     "tailwindcss": "^4.2.2",
     "typescript": "^5.7.0",
     "vitepress": "^2.0.0-alpha.17",
-    "vitepress-daisyui-theme": "^0.2.1",
-    "vue": "^3.5.0",
-    "vitepress-machine-readability": "^0.2.0"
+    "vitepress-daisyui-theme": "^0.3.4",
+    "vitepress-machine-readability": "^0.2.0",
+    "vue": "^3.5.0"
   },
   "trustedDependencies": [
     "skia-canvas"
