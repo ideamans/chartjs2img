@@ -29,7 +29,7 @@
         "tailwindcss": "^4.2.2",
         "typescript": "^5.7.0",
         "vitepress": "^2.0.0-alpha.17",
-        "vitepress-daisyui-theme": "^0.2.1",
+        "vitepress-daisyui-theme": "^0.3.4",
         "vitepress-machine-readability": "^0.2.0",
         "vue": "^3.5.0",
       },
@@ -497,7 +497,7 @@
 
     "vitepress": ["vitepress@2.0.0-alpha.21", "", { "dependencies": { "@docsearch/css": "^4.7.1", "@docsearch/js": "^4.7.1", "@docsearch/sidepanel-js": "^4.7.1", "@iconify-json/simple-icons": "^1.2.99", "@shikijs/transformers": "^4.5.0", "@types/markdown-it": "^14.2.0", "@vitejs/plugin-vue": "^6.0.9", "@vue/devtools-api": "^8.2.1", "@vue/shared": "^3.5.43", "@vueuse/core": "^15.0.0", "@vueuse/integrations": "^15.0.0", "focus-trap": "^8.2.3", "mark.js": "8.11.1", "minisearch": "^7.2.0", "shiki": "^4.5.0", "vite": "^8.3.4", "vue": "^3.5.43" }, "peerDependencies": { "markdown-it-mathjax3": "^4", "postcss": "^8" }, "optionalPeers": ["markdown-it-mathjax3", "postcss"], "bin": { "vitepress": "bin/vitepress.js" } }, "sha512-b2PFPIw2mVfxDi490FhSq4AlkFi17b9lofLCqWfH4uPKz/dF4oy2C9vBpP2r7l7hl2hc5BG7OTRPvRFfRzF7MA=="],
 
-    "vitepress-daisyui-theme": ["vitepress-daisyui-theme@0.2.1", "", { "dependencies": { "minisearch": "^7.0.0" }, "peerDependencies": { "@tailwindcss/vite": "^4.0.0", "daisyui": "^5.0.0", "tailwindcss": "^4.0.0", "vitepress": ">=1.0.0", "vue": "^3.3.0" } }, "sha512-9SQbwR9H/3TudA6dYBVD0IPvCDRjWPVzEiEVkz96/mCn58Dx+cfCBRW0QM/9jgr6N2ahjBKoo9PWGd0p8aGGPw=="],
+    "vitepress-daisyui-theme": ["vitepress-daisyui-theme@0.3.4", "", { "dependencies": { "minisearch": "^7.0.0" }, "peerDependencies": { "@tailwindcss/vite": "^4.0.0", "daisyui": "^5.0.0", "tailwindcss": "^4.0.0", "vitepress": ">=1.0.0 || ^2.0.0-alpha.0", "vue": "^3.3.0" } }, "sha512-NC2Xy4LDgnZN+GcguAQUnfgWrMGprYBli/5CNK56GfGSwVR1LWbBNq0hK67pbB6dpmfFHK6MXNbIwzbX/6IIXQ=="],
 
     "vitepress-machine-readability": ["vitepress-machine-readability@0.2.0", "", { "peerDependencies": { "vitepress": "^1.6.0 || ^2.0.0-alpha.0" } }, "sha512-39YfLcMN/j3LYqAUyaS8CLTnOxOJT0hMpHAD32Bch2FMAcfFfcS9mjsNPOKXvO59O7fly7sclDxS3oPSBs9Wuw=="],
 
